@@ -2,6 +2,7 @@ package org.infinispan.configuration.global;
 
 import java.util.Properties;
 
+import org.infinispan.commons.configuration.Builder;
 import org.infinispan.commons.util.TypedProperties;
 import org.infinispan.executors.DefaultScheduledExecutorFactory;
 import org.infinispan.executors.ScheduledExecutorFactory;
@@ -9,7 +10,7 @@ import org.infinispan.executors.ScheduledExecutorFactory;
 /**
  * Configures executor factory.
  */
-public class ScheduledExecutorFactoryConfigurationBuilder extends AbstractGlobalConfigurationBuilder<ScheduledExecutorFactoryConfiguration> {
+public class ScheduledExecutorFactoryConfigurationBuilder extends AbstractGlobalConfigurationBuilder implements Builder<ScheduledExecutorFactoryConfiguration> {
    
    private ScheduledExecutorFactory factory = new DefaultScheduledExecutorFactory();
    private Properties properties;
@@ -58,11 +59,13 @@ public class ScheduledExecutorFactoryConfigurationBuilder extends AbstractGlobal
    }
    
    @Override
+   public
    void validate() {
       // No-op, no validation required
    } 
    
    @Override
+   public
    ScheduledExecutorFactoryConfiguration create() {
       return new ScheduledExecutorFactoryConfiguration(factory, TypedProperties.toTypedProperties(properties));
    }

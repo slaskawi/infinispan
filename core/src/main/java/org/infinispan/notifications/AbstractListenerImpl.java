@@ -11,13 +11,17 @@ import org.infinispan.notifications.cachelistener.event.EventImpl;
 import org.infinispan.util.concurrent.WithinThreadExecutor;
 import org.infinispan.util.logging.Log;
 
+import javax.security.auth.Subject;
 import javax.transaction.Transaction;
+
 import java.lang.annotation.Annotation;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -125,7 +129,7 @@ public abstract class AbstractListenerImpl {
             if (m.isAnnotationPresent(key)) {
                testListenerMethodValidity(m, value, key.getName());
                m.setAccessible(true);
-               addListenerInvocation(key, new ListenerInvocation(listener, m, l.sync(), l.primaryOnly(), filter, classLoader));
+               addListenerInvocation(key, createListenerInvocation(listener, m, l, filter, classLoader, Subject.getSubject(AccessController.getContext())));
                foundMethods = true;
             }
          }
@@ -134,6 +138,11 @@ public abstract class AbstractListenerImpl {
       if (!foundMethods)
          getLog().noAnnotateMethodsFoundInListener(listener.getClass());
    }
+
+   protected ListenerInvocation createListenerInvocation(Object listener, Method m, Listener l, KeyFilter filter, ClassLoader classLoader, Subject subject) {
+      return new ListenerInvocation(listener, m, l.sync(), l.primaryOnly(), filter, classLoader, subject);
+   }
+
 
    private void addListenerInvocation(Class<? extends Annotation> annotation, ListenerInvocation li) {
       List<ListenerInvocation> result = getListenerCollectionForAnnotation(annotation);
@@ -175,14 +184,16 @@ public abstract class AbstractListenerImpl {
       public final boolean onlyPrimary;
       public final WeakReference<ClassLoader> classLoader;
       public final KeyFilter filter;
+      public final Subject subject;
 
-      public ListenerInvocation(Object target, Method method, boolean sync, boolean onlyPrimary, KeyFilter filter, ClassLoader classLoader) {
+      public ListenerInvocation(Object target, Method method, boolean sync, boolean onlyPrimary, KeyFilter filter, ClassLoader classLoader, Subject subject) {
          this.target = target;
          this.method = method;
          this.sync = sync;
          this.onlyPrimary = onlyPrimary;
          this.filter = filter;
          this.classLoader = new WeakReference<ClassLoader>(classLoader);
+         this.subject = subject;
       }
 
       public void invoke(final Object event) {
@@ -205,7 +216,28 @@ public abstract class AbstractListenerImpl {
                      contextClassLoader = setContextClassLoader(classLoader.get());
                   }
                   try {
-                     method.invoke(target, event);
+                     if (subject != null) {
+                        try {
+                           Subject.doAs(subject, new PrivilegedExceptionAction<Void>() {
+                              @Override
+                              public Void run() throws Exception {
+                                 method.invoke(target, event);
+                                 return null;
+                              }
+                           });
+                        } catch (PrivilegedActionException e) {
+                           Throwable cause = e.getCause();
+                           if (cause instanceof InvocationTargetException) {
+                              throw (InvocationTargetException)cause;
+                           } else if (cause instanceof IllegalAccessException) {
+                              throw (IllegalAccessException)cause;
+                           } else {
+                              throw new InvocationTargetException(cause);
+                           }
+                        }
+                     } else {
+                        method.invoke(target, event);
+                     }
                   } catch (InvocationTargetException exception) {
                      Throwable cause = getRealException(exception);
                      if (sync) {

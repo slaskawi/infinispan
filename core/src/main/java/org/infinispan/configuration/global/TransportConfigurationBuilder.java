@@ -1,5 +1,6 @@
 package org.infinispan.configuration.global;
 
+import org.infinispan.commons.configuration.Builder;
 import org.infinispan.commons.util.TypedProperties;
 import org.infinispan.commons.util.Util;
 import org.infinispan.commons.CacheConfigurationException;
@@ -13,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Configures the transport used for network communications across the cluster.
  */
-public class TransportConfigurationBuilder extends AbstractGlobalConfigurationBuilder<TransportConfiguration> {
+public class TransportConfigurationBuilder extends AbstractGlobalConfigurationBuilder implements Builder<TransportConfiguration> {
    private static final Log log = LogFactory.getLog(TransportConfigurationBuilder.class);
 
    // Lazily instantiate this if the user doesn't request an alternate to avoid a hard dep on jgroups library
@@ -160,14 +161,14 @@ public class TransportConfigurationBuilder extends AbstractGlobalConfigurationBu
 
 
    @Override
-   void validate() {
+   public void validate() {
       if(clusterName == null){
           throw new CacheConfigurationException("Transport clusterName cannot be null");
       }
    }
 
    @Override
-   TransportConfiguration create() {
+   public TransportConfiguration create() {
       return new TransportConfiguration(clusterName, machineId, rackId, siteId, distributedSyncTimeout, transport, nodeName, TypedProperties.toTypedProperties(properties));
    }
 
@@ -178,7 +179,7 @@ public class TransportConfigurationBuilder extends AbstractGlobalConfigurationBu
    }
 
    @Override
-   protected
+   public
    TransportConfigurationBuilder read(TransportConfiguration template) {
       this.clusterName = template.clusterName();
       this.distributedSyncTimeout = template.distributedSyncTimeout();
