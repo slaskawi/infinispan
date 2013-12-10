@@ -58,7 +58,7 @@
          <rest-connector virtual-server="default-host" cache-container="local" />
       </replacement>
    </supplement>
-   <socket-binding name="hotrod" port="11222" />
-   <socket-binding name="hotrod-internal" port="11223" />
-   <socket-binding name="memcached" port="11211" />
+   <socket-binding name="hotrod" interface="management" port="11222" />
+   <socket-binding name="hotrod-internal" interface="management" port="11223" />
+   <socket-binding name="memcached" interface="management" port="11211" />
 </config>
