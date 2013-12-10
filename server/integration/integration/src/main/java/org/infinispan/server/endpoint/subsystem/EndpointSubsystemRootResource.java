@@ -60,7 +60,6 @@ public class EndpointSubsystemRootResource extends SimpleResourceDefinition {
         resourceRegistration.registerSubModel(new HotRodConnectorResource(isRuntimeRegistration()));
         resourceRegistration.registerSubModel(new MemcachedConnectorResource(isRuntimeRegistration()));
         resourceRegistration.registerSubModel(new RestConnectorResource(isRuntimeRegistration()));
-        resourceRegistration.registerSubModel(new WebSocketConnectorResource(isRuntimeRegistration()));
     }
 
     public boolean isRuntimeRegistration() {

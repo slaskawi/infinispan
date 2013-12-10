@@ -215,10 +215,6 @@
          <maven-resource-with-classifier group="org.infinispan" artifact="infinispan-server-rest" classifier="classes" />
       </module-def>
 
-      <module-def name="org.infinispan.server.websocket" src="${infinispan.server.modules.dir}">
-         <maven-resource group="org.infinispan" artifact="infinispan-server-websocket" />
-      </module-def>
-
       <module-def name="org.iq80.leveldb" src="${infinispan.server.modules.dir}">
          <maven-resource group="org.iq80.leveldb" artifact="leveldb" />
       </module-def>
