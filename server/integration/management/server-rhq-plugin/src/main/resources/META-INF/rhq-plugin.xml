@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plugin [
-   <!ENTITY pluginName 'InfinispanServer'>
+   <!ENTITY pluginName 'JDG'>
 
    <!ENTITY addConnectorCommandParameters '
       <c:simple-property name="cache-container" required="true" description="The name of the cache container to apply this endpoint to">
@@ -47,8 +47,8 @@
    '>
 ]>
 
-<plugin name="&pluginName;" displayName="Infinispan Server 6.0.x"
-        description="Supports management and monitoring of Infinispan Server 6.0.x" package="org.infinispan.server.rhq"
+<plugin name="&pluginName;" version="6.2.0" displayName="JBoss Data Grid Server 6.2.x"
+        description="Supports management and monitoring of JBoss Data Grid Server 6.2.x" package="org.infinispan.server.rhq"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:xmlns:rhq-plugin"
         xmlns:c="urn:xmlns:rhq-configuration">
 
