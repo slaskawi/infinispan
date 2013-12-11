@@ -128,7 +128,6 @@
       </module-def>
 
       <module-def name="org.fusesource.leveldbjni-all" src="${infinispan.server.modules.dir}">
-         <maven-resource group="org.fusesource.leveldbjni" artifact="leveldbjni-all" />
       </module-def>
 
       <module-def name="org.infinispan.commons" src="${infinispan.server.modules.dir}">
@@ -216,7 +215,6 @@
       </module-def>
 
       <module-def name="org.iq80.leveldb" src="${infinispan.server.modules.dir}">
-         <maven-resource group="org.iq80.leveldb" artifact="leveldb" />
       </module-def>
 
       <module-def name="org.scala-lang.library" src="${infinispan.server.modules.dir}">
@@ -251,7 +249,6 @@
          <maven-resource group="org.hibernate" artifact="hibernate-search-engine" />
          <maven-resource group="org.hibernate" artifact="hibernate-search-infinispan" />
          <maven-resource group="org.hibernate" artifact="hibernate-search-analyzers" />
-         <maven-resource group="org.xerial.snappy" artifact="snappy-java" />
       </module-def>
 
       <module-def name="org.hibernate.hql.parser" src="${infinispan.server.modules.dir}">
