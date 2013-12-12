@@ -64,7 +64,7 @@
                         <id>javadoc</id>
                         <phase>prepare-package</phase>
                         <goals>
-                           <goal>aggregate</goal>
+                           <goal>aggregate-jar</goal>
                         </goals>
                         <configuration>
                            <quiet>true</quiet>
@@ -119,16 +119,12 @@ pageTracker._trackPageview();
                   </executions>
                   <configuration>
                      <descriptors>
-                        <descriptor>src/main/resources/assemblies/bin.xml</descriptor>
-                        <descriptor>src/main/resources/assemblies/all.xml</descriptor>
-                        <descriptor>src/main/resources/assemblies/src.xml</descriptor>
+                        <descriptor>src/main/resources/assemblies/jdg-bin.xml</descriptor>
+                        <descriptor>src/main/resources/assemblies/jdg-src.xml</descriptor>
                      </descriptors>
                      <finalName>${project.artifactId}-${project.version}</finalName>
                      <outputDirectory>${buildDirectory}/distribution</outputDirectory>
                      <workDirectory>${buildDirectory}/assembly/work</workDirectory>
-
-                     
-                     <attach>false</attach>
                   </configuration>
                </plugin>
             </plugins>
@@ -170,7 +166,8 @@ pageTracker._trackPageview();
                   </executions>
                   <configuration>
                      <descriptors>
-                        <descriptor>src/main/resources/assemblies/all.xml</descriptor>
+                        <descriptor>src/main/resources/assemblies/jdg-bin.xml</descriptor>
+                        <descriptor>src/main/resources/assemblies/jdg-src.xml</descriptor>
                      </descriptors>
                      <finalName>${project.artifactId}-${project.version}</finalName>
                      <outputDirectory>${buildDirectory}/distribution</outputDirectory>

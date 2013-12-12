@@ -117,11 +117,11 @@
          <maven-resource group="org.infinispan.server" artifact="infinispan-server-jgroups" />
       </module-def>
 
-      <module-def name="org.jboss.as.console" slot="ispn" src="${infinispan.server.modules.dir}" />
+      <module-def name="org.jboss.as.console" slot="jdg" src="${infinispan.server.modules.dir}" />
 
-      <module-def name="org.jboss.as.domain-http-error-context" slot="ispn" src="${infinispan.server.modules.dir}" />
+      <module-def name="org.jboss.as.domain-http-error-context" slot="jdg" src="${infinispan.server.modules.dir}" />
 
-      <module-def name="org.jboss.as.product" slot="ispn" src="${infinispan.server.modules.dir}" />
+      <module-def name="org.jboss.as.product" slot="jdg" src="${infinispan.server.modules.dir}" />
 
       <module-def name="org.jboss.netty">
          <maven-resource group="io.netty" artifact="netty" />

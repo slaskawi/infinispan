@@ -1,75 +1,72 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<settings xmlns="http://maven.apache.org/settings/1.0.0"
-          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" 
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
           xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
-    <pluginGroups>
-        <pluginGroup>org.jboss.maven.plugins</pluginGroup>
-    </pluginGroups>
-    <profiles>
-        <profile>
-            <id>jboss-public-repository</id>
-            <repositories>
-                <repository>
-                    <id>jboss-public-repository-group</id>
-                    <name>JBoss Public Maven Repository Group</name>
-                    <url>https://repository.jboss.org/nexus/content/groups/public-jboss/</url>
-                    <layout>default</layout>
-                    <releases>
-                        <enabled>true</enabled>
-                        <updatePolicy>never</updatePolicy>
-                    </releases>
-                    <snapshots>
-                        <enabled>true</enabled>
-                        <updatePolicy>never</updatePolicy>
-                    </snapshots>
-                </repository>
-            </repositories>
-            <pluginRepositories>
-                <pluginRepository>
-                    <id>jboss-public-repository-group</id>
-                    <name>JBoss Public Maven Repository Group</name>
-                    <url>https://repository.jboss.org/nexus/content/groups/public-jboss/</url>
-                    <layout>default</layout>
-                    <releases>
-                        <enabled>true</enabled>
-                        <updatePolicy>never</updatePolicy>
-                    </releases>
-                    <snapshots>
-                        <enabled>true</enabled>
-                        <updatePolicy>never</updatePolicy>
-                    </snapshots>
-                </pluginRepository>
-            </pluginRepositories>
-        </profile>
+  <localRepository>${user.home}/.m2/jdg-mead-repository</localRepository>
 
-        <!-- Include early access of application server and other products -->
-        <profile>
-            <id>redhat-earlyaccess-repository</id>
-            <repositories>
-                <repository>
-                    <id>redhat-earlyaccess-repository-group</id>
-                    <name>Red Hat early access repository</name>
-                    <url>http://maven.repository.redhat.com/earlyaccess/all/</url>
-                    <layout>default</layout>
-                    <releases>
-                        <enabled>true</enabled>
-                        <updatePolicy>never</updatePolicy>
-                    </releases>
-                    <snapshots>
-                        <enabled>true</enabled>
-                        <updatePolicy>never</updatePolicy>
-                    </snapshots>
-                </repository>
-            </repositories>
-        </profile>
+  <pluginGroups />
+  <proxies />
+  <servers />
+  <mirrors>
+    <mirror>
+      <id>jdg6-mirror-setting</id>
+      <mirrorOf>
+         *,!mead-jdg6,!mead-jdg6-plugins,!jboss-public-jdg6,!jboss-public-jdg6-plugins,!central-jdg6,!central-jdg6-plugins
+      </mirrorOf>
+      <name>Mirror Settings for JDG 6 build</name>
+      <url>http://download.devel.redhat.com/brewroot/repos/jb-edg-6-rhel-6-build/latest/maven/</url>
+    </mirror>
+  </mirrors>
 
-    </profiles>
+  <profiles>
+    <!--  Mead repository profile must be placed after public repository profile
+     |    and before public plugin repository profile.  This allows the Mead repository 
+     |    to be prioritized over public repositories and public plugin repositories
+     |    when all repository profiles are active.
+     -->
+    <profile>
+      <id>jdg-mead-repository</id>
+      <activation>
+        <property>
+          <name>!jdg-mead-repository</name>
+        </property>
+      </activation>
+      <repositories>
+        <repository>
+          <id>mead-jdg6</id>
+          <name>MEAD JDG6 Maven Repository</name>
+          <url>http://download.devel.redhat.com/brewroot/repos/jb-edg-6-rhel-6-build/latest/maven/</url>
+          <releases>
+            <enabled>true</enabled>
+            <updatePolicy>never</updatePolicy>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+        </repository>
+      </repositories>
 
-    <activeProfiles>
-        <activeProfile>jboss-public-repository</activeProfile>
-        <activeProfile>redhat-earlyaccess-repository</activeProfile>
-    </activeProfiles>
+      <!-- Note: plugin repositories have non-matching IDs to dependency repositories.
+       |   This allows plugin repos to be mirrored separately.
+       -->
+      <pluginRepositories>
+        <pluginRepository>
+          <id>mead-jdg6-plugins</id>
+          <name>MEAD JDG6 Maven Plugin Repository</name>
+          <url>http://download.devel.redhat.com/brewroot/repos/jb-edg-6-rhel-6-build/latest/maven/</url>
+          <releases>
+            <enabled>true</enabled>
+            <updatePolicy>never</updatePolicy>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+        </pluginRepository>
+      </pluginRepositories>
+    </profile>
+
+  </profiles>
 
 </settings>
 

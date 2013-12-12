@@ -24,23 +24,25 @@
 
       
       <version.ant-contrib>1.0b3</version.ant-contrib>
-      <version.com.github.relaxng.relaxngDatatype>2011.1</version.com.github.relaxng.relaxngDatatype>
-      <version.commons.logging>1.1.1</version.commons.logging>
-      <version.net.jcip.annotations>1.0</version.net.jcip.annotations>
-      <version.org.jboss.as>7.2.0.Final</version.org.jboss.as>
-      <version.org.jboss.jandex>1.0.3.Final</version.org.jboss.jandex>
-      <version.org.jboss.jbossts.jbossjts>4.16.2.Final</version.org.jboss.jbossts.jbossjts>
+      <version.com.github.relaxng.relaxngDatatype>2011.1-redhat-6</version.com.github.relaxng.relaxngDatatype>
+      <version.commons.logging>1.1.1-redhat-2</version.commons.logging>
+      <version.net.jcip.annotations>1.0-redhat-4</version.net.jcip.annotations>
+      <version.org.jboss.as>7.2.1.Final-redhat-10</version.org.jboss.as>
+      <version.org.jboss.as.arquillian>7.2.0.Final</version.org.jboss.as.arquillian>
+      <version.org.jboss.jandex>1.0.3.Final-redhat-2</version.org.jboss.jandex>
+      <version.org.jboss.jbossts.jbossjts>4.17.7.Final-redhat-4</version.org.jboss.jbossts.jbossjts>
+      <version.org.jboss.spec>3.0.2.Final-redhat-4</version.org.jboss.spec>
       <version.junit>4.11</version.junit>
       <version.org.infinispan>${project.version}</version.org.infinispan>
       <version.org.infinispan.arquillian.container>1.1.0.Alpha1</version.org.infinispan.arquillian.container>
       <version.org.iq80.leveldb>0.6</version.org.iq80.leveldb>
-      <version.org.slf4j>1.7.2</version.org.slf4j>
+      <version.org.slf4j>1.7.2-redhat-1</version.org.slf4j>
       <version.org.xerial.snappy>1.0.5</version.org.xerial.snappy>
       <version.xml.maven.plugin>1.0</version.xml.maven.plugin>
-      <version.org.infinispan.protostream>1.0.0.CR1</version.org.infinispan.protostream>
+      <version.org.infinispan.protostream>1.0.0.CR1-redhat-1</version.org.infinispan.protostream>
       <version.http.client>4.3</version.http.client>
-      <version.org.picketbox>4.0.17.SP2</version.org.picketbox>
-      <version.xpp3>1.1.4c</version.xpp3>
+      <version.org.picketbox>4.0.17.SP2-redhat-2</version.org.picketbox>
+      <version.xpp3>1.1.4c-redhat-2</version.xpp3>
       <relocations />
 
    </properties>
@@ -267,23 +269,42 @@
 
          <dependency>
             <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-arquillian-container-managed</artifactId>
-            <version>${version.org.jboss.as}</version>
-            <scope>test</scope>
+            <artifactId>jboss-as-arquillian-common</artifactId>
+            <version>${version.org.jboss.as.arquillian}</version>
          </dependency>
 
          <dependency>
-            <groupId>org.infinispan.arquillian.container</groupId>
-            <artifactId>infinispan-arquillian-container-managed</artifactId>
-            <version>${version.org.infinispan.arquillian.containern}</version>
-            <scope>test</scope>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-arquillian-protocol-jmx</artifactId>
+            <version>${version.org.jboss.as.arquillian}</version>
+         </dependency>
+
+         <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-arquillian-container-managed</artifactId>
+            <version>${version.org.jboss.as.arquillian}</version>
+         </dependency>
+
+         <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-arquillian-testenricher-msc</artifactId>
+            <version>${version.org.jboss.as.arquillian}</version>
          </dependency>
 
          <dependency>
             <groupId>org.infinispan.arquillian.container</groupId>
             <artifactId>infinispan-arquillian-impl</artifactId>
             <version>${version.org.infinispan.arquillian.container}</version>
-            <scope>test</scope>
+            <exclusions>
+               <exclusion>
+                  <groupId>org.jboss.jbossts</groupId>
+                  <artifactId>jbossjta</artifactId>
+               </exclusion>
+               <exclusion>
+                  <groupId>org.jboss.remoting3</groupId>
+                  <artifactId>remoting-jmx</artifactId>
+               </exclusion>
+            </exclusions>            
          </dependency>
 
          <dependency>
@@ -391,6 +412,7 @@
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-enforcer-plugin</artifactId>
+            <version>1.2-redhat-1</version>
             <executions>
                <execution>
                   <id>enforce-java</id>

@@ -20,6 +20,7 @@
       <module>versions</module>
       <module>jgroups</module>
       <module>infinispan</module>
+      <module>security</module>
       <module>integration</module>
       <module>build</module>
       <module>management/server-rhq-plugin</module>
@@ -74,7 +75,7 @@
                      <finalName>${product.name}-${product.version}</finalName>
                      <outputDirectory>${project.build.directory}/distribution</outputDirectory>
                      <workDirectory>${project.build.directory}/assembly/work</workDirectory>
-                     <attach>false</attach>
+                     <attach>true</attach>
                   </configuration>
                </plugin>
             </plugins>

@@ -50,9 +50,8 @@
       </dependency>
 
       <dependency>
-         <groupId>commons-logging</groupId>
-         <artifactId>commons-logging</artifactId>
-         <scope>test</scope>
+         <groupId>org.freemarker</groupId>
+         <artifactId>freemarker</artifactId>
       </dependency>
    </dependencies>
 

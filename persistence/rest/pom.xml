@@ -22,6 +22,11 @@
          <artifactId>httpclient</artifactId>
       </dependency>
       <dependency>
+         <groupId>commons-httpclient</groupId>
+         <artifactId>commons-httpclient</artifactId>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
          <groupId>${project.groupId}</groupId>
          <artifactId>infinispan-server-rest</artifactId>
          <classifier>classes</classifier>
