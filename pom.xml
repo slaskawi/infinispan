@@ -17,24 +17,20 @@
 
    <modules>
       <module>bom</module>
-      <module>checkstyle</module>
       <module>parent</module>
       <module>commons</module>
       <module>core</module>
-      <module>extended-statistics</module>
       <module>tools</module>
       <module>query</module>
       <module>query-dsl</module>
       <module>remote-query/remote-query-client</module>
       <module>remote-query/remote-query-server</module>
-      <module>tree</module>
       <module>lucene</module>
       <module>lucene/lucene-directory</module>
       <module>lucene/lucene-v3</module>
       <module>persistence</module>
       <module>persistence/jdbc</module>
       <module>persistence/remote</module>
-      <module>persistence/cli</module>
       <module>persistence/leveldb</module>
       <module>persistence/rest</module>
       <module>server</module>
@@ -44,29 +40,14 @@
       <module>server/rest</module>
       <module>client/hotrod-client</module>
       <module>rhq-plugin</module>
-      <module>spring</module>
       <module>cli/cli-server</module>
       <module>cli/cli-client</module>
-      <module>demos/gui</module>
-      <module>demos/ec2</module>
-      <module>demos/distexec</module>
-      <module>demos/ec2-ui</module>
-      <module>demos/directory</module>
-      <module>demos/lucene-directory-demo</module>
-      <module>demos/gridfs-webdav</module>
-      <module>demos/nearcache</module>
-      <module>demos/nearcache-client</module>
       <module>cdi/extension</module>
-      <module>as-modules</module>
       <module>integrationtests/luceneintegration</module>
-      <module>integrationtests/as-integration</module>
       <module>integrationtests/compatibility-mode-it</module>
-      <module>integrationtests/cdi-jcache-it</module>
-      <module>jcache</module>
       <module>compatibility52x</module>
       <module>compatibility52x/adaptor52x</module>
       <module>compatibility52x/custom52x-store</module>
-      <module>compatibility52x/cli-migrator52x</module>
       <module>server/integration</module>
    </modules>
 
