@@ -1,12 +1,12 @@
 #!/bin/sh
 #
-# Infinispan Server standalone control script
+# JBoss Data Grid standalone control script
 #
 # chkconfig: - 80 20
-# description: Infinispan Server
+# description: JBoss Data Grid
 # processname: standalone
-# pidfile: /var/run/infinispan-server/infinispan-server-standalone.pid
-# config: /etc/infinispan-server/infinispan-server.conf
+# pidfile: /var/run/jboss-datagrid/jboss-datagrid-standalone.pid
+# config: /etc/jboss-datagrid/jboss-datagrid.conf
 
 # Source function library.
 . /etc/init.d/functions
@@ -15,9 +15,9 @@
 [ -r /etc/java/java.conf ] && . /etc/java/java.conf
 export JAVA_HOME
 
-prog='infinispan-server'
+prog='jboss-datagrid'
 
-# Load Infinispan Server init.d configuration.
+# Load JBoss Data Grid init.d configuration.
 if [ -z "$ISPN_SERVER_CONF" ]; then
   ISPN_SERVER_CONF="/etc/$prog/$prog.conf"
 fi
