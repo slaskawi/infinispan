@@ -873,7 +873,6 @@
    </pluginRepositories>
    <build>
       <directory>${buildDirectory}</directory>
-      <finalName>${project.artifactId}</finalName>
       <pluginManagement>
          <plugins>
             <plugin>
