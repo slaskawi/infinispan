@@ -131,7 +131,7 @@ public class TxDistributionInterceptor extends BaseDistributionInterceptor {
 
          //if the cache entry has the value lock flag set, skip the remote get.
          CacheEntry entry = ctx.lookupEntry(command.getKey());
-         boolean skipRemoteGet = entry != null && entry.skipRemoteGet();
+         boolean skipRemoteGet = entry != null && entry.skipLookup();
 
          // need to check in the context as well since a null retval is not necessarily an indication of the entry not being
          // available.  It could just have been removed in the same tx beforehand.  Also don't bother with a remote get if
@@ -307,15 +307,22 @@ public class TxDistributionInterceptor extends BaseDistributionInterceptor {
    }
 
    protected void remoteGetBeforeWrite(InvocationContext ctx, WriteCommand command, RecipientGenerator keygen) throws Throwable {
-      for (Object k : keygen.getKeys()) {
-         CacheEntry entry = ctx.lookupEntry(k);
-         boolean skipRemoteGet =  entry != null && entry.skipRemoteGet();
-         if (skipRemoteGet) {
-            continue;
-         }
-         InternalCacheEntry ice = remoteGet(ctx, k, true, command);
-         if (ice == null) {
-            localGet(ctx, k, true, command, false);
+      // this should only happen if:
+      //   a) unsafeUnreliableReturnValues is false
+      //   b) unsafeUnreliableReturnValues is true, we are in a TX and the command is conditional or a delta write
+      // On the backup owners, the value matching policy should be set to MATCH_ALWAYS, and command.isConditional() should return true
+      if (isNeedReliableReturnValues(command) || command.isConditional() || command.hasFlag(Flag.DELTA_WRITE) ||
+            shouldFetchRemoteValuesForWriteSkewCheck(ctx, command)) {
+         for (Object k : keygen.getKeys()) {
+            CacheEntry entry = ctx.lookupEntry(k);
+            boolean skipRemoteGet =  entry != null && entry.skipLookup();
+            if (skipRemoteGet) {
+               continue;
+            }
+            InternalCacheEntry ice = remoteGet(ctx, k, true, command);
+            if (ice == null) {
+               localGet(ctx, k, true, command, false);
+            }
          }
       }
    }
