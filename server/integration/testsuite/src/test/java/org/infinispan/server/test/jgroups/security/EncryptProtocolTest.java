@@ -1,4 +1,4 @@
-package org.infinispan.server.test.jgroups.auth;
+package org.infinispan.server.test.jgroups.security;
 
 import java.io.File;
 import java.io.IOException;
@@ -6,6 +6,7 @@ import java.io.IOException;
 import org.apache.commons.io.FileUtils;
 import org.infinispan.arquillian.core.InfinispanResource;
 import org.infinispan.arquillian.core.RemoteInfinispanServers;
+import org.infinispan.arquillian.core.RunningServer;
 import org.infinispan.arquillian.core.WithRunningServer;
 import org.infinispan.arquillian.utils.MBeanServerConnectionProvider;
 import org.infinispan.server.test.client.memcached.MemcachedClient;
@@ -67,8 +68,8 @@ public class EncryptProtocolTest {
         }
     }
 
-    @WithRunningServer(COORDINATOR_NODE)
     @Test
+    @WithRunningServer(@RunningServer(name = COORDINATOR_NODE))
     public void testEncryptProtocolRegistered() throws Exception {
         try {
             controller.start(JOINING_NODE);
