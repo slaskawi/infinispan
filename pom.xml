@@ -30,6 +30,7 @@
       <module>lucene/lucene-v3</module>
       <module>persistence</module>
       <module>persistence/jdbc</module>
+      <module>persistence/jpa</module>
       <module>persistence/remote</module>
       <module>persistence/leveldb</module>
       <module>persistence/rest</module>

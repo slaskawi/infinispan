@@ -102,6 +102,8 @@
       <version.commons.logging>1.1.1</version.commons.logging>
       <version.commons.math>2.2</version.commons.math>
       <version.freemarker>2.3.19-redhat-1</version.freemarker>
+      <version.hibernate.core>4.2.7.SP1-redhat-3</version.hibernate.core>
+      <version.hibernate.entitymanager>${version.hibernate.core}</version.hibernate.entitymanager>
       <version.hibernate.hql.parser>1.0.0.Alpha5-redhat-1</version.hibernate.hql.parser>
       <version.hibernate.javax.persistence>1.0.1.Final-redhat-2</version.hibernate.javax.persistence>
       <version.httpclient>4.2.1-redhat-1</version.httpclient>
@@ -295,6 +297,12 @@
             <version>${version.hibernate.annotations}</version>
          </dependency>
          <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-entitymanager</artifactId>
+            <version>${version.hibernate.entitymanager}</version>
+            <scope>test</scope>
+         </dependency>
+         <dependency>
             <groupId>org.hibernate.hql</groupId>
             <artifactId>hibernate-hql-parser</artifactId>
             <version>${version.hibernate.hql.parser}</version>
@@ -327,6 +335,11 @@
                   <artifactId>hibernate-jpa-2.0-api</artifactId>
                </exclusion>
             </exclusions>
+         </dependency>
+         <dependency>
+            <groupId>org.hibernate.javax.persistence</groupId>
+            <artifactId>hibernate-jpa-2.0-api</artifactId>
+            <version>${version.hibernate.javax.persistence}</version>
          </dependency>
          <dependency>
             <groupId>org.jboss.arquillian</groupId>
@@ -429,6 +442,12 @@
          <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jdk14</artifactId>
+            <version>${version.slf4j}</version>
+            <scope>test</scope>
+         </dependency>
+         <dependency>
+             <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
             <version>${version.slf4j}</version>
             <scope>test</scope>
          </dependency>
