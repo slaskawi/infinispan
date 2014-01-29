@@ -229,6 +229,7 @@
         <attribute name="in"/>
         <attribute name="out"/>
         <attribute name="modifyInfinispan" default="false"/>
+        <attribute name="modifyStack" default="false"/>
         <attribute name="modifyRelay" default="false"/>
         <attribute name="modifyMulticastAddress" default="false"/>
         <attribute name="modifyRemoteDestination" default="false"/>
@@ -244,6 +245,7 @@
         <sequential>
             <xslt in="@{transformDir}/@{in}" out="@{transformDir}/@{in}-transformed" style="@{templateFile}">
                 <param name="modifyInfinispan" expression="@{modifyInfinispan}"/>
+                <param name="modifyStack" expression="@{modifyStack}"/>
                 <param name="modifyRelay" expression="@{modifyRelay}"/>
                 <param name="addAuth" expression="@{addAuth}"/>
                 <param name="addEncrypt" expression="@{addEncrypt}"/>
