@@ -92,7 +92,7 @@ class VariableLengthTest {
       buffer.release()
    }
 
-   @Test(enabled = false)
+   @Test(groups = Array("unstable"))
    def testPrintHexadecimalVint {
       val buffer = Unpooled.directBuffer(1024)
       assert(buffer.writerIndex == 0)
