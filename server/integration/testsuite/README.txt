@@ -44,6 +44,11 @@ This is controlled by following profiles
   -P client.rest      (REST client)
   -P client.memcached (Memcached client)
   -P client.hotrod    (Hot Rod client)
+  -P client.hotrod.osgi    These tests manage an Infinispan server through the maven-antrun-plugin.
+
+  Tests for OSGi run by default in Karaf 2.3.3. A different version of Karaf may be specified via the command line:
+  -Dversion.karaf=<version>
+
 
 Running client tests with TCP stack (UDP by default)
 ----------------------------------------------------

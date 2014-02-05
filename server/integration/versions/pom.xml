@@ -21,7 +21,6 @@
       
       <product.version>${project.version}</product.version>
       <product.name>infinispan-server</product.name>
-
       <version.ant-contrib>1.0b3</version.ant-contrib>
       <version.com.github.relaxng.relaxngDatatype>2011.1-redhat-6</version.com.github.relaxng.relaxngDatatype>
       <version.commons.logging>1.1.1-redhat-2</version.commons.logging>
@@ -550,7 +549,24 @@
                </execution>
             </executions>
          </plugin>
+         <plugin>
+            <groupId>org.apache.servicemix.tooling</groupId>
+            <artifactId>depends-maven-plugin</artifactId>
+            <version>1.2</version>
+          </plugin>
       </plugins>
    </build>
+
+   <profiles>
+      <profile>
+         <id>distribution</id>
+         <activation>
+            <activeByDefault>false</activeByDefault>
+         </activation>
+         <properties>
+            <maven.test.skip.exec>true</maven.test.skip.exec>
+         </properties>
+      </profile>
+   </profiles>
 
 </project>
