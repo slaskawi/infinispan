@@ -93,14 +93,10 @@ public class SslTest extends SingleCacheManagerTest {
       assert defaultRemote.get("k").equals("v");
    }
 
+   @Test(expectedExceptions = TransportException.class)
    public void testSSLServerPlainClient() throws Exception {
-      try {
-         // The server discards data it doesn't understand so we use a client timeout to determine that things don't work
-         initServerAndClient(true, false);
-         fail("Expecting a SocketTimeoutException");
-      } catch (TransportException e) {
-         assertTrue(e.getCause() instanceof SocketTimeoutException);
-      }
+      // The server just disconnect the client
+      initServerAndClient(true, false);
    }
 
    public void testPlainServerSSLClient() throws Exception {
