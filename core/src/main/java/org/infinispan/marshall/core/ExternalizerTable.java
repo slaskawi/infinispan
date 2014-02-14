@@ -65,6 +65,10 @@ import org.infinispan.marshall.exts.SetExternalizer;
 import org.infinispan.marshall.exts.SingletonListExternalizer;
 import org.infinispan.metadata.EmbeddedMetadata;
 import org.infinispan.metadata.InternalMetadataImpl;
+import org.infinispan.notifications.cachelistener.cluster.ClusterEvent;
+import org.infinispan.notifications.cachelistener.cluster.ClusterEventCallable;
+import org.infinispan.notifications.cachelistener.cluster.ClusterListenerRemoveCallable;
+import org.infinispan.notifications.cachelistener.cluster.ClusterListenerReplicateCallable;
 import org.infinispan.registry.ScopedKey;
 import org.infinispan.remoting.responses.CacheNotFoundResponse;
 import org.infinispan.remoting.responses.ExceptionResponse;
@@ -310,6 +314,11 @@ public class ExternalizerTable implements ObjectTable {
       addInternalExternalizer(new CompositeKeyValueFilter.Externalizer());
       addInternalExternalizer(new MapReduceManagerImpl.DeltaListExternalizer());
       addInternalExternalizer(new MapReduceManagerImpl.DeltaAwareListExternalizer());
+
+      addInternalExternalizer(new ClusterEvent.Externalizer());
+      addInternalExternalizer(new ClusterEventCallable.Externalizer());
+      addInternalExternalizer(new ClusterListenerRemoveCallable.Externalizer());
+      addInternalExternalizer(new ClusterListenerReplicateCallable.Externalizer());
    }
 
    void addInternalExternalizer(AdvancedExternalizer<?> ext) {

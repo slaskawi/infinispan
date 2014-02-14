@@ -6,11 +6,14 @@ import org.infinispan.commands.write.WriteCommand;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.container.DataContainer;
 import org.infinispan.container.InternalEntryFactory;
+import org.infinispan.distexec.DistributedCallable;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.factories.annotations.ComponentName;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.annotations.Start;
 import org.infinispan.factories.annotations.Stop;
+import org.infinispan.notifications.cachelistener.cluster.ClusterCacheNotifier;
+import org.infinispan.notifications.cachelistener.cluster.ClusterListenerReplicateCallable;
 import org.infinispan.persistence.manager.PersistenceManager;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.CacheNotifier;
@@ -35,7 +38,6 @@ import static org.infinispan.factories.KnownComponentNames.ASYNC_TRANSPORT_EXECU
  * @author anistor@redhat.com
  * @since 5.2
  */
-@Listener
 public class StateProviderImpl implements StateProvider {
 
    private static final Log log = LogFactory.getLog(StateProviderImpl.class);
@@ -45,7 +47,7 @@ public class StateProviderImpl implements StateProvider {
    private Configuration configuration;
    private RpcManager rpcManager;
    private CommandsFactory commandsFactory;
-   private CacheNotifier cacheNotifier;
+   private ClusterCacheNotifier clusterCacheNotifier;
    private TransactionTable transactionTable;     // optional
    private DataContainer dataContainer;
    private PersistenceManager persistenceManager; // optional
@@ -72,7 +74,7 @@ public class StateProviderImpl implements StateProvider {
                     Configuration configuration,
                     RpcManager rpcManager,
                     CommandsFactory commandsFactory,
-                    CacheNotifier cacheNotifier,
+                    ClusterCacheNotifier clusterCacheNotifier,
                     PersistenceManager persistenceManager,
                     DataContainer dataContainer,
                     TransactionTable transactionTable,
@@ -83,7 +85,7 @@ public class StateProviderImpl implements StateProvider {
       this.configuration = configuration;
       this.rpcManager = rpcManager;
       this.commandsFactory = commandsFactory;
-      this.cacheNotifier = cacheNotifier;
+      this.clusterCacheNotifier = clusterCacheNotifier;
       this.persistenceManager = persistenceManager;
       this.dataContainer = dataContainer;
       this.transactionTable = transactionTable;
@@ -175,6 +177,11 @@ public class StateProviderImpl implements StateProvider {
          }
       }
       return transactions;
+   }
+
+   @Override
+   public Collection<DistributedCallable> getClusterListenersToInstall() {
+      return clusterCacheNotifier.retrieveClusterListenerCallablesToInstall();
    }
 
    private CacheTopology getCacheTopology(int requestTopologyId, Address destination, boolean isReqForTransactions) throws InterruptedException {

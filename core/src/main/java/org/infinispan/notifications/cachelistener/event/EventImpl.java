@@ -11,6 +11,7 @@ import org.infinispan.metadata.Metadata;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.transaction.xa.GlobalTransaction;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
 
@@ -38,6 +39,7 @@ public class EventImpl<K, V> implements CacheEntryActivatedEvent, CacheEntryCrea
    private int newTopologyId;
    private Map<Object, Object> entries;
    private boolean created;
+   private boolean commandRetried;
 
    public EventImpl() {
    }
@@ -139,6 +141,15 @@ public class EventImpl<K, V> implements CacheEntryActivatedEvent, CacheEntryCrea
       if (value instanceof MarshalledValue)
          value = (V) ((MarshalledValue) value).get();
       return value;
+   }
+
+   public void setCommandRetried(boolean commandRetried) {
+      this.commandRetried = commandRetried;
+   }
+
+   @Override
+   public boolean isCommandRetried() {
+      return commandRetried;
    }
 
    @Override

@@ -20,6 +20,7 @@ import org.infinispan.context.InvocationContextContainer;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.eviction.EvictionManager;
 import org.infinispan.factories.ComponentRegistry;
+import org.infinispan.filter.Converter;
 import org.infinispan.filter.KeyValueFilter;
 import org.infinispan.interceptors.base.CommandInterceptor;
 import org.infinispan.iteration.EntryIterable;
@@ -61,6 +62,12 @@ public final class SecureCacheImpl<K, V> implements SecureCache<K, V> {
    public void addListener(Object listener, KeyFilter filter) {
       authzManager.checkPermission(AuthorizationPermission.LISTEN);
       delegate.addListener(listener, filter);
+   }
+
+   @Override
+   public <K, V, C> void addListener(Object listener, KeyValueFilter<K, V> filter, Converter<K, V, C> converter) {
+      authzManager.checkPermission(AuthorizationPermission.LISTEN);
+      delegate.addListener(listener, filter, converter);
    }
 
    @Override

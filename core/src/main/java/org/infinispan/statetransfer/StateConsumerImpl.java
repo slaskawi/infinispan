@@ -16,6 +16,7 @@ import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.context.InvocationContextFactory;
 import org.infinispan.context.impl.TxInvocationContext;
+import org.infinispan.distexec.DistributedCallable;
 import org.infinispan.distribution.L1Manager;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.factories.KnownComponentNames;
@@ -86,6 +87,7 @@ public class StateConsumerImpl implements StateConsumer {
    private static final Object UPDATED_KEY_MARKER = new Object();
    public static final int NO_REBALANCE_IN_PROGRESS = -1;
 
+   private Cache cache;
    private ExecutorService executorService;
    private StateTransferManager stateTransferManager;
    private String cacheName;
@@ -102,7 +104,6 @@ public class StateConsumerImpl implements StateConsumer {
    private CacheNotifier cacheNotifier;
    private TotalOrderManager totalOrderManager;
    private BlockingTaskAwareExecutorService remoteCommandsExecutor;
-   private L1Manager l1Manager;
    private long timeout;
    private boolean isFetchEnabled;
    private boolean isTransactional;
@@ -240,8 +241,8 @@ public class StateConsumerImpl implements StateConsumer {
                     StateTransferLock stateTransferLock,
                     CacheNotifier cacheNotifier,
                     TotalOrderManager totalOrderManager,
-                    @ComponentName(KnownComponentNames.REMOTE_COMMAND_EXECUTOR) BlockingTaskAwareExecutorService remoteCommandsExecutor,
-                    L1Manager l1Manager) {
+                    @ComponentName(KnownComponentNames.REMOTE_COMMAND_EXECUTOR) BlockingTaskAwareExecutorService remoteCommandsExecutor) {
+      this.cache = cache;
       this.cacheName = cache.getName();
       this.executorService = executorService;
       this.stateTransferManager = stateTransferManager;
@@ -258,7 +259,6 @@ public class StateConsumerImpl implements StateConsumer {
       this.cacheNotifier = cacheNotifier;
       this.totalOrderManager = totalOrderManager;
       this.remoteCommandsExecutor = remoteCommandsExecutor;
-      this.l1Manager = l1Manager;
 
       isInvalidationMode = configuration.clustering().cacheMode().isInvalidation();
 
@@ -371,7 +371,19 @@ public class StateConsumerImpl implements StateConsumer {
             Set<Integer> addedSegments;
             if (previousWriteCh == null) {
                // we start fresh, without any data, so we need to pull everything we own according to writeCh
+
                addedSegments = getOwnedSegments(newWriteCh);
+
+               Collection<DistributedCallable> callables = getClusterListeners(cacheTopology);
+
+               for (DistributedCallable callable : callables) {
+                  callable.setEnvironment(cache, null);
+                  try {
+                     callable.call();
+                  } catch (Exception e) {
+                     log.clusterListenerInstallationFailure(e);
+                  }
+               }
 
                if (trace) {
                   log.tracef("On cache %s we have: added segments: %s", cacheName, addedSegments);
@@ -786,6 +798,33 @@ public class StateConsumerImpl implements StateConsumer {
          // start fresh when next step starts (fetching segments)
          sources.clear();
       }
+   }
+
+   private Collection<DistributedCallable> getClusterListeners(CacheTopology topology) {
+      for (Address source : topology.getMembers()) {
+         // Don't send to ourselves
+         if (!source.equals(rpcManager.getAddress())) {
+            if (trace) {
+               log.tracef("Requesting cluster listeners of cache %s from node %s", cacheName, source);
+            }
+            // get cluster listeners
+            try {
+               StateRequestCommand cmd = commandsFactory.buildStateRequestCommand(StateRequestCommand.Type.GET_CACHE_LISTENERS,
+                                                                                  rpcManager.getAddress(), 0, null);
+               Map<Address, Response> responses = rpcManager.invokeRemotely(Collections.singleton(source), cmd, rpcOptions);
+               Response response = responses.get(source);
+               if (response instanceof SuccessfulResponse) {
+                  return (Collection<DistributedCallable>) ((SuccessfulResponse) response).getResponseValue();
+               } else {
+                  log.unsuccessfulResponseForClusterListeners(source, response);
+               }
+            } catch (CacheException e) {
+               log.exceptionDuringClusterListenerRetrieval(source, e);
+            }
+         }
+      }
+      log.trace("Unable to acquire cluster listeners from other members, assuming none are present");
+      return Collections.emptySet();
    }
 
    private Response getTransactions(Address source, Set<Integer> segments, int topologyId) {

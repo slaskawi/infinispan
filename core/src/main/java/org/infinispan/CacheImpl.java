@@ -66,6 +66,8 @@ import org.infinispan.factories.ComponentRegistry;
 import org.infinispan.factories.annotations.ComponentName;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.annotations.SurvivesRestarts;
+import org.infinispan.filter.Converter;
+import org.infinispan.filter.KeyValueFilter;
 import org.infinispan.interceptors.InterceptorChain;
 import org.infinispan.interceptors.base.CommandInterceptor;
 import org.infinispan.iteration.EntryIterable;
@@ -82,8 +84,6 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.metadata.EmbeddedMetadata;
 import org.infinispan.metadata.Metadata;
 import org.infinispan.notifications.KeyFilter;
-import org.infinispan.filter.Converter;
-import org.infinispan.filter.KeyValueFilter;
 import org.infinispan.notifications.cachelistener.CacheNotifier;
 import org.infinispan.remoting.rpc.RpcManager;
 import org.infinispan.security.AuthorizationManager;
@@ -407,7 +407,7 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
    }
 
    @Override
-   public EntryIterable<K, V> filterEntries(KeyValueFilter<? super K, ? super V> filter) {
+   public EntryIterable<K, V> filterEntries(org.infinispan.filter.KeyValueFilter<? super K, ? super V> filter) {
       return new EntryIterableImpl<K, V>(entryRetriever, filter);
    }
 
@@ -562,6 +562,11 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
    @Override
    public void addListener(Object listener, KeyFilter filter) {
       notifier.addListener(listener, filter);
+   }
+
+   @Override
+   public <K, V, C> void addListener(Object listener, KeyValueFilter<K, V> filter, Converter<K, V, C> converter) {
+      notifier.addListener(listener, filter, converter);
    }
 
    @Override

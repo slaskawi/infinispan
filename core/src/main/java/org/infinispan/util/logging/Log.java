@@ -1039,6 +1039,18 @@ public interface Log extends BasicLogger {
    @Message(value = "Unrecognized attribute %s. Please check your configuration. Ignoring!!", id = 282)
    void unrecognizedAttribute(String property);
 
+   @LogMessage(level = WARN)
+   @Message(value = "Problem encountered while installing cluster listener", id = 284)
+   void clusterListenerInstallationFailure(@Cause Throwable cause);
+
+   @LogMessage(level = WARN)
+   @Message(value = "Issue when retrieving cluster listeners from %s response was %s", id = 285)
+   void unsuccessfulResponseForClusterListeners(Address address, Response response);
+
+   @LogMessage(level = WARN)
+   @Message(value = "Issue when retrieving cluster listeners from %s", id = 286)
+   void exceptionDuringClusterListenerRetrieval(Address address, @Cause Throwable cause);
+
    @Message(value = "Unauthorized access: subject '%s' lacks '%s' permission", id = 287)
    SecurityException unauthorizedAccess(String subject, String permission);
 

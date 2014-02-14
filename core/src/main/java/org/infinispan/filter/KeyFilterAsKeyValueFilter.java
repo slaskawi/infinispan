@@ -4,6 +4,7 @@ import org.infinispan.commons.marshall.AbstractExternalizer;
 import org.infinispan.commons.util.Util;
 import org.infinispan.marshall.core.Ids;
 import org.infinispan.metadata.Metadata;
+import org.infinispan.notifications.KeyFilter;
 
 import java.io.IOException;
 import java.io.ObjectInput;

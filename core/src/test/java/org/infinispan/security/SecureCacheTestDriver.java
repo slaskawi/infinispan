@@ -10,6 +10,7 @@ import org.infinispan.atomic.Delta;
 import org.infinispan.atomic.DeltaAware;
 import org.infinispan.container.versioning.EntryVersion;
 import org.infinispan.context.Flag;
+import org.infinispan.filter.Converter;
 import org.infinispan.filter.KeyValueFilter;
 import org.infinispan.interceptors.InvocationContextInterceptor;
 import org.infinispan.interceptors.base.CommandInterceptor;
@@ -23,6 +24,8 @@ public class SecureCacheTestDriver {
    private NullListener listener;
    private CommandInterceptor interceptor;
    private KeyFilter keyFilter;
+   private Converter<String, String, String> converter;
+   private KeyValueFilter<String, String> keyValueFilter;
 
    public SecureCacheTestDriver() {
       interceptor = new CommandInterceptor() {
@@ -31,6 +34,18 @@ public class SecureCacheTestDriver {
          @Override
          public boolean accept(Object key) {
             return true;
+         }
+      };
+      keyValueFilter = new KeyValueFilter<String, String>() {
+         @Override
+         public boolean accept(String key, String value, Metadata metadata) {
+            return true;
+         }
+      };
+      converter = new Converter<String, String, String>() {
+         @Override
+         public String convert(String key, String value, Metadata metadata) {
+            return value;
          }
       };
       listener = new NullListener();
@@ -568,6 +583,11 @@ public class SecureCacheTestDriver {
             return true;
          }
       });
+   }
+
+   @TestCachePermission(AuthorizationPermission.LISTEN)
+   public void testAddListener_Object_KeyValueFilter_Converter(SecureCache<String, String> cache) {
+      cache.addListener(listener, keyValueFilter, converter);
    }
 
    @Listener

@@ -1,5 +1,7 @@
 package org.infinispan;
 
+import org.infinispan.filter.Converter;
+import org.infinispan.filter.KeyValueFilter;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.notifications.KeyFilter;
@@ -325,6 +327,11 @@ public abstract class AbstractDelegatingCache<K, V> implements Cache<K, V> {
    @Override
    public void addListener(Object listener, KeyFilter filter) {
       cache.addListener(listener, filter);
+   }
+
+   @Override
+   public <K, V, C> void addListener(Object listener, KeyValueFilter<K, V> filter, Converter<K, V, C> converter) {
+      cache.addListener(listener, filter, converter);
    }
 
    @Override

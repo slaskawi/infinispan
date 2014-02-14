@@ -2,11 +2,21 @@ package org.infinispan.notifications;
 
 import org.infinispan.commons.CacheException;
 import org.infinispan.commons.util.ReflectionUtil;
+import org.infinispan.distexec.DistributedExecutorService;
 import org.infinispan.factories.KnownComponentNames;
 import org.infinispan.factories.annotations.ComponentName;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.annotations.Start;
 import org.infinispan.factories.annotations.Stop;
+import org.infinispan.filter.Converter;
+import org.infinispan.filter.KeyValueFilter;
+import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
+import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
+import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
+import org.infinispan.notifications.cachelistener.cluster.ClusterListenerReplicateCallable;
+import org.infinispan.notifications.cachelistener.event.CacheEntryCreatedEvent;
+import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
+import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 import org.infinispan.notifications.cachelistener.event.EventImpl;
 import org.infinispan.security.Security;
 import org.infinispan.util.concurrent.WithinThreadExecutor;
@@ -14,11 +24,12 @@ import org.infinispan.util.logging.Log;
 
 import javax.security.auth.Subject;
 import javax.transaction.Transaction;
-
 import java.lang.annotation.Annotation;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
@@ -27,6 +38,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -34,7 +46,6 @@ import java.util.concurrent.ExecutorService;
  * {@link org.infinispan.notifications.cachelistener.CacheNotifierImpl}
  *
  * @author Manik Surtani
- * @private
  */
 public abstract class AbstractListenerImpl {
 
@@ -44,7 +55,6 @@ public abstract class AbstractListenerImpl {
    // two separate executor services, one for sync and one for async listeners
    protected ExecutorService syncProcessor;
    protected ExecutorService asyncProcessor;
-
 
    @Inject
    void injectExecutor(@ComponentName(KnownComponentNames.ASYNC_NOTIFICATION_EXECUTOR) ExecutorService executor) {
@@ -94,11 +104,11 @@ public abstract class AbstractListenerImpl {
    }
 
    public void addListener(Object listener) {
-      validateAndAddListenerInvocation(listener, null, null);
+      addListener(listener, null);
    }
 
    public void addListener(Object listener, ClassLoader classLoader) {
-      validateAndAddListenerInvocation(listener, null, classLoader);
+      validateAndAddListenerInvocation(listener, null, null, classLoader);
    }
 
    public Set<Object> getListeners() {
@@ -115,9 +125,12 @@ public abstract class AbstractListenerImpl {
     *
     * @param listener object to be considered as a listener.
     */
-   protected void validateAndAddListenerInvocation(Object listener, KeyFilter filter, ClassLoader classLoader) {
+   protected void validateAndAddListenerInvocation(Object listener, KeyValueFilter filter, Converter converter,
+                                                   ClassLoader classLoader) {
       Listener l = testListenerClassValidity(listener.getClass());
+      UUID generatedId = UUID.randomUUID();
       boolean foundMethods = false;
+      boolean foundClusterMethods = false;
       Map<Class<? extends Annotation>, Class<?>> allowedListeners = getAllowedMethodAnnotations();
       // now try all methods on the listener for anything that we like.  Note that only PUBLIC methods are scanned.
       for (Method m : listener.getClass().getMethods()) {
@@ -128,20 +141,35 @@ public abstract class AbstractListenerImpl {
             if (m.isAnnotationPresent(key)) {
                testListenerMethodValidity(m, value, key.getName());
                m.setAccessible(true);
-               addListenerInvocation(key, createListenerInvocation(listener, m, l, filter, classLoader, Security.getSubject()));
+               addListenerInvocation(key, createListenerInvocation(listener, m, l, filter, converter, classLoader,
+                                                                   Security.getSubject(), generatedId));
                foundMethods = true;
+               // If the annotation is also a cluster listener available event we need to replicate listener
+               if (l.clustered()) {
+                  foundClusterMethods = true;
+               }
             }
          }
       }
 
       if (!foundMethods)
          getLog().noAnnotateMethodsFoundInListener(listener.getClass());
+      else {
+         addedListener(listener, generatedId, foundClusterMethods, filter, converter);
+      }
    }
 
-   protected ListenerInvocation createListenerInvocation(Object listener, Method m, Listener l, KeyFilter filter, ClassLoader classLoader, Subject subject) {
-      return new ListenerInvocation(listener, m, l.sync(), l.primaryOnly(), filter, classLoader, subject);
+   protected ListenerInvocation createListenerInvocation(Object listener, Method m, Listener l, KeyValueFilter filter,
+                                                         Converter converter, ClassLoader classLoader, Subject subject,
+                                                         UUID generatedId) {
+      return new ListenerInvocation(listener, m, l.sync(), l.primaryOnly(), l.clustered(), filter, converter,
+                                    classLoader, subject, generatedId);
    }
 
+   protected void addedListener(Object listener, UUID generatedId, boolean hasClusteredMethods, KeyValueFilter filter,
+                                Converter converter) {
+      // Default is noop
+   }
 
    private void addListenerInvocation(Class<? extends Annotation> annotation, ListenerInvocation li) {
       List<ListenerInvocation> result = getListenerCollectionForAnnotation(annotation);
@@ -181,17 +209,25 @@ public abstract class AbstractListenerImpl {
       public final Method method;
       public final boolean sync;
       public final boolean onlyPrimary;
+      public final boolean clustered;
       public final WeakReference<ClassLoader> classLoader;
-      public final KeyFilter filter;
+      public final KeyValueFilter filter;
       public final Subject subject;
+      public final Converter converter;
+      public final UUID generatedId;
 
-      public ListenerInvocation(Object target, Method method, boolean sync, boolean onlyPrimary, KeyFilter filter, ClassLoader classLoader, Subject subject) {
+      public ListenerInvocation(Object target, Method method, boolean sync, boolean onlyPrimary, boolean clustered,
+                                KeyValueFilter filter, Converter converter, ClassLoader classLoader, Subject subject,
+                                UUID generatedId) {
          this.target = target;
          this.method = method;
          this.sync = sync;
          this.onlyPrimary = onlyPrimary;
+         this.clustered = clustered;
          this.filter = filter;
+         this.converter = converter;
          this.classLoader = new WeakReference<ClassLoader>(classLoader);
+         this.generatedId = generatedId;
          this.subject = subject;
       }
 
@@ -203,7 +239,7 @@ public abstract class AbstractListenerImpl {
          invoke(event, isLocalNodePrimaryOwner, false);
       }
 
-      private void invoke(final Object event, boolean isLocalNodePrimaryOwner, boolean unKeyed) {
+      public void invoke(final Object event, boolean isLocalNodePrimaryOwner, final boolean unKeyed) {
          if (unKeyed || shouldInvoke(event, isLocalNodePrimaryOwner)) {
             Runnable r = new Runnable() {
 
@@ -212,9 +248,20 @@ public abstract class AbstractListenerImpl {
                   ClassLoader contextClassLoader = null;
                   Transaction transaction = suspendIfNeeded();
                   if (classLoader != null && classLoader.get() != null) {
-                     contextClassLoader = SecurityActions.setContextClassLoader(classLoader.get());
+                     contextClassLoader = setContextClassLoader(classLoader.get());
                   }
                   try {
+                     // Only run converter on events we can change and if it was keyed
+                     if (!unKeyed && converter != null) {
+                        if (event instanceof EventImpl) {
+                           EventImpl eventImpl = (EventImpl)event;
+                           eventImpl.setValue(converter.convert(eventImpl.getKey(), eventImpl.getValue(),
+                                                                eventImpl.getMetadata()));
+                        } else {
+                           throw new IllegalArgumentException("Provided event should be EventImpl when a converter is" +
+                                                                    "being used!");
+                        }
+                     }
                      if (subject != null) {
                         try {
                            Security.doAs(subject, new PrivilegedExceptionAction<Void>() {
@@ -250,7 +297,7 @@ public abstract class AbstractListenerImpl {
                      removeListener(target);
                   } finally {
                      if (classLoader != null && classLoader.get() != null) {
-                        SecurityActions.setContextClassLoader(contextClassLoader);
+                        setContextClassLoader(contextClassLoader);
                      }
                      resumeIfNeeded(transaction);
                   }
@@ -266,8 +313,13 @@ public abstract class AbstractListenerImpl {
 
       private boolean shouldInvoke(Object event, boolean isLocalNodePrimaryOwner) {
          if (onlyPrimary && !isLocalNodePrimaryOwner) return false;
-         return filter == null ||
-               ((event instanceof EventImpl) && filter.accept(((EventImpl) event).getKey()));
+         if (event instanceof  EventImpl) {
+            EventImpl eventImpl = (EventImpl)event;
+            // Cluster listeners only get post events
+            if (eventImpl.isPre() && clustered) return false;
+            if (filter != null && !filter.accept(eventImpl.getKey(), eventImpl.getValue(), eventImpl.getMetadata())) return false;
+         }
+         return true;
       }
    }
 
@@ -278,5 +330,17 @@ public abstract class AbstractListenerImpl {
          return getRealException(cause);
       else
          return re;
+   }
+
+   static ClassLoader setContextClassLoader(final ClassLoader loader) {
+      PrivilegedAction<ClassLoader> action = new PrivilegedAction<ClassLoader>() {
+         @Override
+         public ClassLoader run() {
+            ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+            Thread.currentThread().setContextClassLoader(loader);
+            return contextClassLoader;
+         }
+      };
+      return AccessController.doPrivileged(action);
    }
 }
