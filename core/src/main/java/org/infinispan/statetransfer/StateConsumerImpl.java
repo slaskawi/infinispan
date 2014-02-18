@@ -17,20 +17,17 @@ import org.infinispan.context.InvocationContext;
 import org.infinispan.context.InvocationContextFactory;
 import org.infinispan.context.impl.TxInvocationContext;
 import org.infinispan.distexec.DistributedCallable;
-import org.infinispan.distribution.L1Manager;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.factories.KnownComponentNames;
 import org.infinispan.factories.annotations.ComponentName;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.annotations.Start;
 import org.infinispan.factories.annotations.Stop;
-import org.infinispan.filter.KeyFilter;
 import org.infinispan.interceptors.InterceptorChain;
-import org.infinispan.persistence.CollectionKeyFilter;
-import org.infinispan.persistence.manager.PersistenceManager;
-import org.infinispan.persistence.spi.AdvancedCacheLoader;
 import org.infinispan.marshall.core.MarshalledEntry;
 import org.infinispan.notifications.cachelistener.CacheNotifier;
+import org.infinispan.persistence.manager.PersistenceManager;
+import org.infinispan.persistence.spi.AdvancedCacheLoader;
 import org.infinispan.remoting.responses.CacheNotFoundResponse;
 import org.infinispan.remoting.responses.Response;
 import org.infinispan.remoting.responses.SuccessfulResponse;
@@ -46,7 +43,6 @@ import org.infinispan.transaction.totalorder.TotalOrderLatch;
 import org.infinispan.transaction.totalorder.TotalOrderManager;
 import org.infinispan.transaction.xa.CacheTransaction;
 import org.infinispan.transaction.xa.GlobalTransaction;
-import org.infinispan.util.ReadOnlyDataContainerBackedKeySet;
 import org.infinispan.util.concurrent.BlockingTaskAwareExecutorService;
 import org.infinispan.util.concurrent.ConcurrentHashSet;
 import org.infinispan.util.logging.Log;
@@ -84,7 +80,6 @@ public class StateConsumerImpl implements StateConsumer {
 
    private static final Log log = LogFactory.getLog(StateConsumerImpl.class);
    private static final boolean trace = log.isTraceEnabled();
-   private static final Object UPDATED_KEY_MARKER = new Object();
    public static final int NO_REBALANCE_IN_PROGRESS = -1;
 
    private Cache cache;
@@ -110,15 +105,9 @@ public class StateConsumerImpl implements StateConsumer {
    private boolean isInvalidationMode;
    private boolean isTotalOrder;
    private volatile KeyInvalidationListener keyInvalidationListener; //for test purpose only!
+   private CommitManager commitManager;
 
    private volatile CacheTopology cacheTopology;
-
-   /**
-    * Keeps track of all keys updated by user code during state transfer. If this is null no keys are being recorded and
-    * state transfer is not allowed to update anything. This can be null if there is not state transfer in progress at
-    * the moment of there is one but a ClearCommand was encountered.
-    */
-   private volatile EquivalentConcurrentHashMapV8<Object, Object> updatedKeys;
 
    /**
     * Indicates if there is a rebalance in progress. It is set to true when onTopologyUpdate with isRebalance==true is called.
@@ -175,54 +164,7 @@ public class StateConsumerImpl implements StateConsumer {
    @Override
    public void stopApplyingState() {
       if (trace) log.tracef("Stop keeping track of changed keys for state transfer");
-      updatedKeys = null;
-   }
-
-   /**
-    * Receive notification of updated keys right before they are committed in DataContainer.
-    *
-    * @param key the key that is being modified
-    */
-   @Override
-   public void addUpdatedKey(Object key) {
-      // grab a copy of the reference to prevent issues if another thread calls stopApplyingState() between null check and actual usage
-      final EquivalentConcurrentHashMapV8<Object, Object> localUpdatedKeys = updatedKeys;
-      if (localUpdatedKeys != null) {
-         if (cacheTopology.getWriteConsistentHash().isKeyLocalToNode(rpcManager.getAddress(), key)) {
-            if (trace) log.tracef("Key %s modified by a regular tx, state transfer will ignore it", key);
-            localUpdatedKeys.put(key, UPDATED_KEY_MARKER);
-         }
-      }
-   }
-
-   /**
-    * Checks if a given key was updated by user code during state transfer (and consequently it is untouchable by state transfer).
-    *
-    * @param key the key to check
-    * @return true if the key is known to be modified, false otherwise
-    */
-   @Override
-   public boolean isKeyUpdated(Object key) {
-      // grab a copy of the reference to prevent issues if another thread calls stopApplyingState() between null check and actual usage
-      final EquivalentConcurrentHashMapV8<Object, Object> localUpdatedKeys = updatedKeys;
-      return localUpdatedKeys == null || localUpdatedKeys.contains(key);
-   }
-
-   @Override
-   public boolean executeIfKeyIsNotUpdated(Object key, final Runnable callback) {
-      // grab a copy of the reference to prevent issues if another thread calls stopApplyingState() between null check and actual usage
-      final EquivalentConcurrentHashMapV8<Object, Object> localUpdatedKeys = updatedKeys;
-      if (localUpdatedKeys != null) {
-         Object value = localUpdatedKeys.computeIfAbsent(key, new EquivalentConcurrentHashMapV8.Fun<Object, Object>() {
-            @Override
-            public Object apply(Object o) {
-               callback.run();
-               return null;
-            }
-         });
-         return value == null;
-      }
-      return false;
+      commitManager.stopTrack(PUT_FOR_STATE_TRANSFER);
    }
 
    @Inject
@@ -241,7 +183,8 @@ public class StateConsumerImpl implements StateConsumer {
                     StateTransferLock stateTransferLock,
                     CacheNotifier cacheNotifier,
                     TotalOrderManager totalOrderManager,
-                    @ComponentName(KnownComponentNames.REMOTE_COMMAND_EXECUTOR) BlockingTaskAwareExecutorService remoteCommandsExecutor) {
+                    @ComponentName(KnownComponentNames.REMOTE_COMMAND_EXECUTOR) BlockingTaskAwareExecutorService remoteCommandsExecutor,
+                    CommitManager commitManager) {
       this.cache = cache;
       this.cacheName = cache.getName();
       this.executorService = executorService;
@@ -259,6 +202,7 @@ public class StateConsumerImpl implements StateConsumer {
       this.cacheNotifier = cacheNotifier;
       this.totalOrderManager = totalOrderManager;
       this.remoteCommandsExecutor = remoteCommandsExecutor;
+      this.commitManager = commitManager;
 
       isInvalidationMode = configuration.clustering().cacheMode().isInvalidation();
 
@@ -358,9 +302,7 @@ public class StateConsumerImpl implements StateConsumer {
       this.cacheTopology = cacheTopology;
       if (isRebalance) {
          if (trace) log.tracef("Start keeping track of keys for rebalance");
-         updatedKeys = new EquivalentConcurrentHashMapV8<Object, Object>(
-               configuration.dataContainer().keyEquivalence(),
-               configuration.dataContainer().valueEquivalence());
+         commitManager.startTrack(PUT_FOR_STATE_TRANSFER);
       }
       stateTransferLock.releaseExclusiveTopologyLock();
       stateTransferLock.notifyTopologyInstalled(cacheTopology.getTopologyId());

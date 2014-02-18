@@ -1082,4 +1082,16 @@ public interface Log extends BasicLogger {
    @LogMessage(level = WARN)
    @Message(value = "Issue when retrieving transactions from %s, response was %s", id = 302)
    void unsuccessfulResponseRetrievingTransactionsForSegments(Address address, Response response);
+
+   @LogMessage(level = WARN)
+   @Message(value = "Unable to send X-Site state chunk to '%s'.", id = 303)
+   void unableToSendXSiteState(String site, @Cause Throwable cause);
+
+   @LogMessage(level = WARN)
+   @Message(value = "Unable to wait for X-Site state chunk ACKs from '%s'.", id = 304)
+   void unableToWaitForXSiteStateAcks(String site, @Cause Throwable cause);
+
+   @LogMessage(level = WARN)
+   @Message(value = "Unable to apply X-Site state chunk.", id = 305)
+   void unableToApplyXSiteState(@Cause Throwable cause);
 }

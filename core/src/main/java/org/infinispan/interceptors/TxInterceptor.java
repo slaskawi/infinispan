@@ -308,7 +308,9 @@ public class TxInterceptor extends CommandInterceptor implements JmxStatisticsEx
          localTxContext.setLocalTransaction(localTransaction);
          if (command.hasFlag(Flag.PUT_FOR_STATE_TRANSFER)) {
             // mark the transaction as originating from state transfer as early as possible
-            localTransaction.setFromStateTransfer(true);
+            localTransaction.setStateTransferFlag(Flag.PUT_FOR_STATE_TRANSFER);
+         } else if (command.hasFlag(Flag.PUT_FOR_X_SITE_STATE_TRANSFER)) {
+            localTransaction.setStateTransferFlag(Flag.PUT_FOR_X_SITE_STATE_TRANSFER);
          }
          boolean implicitWith1Pc = useOnePhaseForAutoCommitTx && localTransaction.isImplicitTransaction();
          if (implicitWith1Pc) {

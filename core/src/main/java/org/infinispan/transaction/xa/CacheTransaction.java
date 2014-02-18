@@ -4,6 +4,7 @@ import org.infinispan.commands.write.WriteCommand;
 import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.container.versioning.EntryVersion;
 import org.infinispan.container.versioning.EntryVersionsMap;
+import org.infinispan.context.Flag;
 
 import java.util.List;
 import java.util.Map;
@@ -123,4 +124,10 @@ public interface CacheTransaction {
     *         exists, the key has not been read.
     */
    EntryVersionsMap getVersionsRead();
+
+   boolean isFromStateTransfer();
+
+   Flag getStateTransferFlag();
+
+   void setStateTransferFlag(Flag stateTransferFlag);
 }

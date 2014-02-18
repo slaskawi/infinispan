@@ -49,6 +49,11 @@ import org.infinispan.transaction.xa.GlobalTransaction;
 import org.infinispan.util.concurrent.ReclosableLatch;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
+import org.infinispan.xsite.SingleXSiteRpcCommand;
+import org.infinispan.xsite.XSiteAdminCommand;
+import org.infinispan.xsite.statetransfer.XSiteState;
+import org.infinispan.xsite.statetransfer.XSiteStatePushCommand;
+import org.infinispan.xsite.statetransfer.XSiteStateTransferControlCommand;
 
 import javax.transaction.xa.Xid;
 import java.util.ArrayList;
@@ -59,6 +64,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.infinispan.xsite.XSiteAdminCommand.*;
+import static org.infinispan.xsite.statetransfer.XSiteStateTransferControlCommand.*;
 
 /**
  * @author Mircea Markus
@@ -329,5 +337,27 @@ public class ControlledCommandFactory implements CommandsFactory {
    @Override
    public <K, C> EntryResponseCommand buildEntryResponseCommand(UUID identifier, Set<Integer> completedSegments, Set<Integer> inDoubtSegments, Collection<CacheEntry> values) {
       return actual.buildEntryResponseCommand(identifier, completedSegments, inDoubtSegments, values);
+   }
+
+   @Override
+   public XSiteStateTransferControlCommand buildXSiteStateTransferControlCommand(StateTransferControl control,
+                                                                                 String siteName) {
+      return actual.buildXSiteStateTransferControlCommand(control, siteName);
+   }
+
+   @Override
+   public XSiteAdminCommand buildXSiteAdminCommand(String siteName, AdminOperation op, Integer afterFailures,
+                                                   Long minTimeToWait) {
+      return actual.buildXSiteAdminCommand(siteName, op, afterFailures, minTimeToWait);
+   }
+
+   @Override
+   public XSiteStatePushCommand buildXSiteStatePushCommand(XSiteState[] chunk) {
+      return actual.buildXSiteStatePushCommand(chunk);
+   }
+
+   @Override
+   public SingleXSiteRpcCommand buildSingleXSiteRpcCommand(VisitableCommand command) {
+      return actual.buildSingleXSiteRpcCommand(command);
    }
 }

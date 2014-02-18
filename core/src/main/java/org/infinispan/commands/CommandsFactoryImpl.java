@@ -78,7 +78,14 @@ import org.infinispan.util.concurrent.locks.LockManager;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 import org.infinispan.xsite.BackupSender;
+import org.infinispan.xsite.SingleXSiteRpcCommand;
 import org.infinispan.xsite.XSiteAdminCommand;
+import org.infinispan.xsite.statetransfer.XSiteState;
+import org.infinispan.xsite.statetransfer.XSiteStateConsumer;
+import org.infinispan.xsite.statetransfer.XSiteStateProvider;
+import org.infinispan.xsite.statetransfer.XSiteStatePushCommand;
+import org.infinispan.xsite.statetransfer.XSiteStateTransferControlCommand;
+import org.infinispan.xsite.statetransfer.XSiteStateTransferManager;
 
 import javax.transaction.xa.Xid;
 import java.util.Collection;
@@ -87,6 +94,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+
+import static org.infinispan.xsite.XSiteAdminCommand.*;
+import static org.infinispan.xsite.statetransfer.XSiteStateTransferControlCommand.*;
 
 /**
  * @author Mircea.Markus@jboss.com
@@ -122,6 +132,9 @@ public class CommandsFactoryImpl implements CommandsFactory {
    private CancellationService cancellationService;
    private TimeService timeService;
    private EntryRetriever entryRetriever;
+   private XSiteStateProvider xSiteStateProvider;
+   private XSiteStateConsumer xSiteStateConsumer;
+   private XSiteStateTransferManager xSiteStateTransferManager;
 
    private Map<Byte, ModuleCommandInitializer> moduleCommandInitializers;
 
@@ -133,7 +146,9 @@ public class CommandsFactoryImpl implements CommandsFactory {
                                  RecoveryManager recoveryManager, StateProvider stateProvider, StateConsumer stateConsumer,
                                  LockManager lockManager, InternalEntryFactory entryFactory, MapReduceManager mapReduceManager, 
                                  StateTransferManager stm, BackupSender backupSender, CancellationService cancellationService,
-                                 TimeService timeService, EntryRetriever entryRetriever) {
+                                 TimeService timeService, EntryRetriever entryRetriever,
+                                 XSiteStateProvider xSiteStateProvider, XSiteStateConsumer xSiteStateConsumer,
+                                 XSiteStateTransferManager xSiteStateTransferManager) {
       this.dataContainer = container;
       this.notifier = notifier;
       this.cache = cache;
@@ -154,6 +169,9 @@ public class CommandsFactoryImpl implements CommandsFactory {
       this.cancellationService = cancellationService;
       this.timeService = timeService;
       this.entryRetriever = entryRetriever;
+      this.xSiteStateConsumer = xSiteStateConsumer;
+      this.xSiteStateProvider = xSiteStateProvider;
+      this.xSiteStateTransferManager = xSiteStateTransferManager;
    }
 
    @Start(priority = 1)
@@ -439,6 +457,14 @@ public class CommandsFactoryImpl implements CommandsFactory {
             EntryResponseCommand entryResponseCommand = (EntryResponseCommand) c;
             entryResponseCommand.init(entryRetriever);
             break;
+         case XSiteStateTransferControlCommand.COMMAND_ID:
+            XSiteStateTransferControlCommand xSiteStateTransferControlCommand = (XSiteStateTransferControlCommand) c;
+            xSiteStateTransferControlCommand.initialize(xSiteStateProvider, xSiteStateConsumer, xSiteStateTransferManager);
+            break;
+         case XSiteStatePushCommand.COMMAND_ID:
+            XSiteStatePushCommand xSiteStatePushCommand = (XSiteStatePushCommand) c;
+            xSiteStatePushCommand.initialize(xSiteStateConsumer);
+            break;
          default:
             ModuleCommandInitializer mci = moduleCommandInitializers.get(c.getCommandId());
             if (mci != null) {
@@ -557,5 +583,26 @@ public class CommandsFactoryImpl implements CommandsFactory {
                                                                 Collection<CacheEntry> values) {
       return new EntryResponseCommand(cache.getCacheManager().getAddress(), cacheName, identifier, completedSegments,
                                       inDoubtSegments, values);
+   }
+
+   public XSiteStateTransferControlCommand buildXSiteStateTransferControlCommand(StateTransferControl control,
+                                                                                 String siteName) {
+      return new XSiteStateTransferControlCommand(cacheName, control, siteName);
+   }
+
+   @Override
+   public XSiteAdminCommand buildXSiteAdminCommand(String siteName, AdminOperation op, Integer afterFailures,
+                                                   Long minTimeToWait) {
+      return new XSiteAdminCommand(cacheName, siteName, op, afterFailures, minTimeToWait);
+   }
+
+   @Override
+   public XSiteStatePushCommand buildXSiteStatePushCommand(XSiteState[] chunk) {
+      return new XSiteStatePushCommand(cacheName, chunk);
+   }
+
+   @Override
+   public SingleXSiteRpcCommand buildSingleXSiteRpcCommand(VisitableCommand command) {
+      return new SingleXSiteRpcCommand(cacheName, command);
    }
 }
