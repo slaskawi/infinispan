@@ -19,6 +19,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.infinispan.arquillian.core.InfinispanResource;
 import org.infinispan.arquillian.core.RemoteInfinispanServer;
+import org.infinispan.server.test.category.UnstableTest;
 import org.jboss.arquillian.container.test.api.Config;
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.junit.Arquillian;
@@ -27,6 +28,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.security.JBossJSSESecurityDomain;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.experimental.categories.Category;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
@@ -63,6 +65,7 @@ import static org.junit.Assert.assertEquals;
  *
  * @author Martin Gencur
  */
+@Category(UnstableTest.class) // See ISPN-4023
 @RunWith(Arquillian.class)
 public class RESTCertSecurityTest {
 
