@@ -325,7 +325,7 @@ public class TransactionTable {
          log.tracef("Created a new local transaction: %s", current);
          localTransactions.put(transaction, current);
          globalToLocalTransactions.put(current.getGlobalTransaction(), current);
-         notifier.notifyTransactionRegistered(tx, ctx);
+         notifier.notifyTransactionRegistered(tx, ctx.isOriginLocal());
       }
       return current;
    }

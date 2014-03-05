@@ -100,7 +100,7 @@ public interface CacheNotifier<K, V> extends ClassLoaderAwareFilteringListenable
     *
     * @param globalTransaction
     */
-   void notifyTransactionRegistered(GlobalTransaction globalTransaction, InvocationContext ctx);
+   void notifyTransactionRegistered(GlobalTransaction globalTransaction, boolean isOriginLocal);
 
    void notifyDataRehashed(ConsistentHash oldCH, ConsistentHash newCH, ConsistentHash unionCH, int newTopologyId, boolean pre);
 
