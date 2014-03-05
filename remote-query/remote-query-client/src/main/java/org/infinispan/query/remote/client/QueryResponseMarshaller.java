@@ -18,6 +18,7 @@ public class QueryResponseMarshaller implements MessageMarshaller<QueryResponse>
       queryResponse.setNumResults(reader.readInt("numResults"));
       queryResponse.setProjectionSize(reader.readInt("projectionSize"));
       queryResponse.setResults(reader.readCollection("results", new ArrayList<WrappedMessage>(), WrappedMessage.class));
+      queryResponse.setTotalResults(reader.readLong("totalResults"));
       return queryResponse;
    }
 
@@ -26,6 +27,7 @@ public class QueryResponseMarshaller implements MessageMarshaller<QueryResponse>
       writer.writeInt("numResults", queryResponse.getNumResults());
       writer.writeInt("projectionSize", queryResponse.getProjectionSize());
       writer.writeCollection("results", queryResponse.getResults(), WrappedMessage.class);
+      writer.writeLong("totalResults", queryResponse.getTotalResults());
    }
 
    @Override

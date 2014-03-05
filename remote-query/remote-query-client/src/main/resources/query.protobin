@@ -1,5 +1,5 @@
 
-¬
+Ã
 query.proto'org.infinispan.client.hotrod.impl.querymessage-wrapping.proto"á
 QueryRequest
 
@@ -10,9 +10,10 @@ jpqlString (	X
 maxResults (:
 SortCriteria
 attributePath (	
-isAscending ("x
+isAscending ("Ž
 QueryResponse
 
 numResults (
 projectionSize (;
-results (2*.org.infinispan.protostream.WrappedMessage
+results (2*.org.infinispan.protostream.WrappedMessage
+totalResults (
