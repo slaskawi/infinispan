@@ -33,6 +33,9 @@ import java.util.concurrent.CompletionService;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 
+/**
+ * @public
+ */
 public class LevelDBStore implements AdvancedLoadWriteStore {
    private static final Log log = LogFactory.getLog(LevelDBStore.class, Log.class);
 

@@ -37,6 +37,7 @@ import java.util.Set;
  * @author Manik Surtani
  * @see AtomicHashMap
  * @since 4.0
+ * @private
  */
 public class AtomicHashMapProxy<K, V> extends AutoBatchSupport implements AtomicMap<K, V> {
    protected final Object deltaMapKey;

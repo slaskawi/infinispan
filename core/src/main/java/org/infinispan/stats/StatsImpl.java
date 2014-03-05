@@ -7,9 +7,10 @@ import org.infinispan.interceptors.InterceptorChain;
 
 /**
  * StatsImpl.
- * 
+ *
  * @author Galder Zamarreño
  * @since 4.0
+ * @private
  */
 @Immutable
 public class StatsImpl implements Stats {

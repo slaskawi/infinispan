@@ -4,6 +4,9 @@ import static org.infinispan.commons.util.Immutables.immutableTypedProperties;
 
 import org.infinispan.commons.util.TypedProperties;
 
+/**
+ * @private
+ */
 public abstract class AbstractTypedPropertiesConfiguration {
 
    private final TypedProperties properties;

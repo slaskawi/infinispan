@@ -31,6 +31,7 @@ import org.infinispan.util.concurrent.NotifyingFuture;
  * @see AdvancedCache#with(ClassLoader)
  * @see AdvancedCache#withFlags(org.infinispan.context.Flag...)
  * @since 5.1
+ * @private
  */
 public class DecoratedCache<K, V> extends AbstractDelegatingAdvancedCache<K, V> {
 

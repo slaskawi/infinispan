@@ -28,6 +28,7 @@ import java.util.Set;
  * @param <V> the type of mapped values
  * @see AtomicHashMap
  * @since 5.1
+ * @private
  */
 public class FineGrainedAtomicHashMapProxy<K, V> extends AtomicHashMapProxy<K, V> implements FineGrainedAtomicMap<K,V> {
 

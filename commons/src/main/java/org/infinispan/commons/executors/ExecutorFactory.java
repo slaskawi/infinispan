@@ -8,6 +8,7 @@ import java.util.concurrent.ExecutorService;
  *
  * @author Manik Surtani
  * @since 4.0
+ * @public
  */
 public interface ExecutorFactory {
    ExecutorService getExecutor(Properties p);

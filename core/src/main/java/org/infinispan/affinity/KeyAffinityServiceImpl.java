@@ -32,13 +32,14 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  *
  * @author Mircea.Markus@jboss.com
  * @since 4.1
+ * @private
  */
 @ThreadSafe
 public class KeyAffinityServiceImpl<K> implements KeyAffinityService<K> {
 
    // TODO During state transfer, we should try to assign keys to a node only if they are owners in both CHs
    public final static float THRESHOLD = 0.5f;
-   
+
    private static final Log log = LogFactory.getLog(KeyAffinityServiceImpl.class);
 
    private final Set<Address> filter;

@@ -20,6 +20,7 @@ import java.util.concurrent.Executor;
  *
  * @author Mircea.Markus@jboss.com
  * @since 4.1
+ * @private
  */
 public class KeyAffinityServiceFactory {
 

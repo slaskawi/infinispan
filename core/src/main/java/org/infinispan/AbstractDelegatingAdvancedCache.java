@@ -27,6 +27,7 @@ import java.util.List;
  *
  * @author Mircea.Markus@jboss.com
  * @see org.infinispan.AbstractDelegatingCache
+ * @private
  */
 public class AbstractDelegatingAdvancedCache<K, V> extends AbstractDelegatingCache<K, V> implements AdvancedCache<K, V> {
 

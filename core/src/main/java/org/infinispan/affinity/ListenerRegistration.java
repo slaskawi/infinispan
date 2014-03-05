@@ -11,6 +11,7 @@ import org.infinispan.notifications.cachemanagerlistener.event.CacheStoppedEvent
 *
 * @author Mircea.Markus@jboss.com
 * @since 4.1
+* @private
 */
 @Listener(sync = true)
 public class ListenerRegistration {

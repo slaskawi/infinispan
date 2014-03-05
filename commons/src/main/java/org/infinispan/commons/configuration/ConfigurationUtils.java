@@ -7,6 +7,7 @@ import org.infinispan.commons.CacheConfigurationException;
  *
  * @author Tristan Tarrant
  * @since 5.2
+ * @private
  */
 public final class ConfigurationUtils {
 

@@ -19,6 +19,7 @@ import java.util.Set;
  *
  * @author Manik Surtani (<a href="mailto:manik AT jboss DOT org">manik AT jboss DOT org</a>)
  * @since 4.0
+ * @private
  */
 public class AtomicHashMapDelta implements Delta {
    private static final Log log = LogFactory.getLog(AtomicHashMapDelta.class);

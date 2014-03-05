@@ -17,6 +17,7 @@ import java.util.Set;
  *
  * @author Dan Berindei
  * @since 5.2
+ * @private
  */
 public class GroupingConsistentHash implements ConsistentHash {
    private final ConsistentHash ch;

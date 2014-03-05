@@ -67,14 +67,22 @@
                            <goal>aggregate-jar</goal>
                         </goals>
                         <configuration>
+                           <doclet>org.infinispan.tools.doclet.PublicAPI</doclet>
+                           <docletArtifact>
+                              <groupId>org.infinispan</groupId>
+                              <artifactId>infinispan-tools</artifactId>
+                              <version>${project.version}</version>
+                           </docletArtifact>
                            <quiet>true</quiet>
-                           
+                           <!-- In case anyone needs to trace javadoc issues
+                           <additionalJOption>-J-Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=y</additionalJOption>
+                           -->
                            <stylesheetfile>${basedir}/src/javadoc/stylesheet.css</stylesheetfile>
                            <javadocDirectory>${basedir}/src/javadoc</javadocDirectory>
                            <docfilessubdirs>true</docfilessubdirs>
                            <links>
-                              <link>http://java.sun.com/javase/6/docs/api/</link>
-                              <link>http://java.sun.com/javaee/5/docs/api/</link>
+                              <link>http://docs.oracle.com/javase/6/docs/api/</link>
+                              <link>http://docs.oracle.com/javaee/5/api/</link>
                            </links>
                            <footer>
 --&gt;

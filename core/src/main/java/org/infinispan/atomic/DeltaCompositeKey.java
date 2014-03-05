@@ -11,6 +11,8 @@ import java.util.Set;
 
 /**
  * DeltaCompositeKey is the key guarding access to a specific entry in DeltaAware
+ *
+ * @private
  */
 public final class DeltaCompositeKey {
 

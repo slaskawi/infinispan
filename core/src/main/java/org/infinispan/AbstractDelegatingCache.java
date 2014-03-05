@@ -18,6 +18,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @author Mircea.Markus@jboss.com
  * @see org.infinispan.AbstractDelegatingAdvancedCache
+ * @private
  */
 public abstract class AbstractDelegatingCache<K, V> implements Cache<K, V> {
 

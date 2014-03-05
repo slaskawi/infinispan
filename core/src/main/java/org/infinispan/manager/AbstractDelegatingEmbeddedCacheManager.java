@@ -20,6 +20,7 @@ import java.util.Set;
  * @author Dan Berindei &lt;dan@infinispan.org&gt;
  * @see org.infinispan.AbstractDelegatingCache
  * @see org.infinispan.AbstractDelegatingAdvancedCache
+ * @private
  */
 public class AbstractDelegatingEmbeddedCacheManager implements EmbeddedCacheManager {
 
@@ -74,12 +75,12 @@ public class AbstractDelegatingEmbeddedCacheManager implements EmbeddedCacheMana
    public org.infinispan.configuration.cache.Configuration getDefaultCacheConfiguration() {
       return cm.getDefaultCacheConfiguration();
    }
-   
+
    @Override
    public org.infinispan.configuration.global.GlobalConfiguration getCacheManagerConfiguration() {
       return cm.getCacheManagerConfiguration();
    }
-   
+
    @Override
    public org.infinispan.configuration.cache.Configuration getCacheConfiguration(String name) {
       return cm.getCacheConfiguration(name);
@@ -150,6 +151,7 @@ public class AbstractDelegatingEmbeddedCacheManager implements EmbeddedCacheMana
       return cm.getGlobalComponentRegistry();
    }
 
+   @Override
    public void addListener(Object listener) {
       cm.addListener(listener);
    }

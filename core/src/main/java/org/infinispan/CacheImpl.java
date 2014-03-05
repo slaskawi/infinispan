@@ -97,6 +97,7 @@ import static org.infinispan.factories.KnownComponentNames.*;
  * @author Sanne Grinovero
  * @author <a href="http://gleamynode.net/">Trustin Lee</a>
  * @since 4.0
+ * @private
  */
 @SurvivesRestarts
 @MBean(objectName = CacheImpl.OBJECT_NAME, description = "Component that represents an individual cache instance.")

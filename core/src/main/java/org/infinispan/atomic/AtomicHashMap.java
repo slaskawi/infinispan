@@ -36,6 +36,7 @@ import java.util.Set;
  * @see AtomicMap
  * @see AtomicMapLookup
  * @since 4.0
+ * @private
  */
 @NotThreadSafe
 public final class AtomicHashMap<K, V> implements AtomicMap<K, V>, CopyableDeltaAware, Cloneable {
@@ -192,6 +193,7 @@ public final class AtomicHashMap<K, V> implements AtomicMap<K, V>, CopyableDelta
       return toReturn;
    }
 
+   @Override
    @SuppressWarnings("unchecked")
    public AtomicHashMap<K, V> copy() {
       FastCopyHashMap<K, V> newDelegate = delegate.clone();

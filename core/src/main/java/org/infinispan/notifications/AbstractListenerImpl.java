@@ -31,6 +31,7 @@ import java.util.concurrent.ExecutorService;
  * {@link org.infinispan.notifications.cachelistener.CacheNotifierImpl}
  *
  * @author Manik Surtani
+ * @private
  */
 public abstract class AbstractListenerImpl {
 

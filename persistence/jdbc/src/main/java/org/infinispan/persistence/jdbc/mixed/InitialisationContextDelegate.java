@@ -13,6 +13,7 @@ import org.infinispan.util.TimeService;
  *
  * @author Mircea Markus
  * @since 6.0
+ * @private
  */
 public class InitialisationContextDelegate implements InitializationContext {
 
