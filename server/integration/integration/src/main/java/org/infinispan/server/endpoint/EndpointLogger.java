@@ -139,4 +139,8 @@ public interface EndpointLogger extends BasicLogger {
    @LogMessage(level = WARN)
    @Message(id = 10019, value = "The topology update timeout configuration is ignored")
    void topologyUpdateTimeoutIgnored();
+   
+   @LogMessage(level = WARN)
+   @Message(id = 10099, value = "The WebSocket connector is not available in JBoss Data Grid")
+   void webSocketConnectorUnavailable();
 }

@@ -254,29 +254,8 @@ class EndpointSubsystemReader_6_0 implements XMLStreamConstants, XMLElementReade
    }
 
    private void parseWebSocketConnector(XMLExtendedStreamReader reader, PathAddress subsystemAddress, List<ModelNode> operations) throws XMLStreamException {
-
-      ModelNode connector = Util.getEmptyOperation(ADD, null);
-      String name = ModelKeys.WEBSOCKET_CONNECTOR;
-      final Set<Attribute> required = EnumSet.of(Attribute.SOCKET_BINDING);
-
-      for (int i = 0; i < reader.getAttributeCount(); i++) {
-         ParseUtils.requireNoNamespaceAttribute(reader, i);
-         String value = reader.getAttributeValue(i);
-         Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-         required.remove(attribute);
-         name = parseConnectorAttributes(reader, connector, name, i, value, attribute);
-      }
-
-      if (!required.isEmpty()) {
-         throw ParseUtils.missingRequired(reader, required);
-      }
-
-      PathAddress connectorAddress = subsystemAddress.append(PathElement.pathElement(ModelKeys.WEBSOCKET_CONNECTOR, name));
-      connector.get(OP_ADDR).set(connectorAddress.toModelNode());
-
       ParseUtils.requireNoContent(reader);
-
-      operations.add(connector);
+      ROOT_LOGGER.webSocketConnectorUnavailable();
    }
 
    private void parseTopologyStateTransfer(XMLExtendedStreamReader reader, ModelNode connector, List<ModelNode> operations) throws XMLStreamException {
