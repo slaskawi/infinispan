@@ -41,6 +41,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
@@ -99,7 +100,9 @@ class LegacySupport {
 
 
         public JASPIAuthenticationModulesAttributeDefinition() {
-            super(Constants.AUTH_MODULES, Constants.AUTH_MODULE, true, false, 1, Integer.MAX_VALUE, validator, null, null, null, false, new DeprecationData(ModelVersion.create(1, 2)), AttributeAccess.Flag.RESTART_ALL_SERVICES);
+            super(Constants.AUTH_MODULES, Constants.AUTH_MODULE, true, false, 1, Integer.MAX_VALUE, validator,
+                   null, null, null, false, new DeprecationData(ModelVersion.create(1, 2)), null, (Boolean) null,
+                    AttributeAccess.Flag.RESTART_ALL_SERVICES);
         }
 
         @Override
@@ -184,7 +187,8 @@ class LegacySupport {
 
 
         public LoginModulesAttributeDefinition(String name, String xmlName) {
-            super(name, xmlName, true, false, 1, Integer.MAX_VALUE, validator, null, null, null, false, new DeprecationData(ModelVersion.create(1, 2)), AttributeAccess.Flag.RESTART_ALL_SERVICES);
+            super(name, xmlName, true, false, 1, Integer.MAX_VALUE, validator, null, null, null, false,
+                    new DeprecationData(ModelVersion.create(1, 2)), null, (Boolean) null, AttributeAccess.Flag.RESTART_ALL_SERVICES);
         }
 
         @Override
@@ -264,7 +268,9 @@ class LegacySupport {
 
 
         public MappingModulesAttributeDefinition() {
-            super(Constants.MAPPING_MODULES, Constants.MAPPING_MODULE, true, false, 1, Integer.MAX_VALUE, validator, null, null, null, false, new DeprecationData(ModelVersion.create(1, 2)), AttributeAccess.Flag.RESTART_ALL_SERVICES);
+            super(Constants.MAPPING_MODULES, Constants.MAPPING_MODULE, true, false, 1, Integer.MAX_VALUE, validator,
+                    null, null, null, false, new DeprecationData(ModelVersion.create(1, 2)), null, (Boolean) null,
+                    AttributeAccess.Flag.RESTART_ALL_SERVICES);
         }
 
         @Override
@@ -333,7 +339,8 @@ class LegacySupport {
 
 
         public ProviderModulesAttributeDefinition(String name, String xmlName) {
-            super(name, xmlName, true, false, 1, Integer.MAX_VALUE, validator, null, null, null, false, new DeprecationData(ModelVersion.create(1, 2)), AttributeAccess.Flag.RESTART_ALL_SERVICES);
+            super(name, xmlName, true, false, 1, Integer.MAX_VALUE, validator, null, null, null, false,
+                    new DeprecationData(ModelVersion.create(1, 2)), null, (Boolean) null, AttributeAccess.Flag.RESTART_ALL_SERVICES);
         }
 
         @Override

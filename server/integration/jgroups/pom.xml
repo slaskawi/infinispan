@@ -56,6 +56,7 @@
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-subsystem-test</artifactId>
             <scope>test</scope>
+            <type>pom</type>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
@@ -79,7 +80,6 @@
                 <configuration>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                     <useManifestOnlyJar>false</useManifestOnlyJar>
-                    <parallel>false</parallel>
                 </configuration>
             </plugin>
             <plugin>

@@ -33,7 +33,6 @@ import javax.naming.InitialContext;
 import javax.security.auth.callback.CallbackHandler;
 
 import org.infinispan.Cache;
-import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.security.SecurityLogger;
@@ -89,7 +88,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
 
     /** {@inheritDoc} */
     @Override
-   public AuditManager getAuditManager(String securityDomain) {
+	public AuditManager getAuditManager(String securityDomain) {
         AuditManager am = null;
         try {
             am = auditMgrMap.get(securityDomain);
@@ -105,7 +104,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
 
     /** {@inheritDoc} */
     @Override
-   public AuthenticationManager getAuthenticationManager(String securityDomain) {
+	public AuthenticationManager getAuthenticationManager(String securityDomain) {
         AuthenticationManager am = null;
         try {
             am = authMgrMap.get(securityDomain);
@@ -121,7 +120,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
 
     /** {@inheritDoc} */
     @Override
-   public AuthorizationManager getAuthorizationManager(String securityDomain) {
+	public AuthorizationManager getAuthorizationManager(String securityDomain) {
         AuthorizationManager am = null;
         try {
             am = authzMgrMap.get(securityDomain);
@@ -137,7 +136,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
 
     /** {@inheritDoc} */
     @Override
-   public IdentityTrustManager getIdentityTrustManager(String securityDomain) {
+	public IdentityTrustManager getIdentityTrustManager(String securityDomain) {
         IdentityTrustManager itm = null;
         try {
             itm = idmMgrMap.get(securityDomain);
@@ -153,7 +152,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
 
     /** {@inheritDoc} */
     @Override
-   public MappingManager getMappingManager(String securityDomain) {
+	public MappingManager getMappingManager(String securityDomain) {
         MappingManager mm = null;
         try {
             mm = mappingMgrMap.get(securityDomain);
@@ -169,7 +168,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
 
     /** {@inheritDoc} */
     @Override
-   public JSSESecurityDomain getJSSE(String securityDomain) {
+	public JSSESecurityDomain getJSSE(String securityDomain) {
         JSSESecurityDomain jsse = null;
         try {
             jsse = jsseMap.get(securityDomain);

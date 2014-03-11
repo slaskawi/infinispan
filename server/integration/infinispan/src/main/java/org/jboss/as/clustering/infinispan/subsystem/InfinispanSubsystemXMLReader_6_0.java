@@ -1374,6 +1374,7 @@ public final class InfinispanSubsystemXMLReader_6_0 implements XMLElementReader<
             case NAME: {
                 name = value;
                 BaseStoreResource.NAME.parseAndSetParameter(value, store, reader);
+                break;
             }
             case SHARED: {
                 BaseStoreResource.SHARED.parseAndSetParameter(value, store, reader);

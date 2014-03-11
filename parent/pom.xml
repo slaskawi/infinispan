@@ -240,11 +240,6 @@
             </exclusions>
          </dependency>
          <dependency>
-            <groupId>gnu-getopt</groupId>
-            <artifactId>getopt</artifactId>
-            <version>${version.gnu.getopt}</version>
-         </dependency>
-         <dependency>
             <groupId>mc4j</groupId>
             <artifactId>org-mc4j-ems</artifactId>
             <version>${version.mc4j}</version>

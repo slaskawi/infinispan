@@ -5,7 +5,7 @@
    <parent>
       <groupId>org.jboss</groupId>
       <artifactId>jboss-parent</artifactId>
-      <version>10</version>
+      <version>11</version>
       <relativePath />
    </parent>
 
@@ -26,22 +26,22 @@
       <version.ant-contrib>1.0b3</version.ant-contrib>
       <version.com.github.relaxng.relaxngDatatype>2011.1-redhat-6</version.com.github.relaxng.relaxngDatatype>
       <version.commons.logging>1.1.1-redhat-2</version.commons.logging>
-      <version.net.jcip.annotations>1.0-redhat-4</version.net.jcip.annotations>
-      <version.org.jboss.as>7.2.1.Final-redhat-10</version.org.jboss.as>
+      <version.net.jcip.annotations>1.0.redhat-6</version.net.jcip.annotations>
+      <version.org.jboss.as>7.3.2.Final-redhat-1</version.org.jboss.as>
       <version.org.jboss.as.arquillian>7.2.0.Final</version.org.jboss.as.arquillian>
       <version.org.jboss.jandex>1.0.3.Final-redhat-2</version.org.jboss.jandex>
-      <version.org.jboss.jbossts.jbossjts>4.17.7.Final-redhat-4</version.org.jboss.jbossts.jbossjts>
-      <version.org.jboss.spec>3.0.2.Final-redhat-4</version.org.jboss.spec>
+      <version.org.jboss.jbossts.jbossjts>4.17.15.Final-redhat-4</version.org.jboss.jbossts.jbossjts>
+      <version.org.jboss.spec>3.0.2.Final-redhat-8</version.org.jboss.spec>
       <version.junit>4.11</version.junit>
       <version.org.infinispan>${project.version}</version.org.infinispan>
       <version.org.infinispan.arquillian.container>1.1.0.Alpha1</version.org.infinispan.arquillian.container>
       <version.org.iq80.leveldb>0.6</version.org.iq80.leveldb>
-      <version.org.slf4j>1.7.2-redhat-1</version.org.slf4j>
+      <version.org.slf4j>1.7.2.redhat-2</version.org.slf4j>
       <version.org.xerial.snappy>1.0.5</version.org.xerial.snappy>
       <version.xml.maven.plugin>1.0</version.xml.maven.plugin>
       <version.org.infinispan.protostream>1.0.0.CR1-redhat-1</version.org.infinispan.protostream>
       <version.http.client>4.3</version.http.client>
-      <version.org.picketbox>4.0.17.SP2-redhat-2</version.org.picketbox>
+      <version.org.picketbox>4.0.19.SP4-redhat-1</version.org.picketbox>
       <version.xpp3>1.1.4c-redhat-2</version.xpp3>
       <relocations />
 
@@ -68,6 +68,12 @@
             <artifactId>jboss-marshalling-parent</artifactId>
             <version>${version.org.jboss.marshalling.jboss-marshalling}</version>
             <type>pom</type>
+         </dependency>
+
+         <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>infinispan-server-cli</artifactId>
+            <version>${project.version}</version>
          </dependency>
 
          <dependency>
@@ -133,6 +139,14 @@
             <scope>test</scope>
             <classifier>tests</classifier>
          </dependency>
+         
+         <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-subsystem-test</artifactId>
+            <version>${version.org.jboss.as}</version>
+            <scope>test</scope>
+            <type>pom</type>
+        </dependency>
 
          <dependency>
             <groupId>org.jboss.logmanager</groupId>
@@ -401,6 +415,11 @@
    <build>
       <pluginManagement>
          <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.16</version>
+            </plugin>
             <plugin>
                <groupId>org.codehaus.mojo</groupId>
                <artifactId>xml-maven-plugin</artifactId>

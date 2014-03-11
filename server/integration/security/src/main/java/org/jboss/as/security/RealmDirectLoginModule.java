@@ -22,11 +22,13 @@
 
 package org.jboss.as.security;
 
+import static org.jboss.as.domain.management.RealmConfigurationConstants.DIGEST_PLAIN_TEXT;
+import static org.jboss.as.domain.management.RealmConfigurationConstants.VERIFY_PASSWORD_CALLBACK_SUPPORTED;
+
 import java.io.IOException;
 import java.security.AccessController;
 import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
-import java.security.PrivilegedAction;
 import java.security.acl.Group;
 import java.util.Collection;
 import java.util.HashSet;
@@ -42,13 +44,14 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.LoginException;
 import javax.security.sasl.RealmCallback;
 
-import org.jboss.as.controller.security.SubjectUserInfo;
 import org.jboss.as.domain.management.AuthenticationMechanism;
+
+import org.jboss.as.core.security.RealmRole;
+import org.jboss.as.core.security.SubjectUserInfo;
+
 import org.jboss.as.domain.management.AuthorizingCallbackHandler;
 import org.jboss.as.domain.management.SecurityRealm;
-import org.jboss.as.domain.management.security.RealmRole;
 import org.jboss.as.domain.management.security.RealmUser;
-import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
@@ -57,9 +60,6 @@ import org.jboss.sasl.callback.VerifyPasswordCallback;
 import org.jboss.sasl.util.UsernamePasswordHashUtil;
 import org.jboss.security.SimpleGroup;
 import org.jboss.security.auth.spi.UsernamePasswordLoginModule;
-
-import static org.jboss.as.domain.management.RealmConfigurationConstants.DIGEST_PLAIN_TEXT;
-import static org.jboss.as.domain.management.RealmConfigurationConstants.VERIFY_PASSWORD_CALLBACK_SUPPORTED;
 
 /**
  * A login module implementation to interface directly with the security realm.
@@ -92,7 +92,7 @@ public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
 
         final String realm = options.containsKey(REALM_OPTION) ? (String) options.get(REALM_OPTION) : DEFAULT_REALM;
 
-        final ServiceController<?> controller = currentServiceContainer().getService(SecurityRealmService.BASE_SERVICE_NAME.append(realm));
+        final ServiceController<?> controller = currentServiceContainer().getService(SecurityRealm.ServiceUtil.createServiceName(realm));
         if (controller != null) {
             securityRealm = (SecurityRealm) controller.getValue();
         }
@@ -217,6 +217,7 @@ public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
     @Override
     protected Group[] getRoleSets() throws LoginException {
         Collection<Principal> principalCol = new HashSet<Principal>();
+        // https://bugzilla.redhat.com/show_bug.cgi?id=1017856 use unintentionally exposed legacy RealmUser
         principalCol.add(new RealmUser(getUsername()));
         try {
             AuthorizingCallbackHandler callbackHandler = getCallbackHandler();
@@ -242,11 +243,9 @@ public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
     ;
 
     private static ServiceContainer currentServiceContainer() {
-        return AccessController.doPrivileged(new PrivilegedAction<ServiceContainer>() {
-            @Override
-            public ServiceContainer run() {
-                return CurrentServiceContainer.getServiceContainer();
-            }
-        });
+        if(System.getSecurityManager() == null) {
+            return CurrentServiceContainer.getServiceContainer();
+        }
+        return AccessController.doPrivileged(CurrentServiceContainer.GET_ACTION);
     }
 }

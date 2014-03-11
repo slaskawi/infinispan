@@ -54,7 +54,13 @@
         <fixcrlf srcdir="${output.dir}/bin" includes="**/*.conf" eol="lf" />
         <!-- These files contain digested passwords, which should not be visible to external users -->
         <chmod perm="600" file="${output.dir}/domain/configuration/mgmt-users.properties"/>
+        <chmod perm="600" file="${output.dir}/domain/configuration/mgmt-groups.properties"/>
+        <chmod perm="600" file="${output.dir}/domain/configuration/application-users.properties"/>
+        <chmod perm="600" file="${output.dir}/domain/configuration/application-roles.properties"/>
         <chmod perm="600" file="${output.dir}/standalone/configuration/mgmt-users.properties"/>
+        <chmod perm="600" file="${output.dir}/standalone/configuration/mgmt-groups.properties"/>
+        <chmod perm="600" file="${output.dir}/standalone/configuration/application-users.properties"/>
+        <chmod perm="600" file="${output.dir}/standalone/configuration/application-roles.properties"/>
         <chmod perm="755">
             <fileset dir="${output.dir}/bin">
                 <include name="**/*.sh"/>
@@ -84,9 +90,11 @@
         <mkdir dir="${output.dir}/standalone/lib/ext"/>
         <mkdir dir="${output.dir}/domain/tmp/auth"/>
         <mkdir dir="${output.dir}/standalone/tmp/auth"/>
+        <mkdir dir="${output.dir}/.installation"/>
          <!-- This is directory is used by the SASL transparent auth mechanism to validate local user access -->
         <chmod perm="700" dir="${output.dir}/domain/tmp/auth"/>
         <chmod perm="700" dir="${output.dir}/standalone/tmp/auth"/>
+        <chmod perm="700" dir="${output.dir}/.installation"/>
     </target>
 
     <target name="create-ext-content">
@@ -191,6 +199,10 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-controller-client"/>
         </module-def>
 
+        <module-def name="org.jboss.as.core-security">
+            <maven-resource group="org.wildfly" artifact="wildfly-core-security"/>
+        </module-def>
+
         <module-def name="org.jboss.as.deployment-repository">
             <maven-resource group="org.jboss.as" artifact="jboss-as-deployment-repository"/>
         </module-def>
@@ -214,6 +226,12 @@
         <module-def name="org.jboss.as.network">
             <maven-resource group="org.jboss.as" artifact="jboss-as-network"/>
         </module-def>
+
+        <module-def name="org.jboss.as.patching">
+            <maven-resource group="org.wildfly" artifact="wildfly-patching"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.patching.cli" />
 
         <module-def name="org.jboss.as.platform-mbean">
             <maven-resource group="org.jboss.as" artifact="jboss-as-platform-mbean"/>
@@ -419,7 +437,7 @@
         </module-def>
 
         <module-def name="gnu.getopt">
-            <maven-resource group="gnu-getopt" artifact="getopt" />
+            <maven-resource group="gnu.getopt" artifact="java-getopt" />
         </module-def>
 
         <module-def name="javaee.api"/>
@@ -622,6 +640,7 @@
             <maven-resource group="org.apache.cxf" artifact="cxf-tools-wsdlto-databinding-jaxb"/>
             <maven-resource group="org.apache.cxf" artifact="cxf-tools-wsdlto-frontend-jaxws"/>
             <maven-resource group="org.apache.cxf.services.sts" artifact="cxf-services-sts-core"/>
+            <maven-resource group="org.apache.cxf.services.ws-discovery" artifact="cxf-services-ws-discovery-api"/>
             <maven-resource group="org.apache.cxf.xjcplugins" artifact="cxf-xjc-boolean"/>
             <maven-resource group="org.apache.cxf.xjcplugins" artifact="cxf-xjc-dv"/>
             <maven-resource group="org.apache.cxf.xjcplugins" artifact="cxf-xjc-ts"/>
@@ -985,9 +1004,9 @@
         <module-def name="org.jboss.as.transactions">
             <maven-resource group="org.jboss.as" artifact="jboss-as-transactions"/>
         </module-def>
-    	
+
     	<module-def name="org.jboss.as.vault-tool" />
-        
+
     	<module-def name="org.jboss.as.version">
             <maven-resource group="org.jboss.as" artifact="jboss-as-version"/>
         </module-def>
@@ -1000,7 +1019,7 @@
 
         <module-def name="org.jboss.as.webservices">
             <maven-resource group="org.jboss.as" artifact="jboss-as-webservices-server-integration"/>
-            <maven-resource-with-classifier group="org.jboss.ws.cxf" artifact="jbossws-cxf-resources" classifier="jboss711"/>
+            <maven-resource-with-classifier group="org.jboss.ws.cxf" artifact="jbossws-cxf-resources" classifier="jboss720"/>
         </module-def>
 
         <module-def name="org.jboss.as.webservices.server.integration">
@@ -1030,6 +1049,10 @@
 
             <!-- TODO: this is not the final API -->
             <maven-resource group="org.jboss.ejb3" artifact="jboss-ejb3-ext-api"/>
+        </module-def>
+
+        <module-def name="org.jboss.genericjms">
+            <maven-resource group="org.jboss.genericjms" artifact="generic-jms-ra-jar"/>
         </module-def>
 
         <module-def name="org.jboss.integration.ext-content">
@@ -1214,6 +1237,10 @@
 
         <module-def name="org.jboss.ws.cxf.jbossws-cxf-transports-httpserver">
             <maven-resource group="org.jboss.ws.cxf" artifact="jbossws-cxf-transports-httpserver"/>
+        </module-def>
+
+        <module-def name="org.jboss.ws.cxf.jbossws-cxf-transports-udp">
+            <maven-resource group="org.jboss.ws.cxf" artifact="jbossws-cxf-transports-udp"/>
         </module-def>
 
         <module-def name="org.jboss.ws.jaxws-client">

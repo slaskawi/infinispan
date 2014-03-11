@@ -19,7 +19,7 @@ if "%OS%" == "Windows_NT" (
   set DIRNAME=.\
 )
 
-pushd %DIRNAME%..
+pushd "%DIRNAME%.."
 set "RESOLVED_JBOSS_HOME=%CD%"
 popd
 

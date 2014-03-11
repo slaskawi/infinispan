@@ -21,6 +21,9 @@
  */
 package org.jboss.as.security.service;
 
+import static java.security.AccessController.doPrivileged;
+
+import javax.security.auth.Subject;
 import java.lang.reflect.Method;
 import java.security.CodeSource;
 import java.security.Principal;
@@ -36,11 +39,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.security.auth.Subject;
-
-import org.jboss.as.controller.security.ServerSecurityManager;
-import org.jboss.as.controller.security.SubjectUserInfo;
-import org.jboss.as.controller.security.UniqueIdUserInfo;
+import org.jboss.as.core.security.ServerSecurityManager;
+import org.jboss.as.core.security.SubjectUserInfo;
+import org.jboss.as.core.security.UniqueIdUserInfo;
 import org.jboss.as.domain.management.security.PasswordCredential;
 import org.jboss.as.security.SecurityMessages;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
@@ -69,14 +70,27 @@ import org.jboss.security.identity.plugins.SimpleRoleGroup;
 import org.jboss.security.javaee.AbstractEJBAuthorizationHelper;
 import org.jboss.security.javaee.SecurityHelperFactory;
 
-import static java.security.AccessController.doPrivileged;
-
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class SimpleSecurityManager implements ServerSecurityManager {
     private ThreadLocalStack<SecurityContext> contexts = new ThreadLocalStack<SecurityContext>();
+    /**
+     * Indicates if we propagate previous SecurityContext informations to the current one or not.
+     * This was introduced for WFLY-981 where we wanted to have a clean SecurityContext using only the Singleton EJB security
+     * configuration and not what it might have 'inherited' in the execution stack during a Postconstruct method call.
+     * @see org.jboss.as.ejb3.security.NonPropagatingSecurityContextInterceptorFactory
+     */
+    private boolean propagate = true;
+
+    public SimpleSecurityManager() {
+    }
+
+    public SimpleSecurityManager(SimpleSecurityManager delegate) {
+        this.securityManagement = delegate.securityManagement;
+        this.propagate = false;
+    }
 
     private ISecurityManagement securityManagement = null;
 
@@ -280,7 +294,7 @@ public class SimpleSecurityManager implements ServerSecurityManager {
             SecurityContext current = establishSecurityContext(securityDomain);
             securityContextEstablished = true;
 
-            if (previous != null) {
+            if (propagate && previous != null) {
                 current.setSubjectInfo(previous.getSubjectInfo());
                 current.setIncomingRunAs(previous.getOutgoingRunAs());
             }
@@ -345,7 +359,7 @@ public class SimpleSecurityManager implements ServerSecurityManager {
             if (runAs != null) {
                 RunAs runAsIdentity = new RunAsIdentity(runAs, runAsPrincipal, extraRoles);
                 current.setOutgoingRunAs(runAsIdentity);
-            } else if (previous != null && previous.getOutgoingRunAs() != null) {
+            } else if (propagate &&  previous != null && previous.getOutgoingRunAs() != null) {
                 // Ensure the propagation continues.
                 current.setOutgoingRunAs(previous.getOutgoingRunAs());
             }
@@ -376,7 +390,7 @@ public class SimpleSecurityManager implements ServerSecurityManager {
             SecurityContext current = establishSecurityContext(securityDomain);
             securityContextEstablished = true;
 
-            if (previous != null) {
+            if (propagate && previous != null) {
                 current.setSubjectInfo(previous.getSubjectInfo());
                 current.setIncomingRunAs(previous.getOutgoingRunAs());
             }
@@ -392,7 +406,7 @@ public class SimpleSecurityManager implements ServerSecurityManager {
                 }
             }
 
-            if (previous != null && previous.getOutgoingRunAs() != null) {
+            if (propagate && previous != null && previous.getOutgoingRunAs() != null) {
                 // Ensure the propagation continues.
                 current.setOutgoingRunAs(previous.getOutgoingRunAs());
             }

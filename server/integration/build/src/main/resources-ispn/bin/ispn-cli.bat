@@ -14,7 +14,7 @@ if "%OS%" == "Windows_NT" (
   set DIRNAME=.\
 )
 
-pushd %DIRNAME%..
+pushd "%DIRNAME%.."
 set "RESOLVED_JBOSS_HOME=%CD%"
 popd
 
@@ -39,7 +39,7 @@ if "%OS%" == "Windows_NT" (
 )
 
 rem Setup JBoss specific properties
-set JAVA_OPTS=-Dprogram.name=%PROGNAME% %JAVA_OPTS%
+set "JAVA_OPTS=-Dprogram.name=%PROGNAME% %JAVA_OPTS%"
 
 if "x%JAVA_HOME%" == "x" (
   set  JAVA=java
@@ -58,10 +58,13 @@ if exist "%JBOSS_HOME%\jboss-modules.jar" (
   goto END
 )
 
+rem Add base package for L&F
+set "JAVA_OPTS=%JAVA_OPTS% -Djboss.modules.system.pkgs=com.sun.java.swing -Dlogging.configuration=file:%JBOSS_HOME%\bin\ispn-cli-logging.properties"
+
 "%JAVA%" %JAVA_OPTS% ^
     -jar "%JBOSS_HOME%\jboss-modules.jar" ^
     -mp "%JBOSS_HOME%\modules" ^
-     org.infinispan.cli.client ^
+     org.jboss.as.cli ^
      %*
 
 :END

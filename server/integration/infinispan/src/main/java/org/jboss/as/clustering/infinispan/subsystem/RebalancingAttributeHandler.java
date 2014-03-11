@@ -50,20 +50,22 @@ public class RebalancingAttributeHandler implements OperationStepHandler {
         final String cacheName = address.getElement(address.size() - 1).getValue();
         final ServiceController<?> controller = context.getServiceRegistry(false).getService(
                 CacheService.getServiceName(cacheContainerName, cacheName));
-        Cache<?, ?> cache = (Cache<?, ?>) controller.getValue();
-        LocalTopologyManagerImpl localTopologyManager = (LocalTopologyManagerImpl) cache.getAdvancedCache()
-                .getComponentRegistry().getGlobalComponentRegistry().getComponent(LocalTopologyManager.class);
-        if (localTopologyManager != null) {
-            try {
-                if (operation.hasDefined(VALUE)) {
-                    ModelNode newValue = operation.get(VALUE);
-                    localTopologyManager.setRebalancingEnabled(newValue.asBoolean());
-                } else {
-                    context.getResult().set(new ModelNode().set(localTopologyManager.isRebalancingEnabled()));
-                }
-            } catch (Exception e) {
-                throw new OperationFailedException(new ModelNode().set(MESSAGES.failedToInvokeOperation(e.getLocalizedMessage())));
-            }
+        Cache<?, ?> cache = controller != null ? (Cache<?, ?>) controller.getValue() : null;
+        if (cache != null) {
+           LocalTopologyManagerImpl localTopologyManager = (LocalTopologyManagerImpl) cache.getAdvancedCache()
+                   .getComponentRegistry().getGlobalComponentRegistry().getComponent(LocalTopologyManager.class);
+           if (localTopologyManager != null) {
+               try {
+                   if (operation.hasDefined(VALUE)) {
+                       ModelNode newValue = operation.get(VALUE);
+                       localTopologyManager.setRebalancingEnabled(newValue.asBoolean());
+                   } else {
+                       context.getResult().set(new ModelNode().set(localTopologyManager.isRebalancingEnabled()));
+                   }
+               } catch (Exception e) {
+                   throw new OperationFailedException(new ModelNode().set(MESSAGES.failedToInvokeOperation(e.getLocalizedMessage())));
+               }
+           }
         }
         context.stepCompleted();
     }

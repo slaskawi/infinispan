@@ -44,6 +44,10 @@ else
 fi
 export JBOSS_HOME
 
+if [ "x$JBOSS_MODULEPATH" = "x" ]; then
+    JBOSS_MODULEPATH="$JBOSS_HOME/modules"
+fi
+
 # Setup the JVM
 if [ "x$JAVA" = "x" ]; then
     if [ "x$JAVA_HOME" != "x" ]; then
@@ -59,8 +63,15 @@ if $cygwin; then
     JAVA_HOME=`cygpath --path --windows "$JAVA_HOME"`
 fi
 
+if $darwin ; then
+    # Add the apple gui packages for the gui client
+    JAVA_OPTS="$JAVA_OPTS -Djboss.modules.system.pkgs=com.apple.laf,com.apple.laf.resources"
+else
+    # Add base package for L&F
+    JAVA_OPTS="$JAVA_OPTS -Djboss.modules.system.pkgs=com.sun.java.swing"
+fi
+
 # Sample JPDA settings for remote socket debugging
 #JAVA_OPTS="$JAVA_OPTS -agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=n"
 
-eval \"$JAVA\" $JAVA_OPTS \"-Dlogging.configuration=file:$JBOSS_HOME/bin/ispn-cli-logging.properties\" -jar \"$JBOSS_HOME/jboss-modules.jar\" -mp \"$JBOSS_HOME/modules\" org.infinispan.cli.client '"$@"'
-
+eval \"$JAVA\" $JAVA_OPTS \"-Dlogging.configuration=file:$JBOSS_HOME/bin/ispn-cli-logging.properties\" -jar \"$JBOSS_HOME/jboss-modules.jar\" -mp \"${JBOSS_MODULEPATH}\" org.jboss.as.cli '"$@"'

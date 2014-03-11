@@ -27,7 +27,7 @@ if exist "%DOMAIN_CONF%" (
    echo Config file not found "%DOMAIN_CONF%"
 )
 
-pushd %DIRNAME%..
+pushd "%DIRNAME%.."
 set "RESOLVED_JBOSS_HOME=%CD%"
 popd
 
@@ -52,7 +52,7 @@ if "%OS%" == "Windows_NT" (
 )
 
 rem Setup JBoss specific properties
-set JAVA_OPTS=-Dprogram.name=%PROGNAME% %JAVA_OPTS%
+set "JAVA_OPTS=-Dprogram.name=%PROGNAME% %JAVA_OPTS%"
 
 if "x%JAVA_HOME%" == "x" (
   set  JAVA=java
@@ -60,10 +60,10 @@ if "x%JAVA_HOME%" == "x" (
   echo Set JAVA_HOME to the directory of your local JDK to avoid this message.
 ) else (
   if not exist "%JAVA_HOME%" (
-    echo JAVA_HOME '%JAVA_HOME%' path doesn't exist
+    echo JAVA_HOME "%JAVA_HOME%" path doesn't exist
     goto END
   ) else (
-    echo Setting JAVA property to '%JAVA_HOME%\bin\java'
+    echo Setting JAVA property to "%JAVA_HOME%\bin\java"
     set "JAVA=%JAVA_HOME%\bin\java"
   )
 )
@@ -138,11 +138,11 @@ echo ===========================================================================
 echo.
 echo   JBoss Bootstrap Environment
 echo.
-echo   JBOSS_HOME: %JBOSS_HOME%
+echo   JBOSS_HOME: "%JBOSS_HOME%"
 echo.
-echo   JAVA: %JAVA%
+echo   JAVA: "%JAVA%"
 echo.
-echo   JAVA_OPTS: %JAVA_OPTS%
+echo   JAVA_OPTS: "%JAVA_OPTS%"
 echo.
 echo ===============================================================================
 echo.

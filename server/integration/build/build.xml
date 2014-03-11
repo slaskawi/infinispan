@@ -105,6 +105,10 @@
          <maven-resource group="javax.activation" artifact="activation" />
       </module-def>
 
+      <module-def name="org.jboss.as.cli" src="${infinispan.server.modules.dir}">
+            <maven-resource group="org.infinispan.server" artifact="infinispan-server-cli"/>
+      </module-def>
+
       <module-def name="org.jboss.as.security" src="${infinispan.server.modules.dir}">
          <maven-resource group="org.infinispan.server" artifact="infinispan-server-security" />
       </module-def>

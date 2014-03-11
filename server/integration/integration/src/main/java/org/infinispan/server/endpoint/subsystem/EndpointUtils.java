@@ -97,7 +97,7 @@ public class EndpointUtils {
    }
 
    public static void addSecurityRealmDependency(ServiceBuilder<?> builder, String securityRealmName, InjectedValue<SecurityRealm> target) {
-      ServiceName securityRealmServiceName = SecurityRealmService.BASE_SERVICE_NAME.append(securityRealmName);
+      ServiceName securityRealmServiceName = SecurityRealm.ServiceUtil.createServiceName(securityRealmName);
       builder.addDependency(securityRealmServiceName, SecurityRealm.class, target);
    }
 

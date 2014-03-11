@@ -37,7 +37,9 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.RejectExpressionsConfig;
+import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
+import org.jboss.as.model.test.SingleClassFilter;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -82,7 +84,7 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
 
         ModelNode writeOp = Util.createOperation("write-attribute", address);
         writeOp.get("name").set("login-modules");
-        for (int i = 1; i <= 5; i++) {
+        for (int i = 1; i <= 6; i++) {
             ModelNode module = writeOp.get("value").add();
             module.get("code").set("module-" + i);
             module.get("flag").set("optional");
@@ -94,46 +96,47 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
         readOp.get("name").set("login-modules");
         ModelNode result = service.executeForResult(readOp);
         List<ModelNode> modules = result.asList();
-        Assert.assertEquals("There should be exactly 5 modules but there are not", 5, modules.size());
-        for (int i = 1; i <= 5; i++) {
+        Assert.assertEquals("There should be exactly 6 modules but there are not", 6, modules.size());
+        for (int i = 1; i <= 6; i++) {
             ModelNode module = modules.get(i - 1);
             Assert.assertEquals(module.get("code").asString(), "module-" + i);
         }
     }
 
     @Test
-    public void testTransformers712() throws Exception {
-        testResourceTransformers_1_1_0("7.1.2.Final");
+    public void testTransformersEAP600() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testResourceTransformers_1_1_0(ModelTestControllerVersion.EAP_6_0_0);
     }
 
     @Test
-    public void testTransformers713() throws Exception {
-        testResourceTransformers_1_1_0("7.1.3.Final");
-    }
-
-
-    @Test
-    public void testRejectedTransformers712() throws Exception {
-        testOperationTransformers_1_1_0("7.1.2.Final");
+    public void testTransformersEAP601() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testResourceTransformers_1_1_0(ModelTestControllerVersion.EAP_6_0_1);
     }
 
     @Test
-    public void testRejectedTransformers713() throws Exception {
-        testOperationTransformers_1_1_0("7.1.3.Final");
+    public void testRejectedTransformersEAP600() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testOperationTransformers_1_1_0(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testRejectedTransformersEAP601() throws Exception {
+        testOperationTransformers_1_1_0(ModelTestControllerVersion.EAP_6_0_1);
     }
 
 
-    private void testOperationTransformers_1_1_0(String version) throws Exception {
+    private void testOperationTransformers_1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
         ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
 
 
         //which is why we need to include the jboss-as-controller artifact.
-        builder.createLegacyKernelServicesBuilder(null, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-security:" + version)
-                .addMavenResourceURL("org.jboss.as:jboss-as-controller:" + version)
-                .addParentFirstClassPattern("org.jboss.as.controller.*")
-                .dontPersistXml();
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-security:" + controllerVersion.getMavenGavVersion())
+                .dontPersistXml()
+                .excludeFromParent(SingleClassFilter.createFilter(SecurityLogger.class));
 
 
         KernelServices mainServices = builder.build();
@@ -148,17 +151,16 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
 
     }
 
-    private void testResourceTransformers_1_1_0(String version) throws Exception {
+    private void testResourceTransformers_1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
         ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXmlResource("transformers-noexpressions.xml");
 
         //which is why we need to include the jboss-as-controller artifact.
-        builder.createLegacyKernelServicesBuilder(null, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-security:" + version)
-                .addMavenResourceURL("org.jboss.as:jboss-as-controller:" + version)
-                .addParentFirstClassPattern("org.jboss.as.controller.*")
-                .dontPersistXml();
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-security:" + controllerVersion.getMavenGavVersion())
+                .dontPersistXml()
+                .excludeFromParent(SingleClassFilter.createFilter(SecurityLogger.class));
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
@@ -166,6 +168,35 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
         checkSubsystemModelTransformation(mainServices, modelVersion);
 
         testAddAndRemove_1_1_0(mainServices, modelVersion);
+    }
+
+    @Test
+    public void testTransformersEAP610() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testResourceTransformers_1_2_1(ModelTestControllerVersion.EAP_6_1_0);
+    }
+
+    @Test
+    public void testTransformersEAP611() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testResourceTransformers_1_2_1(ModelTestControllerVersion.EAP_6_1_1);
+    }
+
+    private void testResourceTransformers_1_2_1(ModelTestControllerVersion controllerVersion) throws Exception {
+        ModelVersion modelVersion = ModelVersion.create(1, 2, 1);
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXmlResource("securitysubsystemv12.xml");
+
+        //which is why we need to include the jboss-as-controller artifact.
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-security:" + controllerVersion.getMavenGavVersion())
+                .dontPersistXml()
+                .excludeFromParent(SingleClassFilter.createFilter(SecurityLogger.class));
+
+        KernelServices mainServices = builder.build();
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        Assert.assertTrue(mainServices.getLegacyServices(modelVersion).isSuccessfulBoot());
+        checkSubsystemModelTransformation(mainServices, modelVersion);
     }
 
     private void testAddAndRemove_1_1_0(KernelServices mainServices, ModelVersion version) throws Exception {
