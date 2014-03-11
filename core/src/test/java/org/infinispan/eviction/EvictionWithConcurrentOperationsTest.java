@@ -30,6 +30,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.testng.AssertJUnit.*;
 
@@ -42,6 +43,7 @@ import static org.testng.AssertJUnit.*;
 @Test(groups = "functional", testName = "eviction.EvictionWithConcurrentOperationsTest")
 public class EvictionWithConcurrentOperationsTest extends SingleCacheManagerTest {
 
+   protected final AtomicInteger storeNamePrefix = new AtomicInteger(0);
    public final String storeName = getClass().getSimpleName();
 
    public EvictionWithConcurrentOperationsTest() {
@@ -394,7 +396,7 @@ public class EvictionWithConcurrentOperationsTest extends SingleCacheManagerTest
 
    protected void configurePersistence(ConfigurationBuilder builder) {
       builder.persistence().passivation(false).addStore(DummyInMemoryStoreConfigurationBuilder.class)
-            .storeName(storeName);
+            .storeName(storeName + storeNamePrefix.getAndIncrement());
    }
 
    protected final ControlledPassivationManager replacePassivationManager(final Latch latch) {
@@ -483,13 +485,23 @@ public class EvictionWithConcurrentOperationsTest extends SingleCacheManagerTest
       }
 
       @Override
-      public long getPassivationCount() {
-         return delegate.getPassivationCount();
+      public long getPassivations() {
+         return delegate.getPassivations();
       }
 
-      @Override
-      public void resetPassivationCount() {
-         delegate.resetPassivationCount();
+       @Override
+       public boolean getStatisticsEnabled() {
+           return delegate.getStatisticsEnabled();
+       }
+
+       @Override
+       public void setStatisticsEnabled(boolean enabled) {
+           delegate.setStatisticsEnabled(enabled);
+       }
+
+       @Override
+      public void resetStatistics() {
+         delegate.resetStatistics();
       }
    }
 

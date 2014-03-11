@@ -3,12 +3,12 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.eviction.ActivationManager;
+import org.infinispan.eviction.PassivationManager;
 import org.infinispan.factories.ComponentRegistry;
 import org.infinispan.interceptors.ActivationInterceptor;
 import org.infinispan.interceptors.CacheMgmtInterceptor;
 import org.infinispan.interceptors.CacheWriterInterceptor;
 import org.infinispan.interceptors.InvalidationInterceptor;
-import org.infinispan.interceptors.PassivationInterceptor;
 import org.infinispan.interceptors.TxInterceptor;
 import org.infinispan.interceptors.base.CommandInterceptor;
 import org.infinispan.lifecycle.ComponentStatus;
@@ -268,8 +268,8 @@ public class CacheMetricsHandler extends AbstractRuntimeOnlyHandler {
                     break;
                 }
                 case PASSIVATIONS: {
-                    PassivationInterceptor interceptor = getFirstInterceptorWhichExtends(interceptors, PassivationInterceptor.class);
-                    result.set(interceptor != null ? interceptor.getPassivations() : "");
+                    PassivationManager manager = registry.getComponent(PassivationManager.class);
+                    result.set(manager != null ? manager.getPassivations() : 0);
                     break;
                 }
                 case ACTIVATIONS: {

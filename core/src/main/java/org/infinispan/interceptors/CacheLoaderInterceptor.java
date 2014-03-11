@@ -13,6 +13,7 @@ import org.infinispan.commands.write.PutKeyValueCommand;
 import org.infinispan.commands.write.RemoveCommand;
 import org.infinispan.commands.write.ReplaceCommand;
 import org.infinispan.commons.util.InfinispanCollections;
+import org.infinispan.container.DataContainer;
 import org.infinispan.container.EntryFactory;
 import org.infinispan.container.InternalEntryFactory;
 import org.infinispan.container.entries.CacheEntry;
@@ -27,6 +28,7 @@ import org.infinispan.jmx.annotations.ManagedAttribute;
 import org.infinispan.jmx.annotations.ManagedOperation;
 import org.infinispan.jmx.annotations.MeasurementType;
 import org.infinispan.jmx.annotations.Parameter;
+import org.infinispan.metadata.InternalMetadataImpl;
 import org.infinispan.persistence.CollectionKeyFilter;
 import org.infinispan.persistence.manager.PersistenceManager;
 import org.infinispan.persistence.spi.AdvancedCacheLoader;
@@ -45,6 +47,7 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 @MBean(objectName = "CacheLoader", description = "Component that handles loading entries from a CacheStore into memory.")
 public class CacheLoaderInterceptor extends JmxStatsCommandInterceptor {
@@ -57,6 +60,7 @@ public class CacheLoaderInterceptor extends JmxStatsCommandInterceptor {
    protected EntryFactory entryFactory;
    private TimeService timeService;
    private InternalEntryFactory iceFactory;
+   private DataContainer dataContainer;
 
    private static final Log log = LogFactory.getLog(CacheLoaderInterceptor.class);
 
@@ -66,12 +70,14 @@ public class CacheLoaderInterceptor extends JmxStatsCommandInterceptor {
    }
 
    @Inject
-   protected void injectDependencies(PersistenceManager clm, EntryFactory entryFactory, CacheNotifier notifier, TimeService timeService, InternalEntryFactory iceFactory) {
+   protected void injectDependencies(PersistenceManager clm, EntryFactory entryFactory, CacheNotifier notifier,
+                                     TimeService timeService, InternalEntryFactory iceFactory, DataContainer dataContainer) {
       this.persistenceManager = clm;
       this.notifier = notifier;
       this.entryFactory = entryFactory;
       this.timeService = timeService;
       this.iceFactory = iceFactory;
+      this.dataContainer = dataContainer;
    }
 
    @Override
@@ -248,7 +254,7 @@ public class CacheLoaderInterceptor extends JmxStatsCommandInterceptor {
     *         queried for the value, so it was neither a hit or a miss.
     * @throws Throwable
     */
-   protected Boolean loadIfNeeded(InvocationContext ctx, Object key, boolean isRetrieval, FlagAffectedCommand cmd) throws Throwable {
+   protected final Boolean loadIfNeeded(final InvocationContext ctx, Object key, boolean isRetrieval, final FlagAffectedCommand cmd) throws Throwable {
       if (shouldSkipCacheLoader(cmd) || cmd.hasFlag(Flag.IGNORE_RETURN_VALUES) || !canLoad(key)) {
          return null; //skip operation
       }
@@ -259,26 +265,74 @@ public class CacheLoaderInterceptor extends JmxStatsCommandInterceptor {
 
       // first check if the container contains the key we need.  Try and load this into the context.
       CacheEntry e = ctx.lookupEntry(key);
-      if (shouldAttemptLookup(e)) {
-         MarshalledEntry loaded = persistenceManager.loadFromAllStores(key, ctx);
-         if(loaded == null)
-            return Boolean.FALSE;
-         InternalMetadata metadata = loaded.getMetadata();
-         if (metadata != null && metadata.isExpired(timeService.wallClockTime())) {
-            return Boolean.FALSE;
-         }
-         InternalCacheEntry ice = iceFactory.create(loaded.getKey(), loaded.getValue(), metadata);
-         CacheEntry wrappedEntry;
-         if (cmd instanceof ApplyDeltaCommand) {
-            ctx.putLookedUpEntry(key, ice);
-            wrappedEntry = entryFactory.wrapEntryForDelta(ctx, key, ((ApplyDeltaCommand) cmd).getDelta());
-         } else {
-            wrappedEntry = entryFactory.wrapEntryForPut(ctx, key, ice, false, cmd, false);
-         }
-         recordLoadedEntry(ctx, key, wrappedEntry, ice, cmd);
-         return Boolean.TRUE;
-      } else {
+      if (!shouldAttemptLookup(e)) {
          return null;
+      }
+
+      final boolean isDelta = cmd instanceof ApplyDeltaCommand;
+      final AtomicReference<Boolean> isLoaded = new AtomicReference<Boolean>();
+      dataContainer.compute(key, new DataContainer.ComputeAction() {
+         @Override
+         public InternalCacheEntry compute(Object key, InternalCacheEntry oldEntry,
+                                           InternalEntryFactory factory) {
+            //under the lock, check if the entry exists in the DataContainer
+            if (oldEntry != null) {
+               wrapInternalCacheEntry(ctx, key, cmd, oldEntry, isDelta);
+               isLoaded.set(null); //not loaded
+               return oldEntry; //no changes in container
+            }
+
+            MarshalledEntry loaded = internalLoadAndUpdateStats(key, ctx);
+            if(loaded == null) {
+               isLoaded.set(Boolean.FALSE); //not loaded
+               return null; //no changed in container
+            }
+
+            InternalCacheEntry newEntry;
+            InternalMetadata metadata = loaded.getMetadata();
+            if (metadata != null) {
+               Metadata actual = metadata instanceof InternalMetadataImpl ? ((InternalMetadataImpl) metadata).actual() :
+                     metadata;
+               newEntry = factory.create(loaded.getKey(), loaded.getValue(), actual, metadata.created(), metadata.lifespan(),
+                                       metadata.lastUsed(), metadata.maxIdle());
+            } else {
+               //metadata is null!
+               newEntry = factory.create(loaded.getKey(), loaded.getValue(), (Metadata) null);
+            }
+            CacheEntry wrappedEntry = wrapInternalCacheEntry(ctx, key, cmd, newEntry, isDelta);
+            recordLoadedEntry(ctx, key, wrappedEntry, newEntry, cmd);
+            //afterSuccessfullyLoaded(wrappedEntry);
+
+            isLoaded.set(Boolean.TRUE); //loaded!
+            return newEntry;
+         }
+      });
+
+      return isLoaded.get();
+   }
+
+   private MarshalledEntry internalLoadAndUpdateStats(Object key, InvocationContext context) {
+      final MarshalledEntry loaded = persistenceManager.loadFromAllStores(key, context);
+      if (getLog().isTraceEnabled()) {
+         getLog().tracef("Loaded %s for key %s from persistence.", loaded, key);
+      }
+      if(loaded == null) {
+         return null;
+      }
+      InternalMetadata metadata = loaded.getMetadata();
+      if (metadata != null && metadata.isExpired(timeService.wallClockTime())) {
+         return null;
+      }
+      return loaded;
+   }
+
+   private CacheEntry wrapInternalCacheEntry(InvocationContext ctx, Object key, FlagAffectedCommand cmd,
+                                             InternalCacheEntry ice, boolean isDelta) {
+      if (isDelta) {
+         ctx.putLookedUpEntry(key, ice);
+         return entryFactory.wrapEntryForDelta(ctx, key, ((ApplyDeltaCommand) cmd).getDelta());
+      } else {
+         return entryFactory.wrapEntryForPut(ctx, key, ice, false, cmd, false);
       }
    }
 
@@ -298,7 +352,7 @@ public class CacheLoaderInterceptor extends JmxStatsCommandInterceptor {
     * listeners</li> </ol>
     */
    private void recordLoadedEntry(InvocationContext ctx, Object key,
-         CacheEntry entry, InternalCacheEntry loadedEntry, FlagAffectedCommand cmd) throws Exception {
+         CacheEntry entry, InternalCacheEntry loadedEntry, FlagAffectedCommand cmd) {
       boolean entryExists = loadedEntry != null;
       if (log.isTraceEnabled()) {
          log.trace("Entry exists in loader? " + entryExists);
@@ -328,7 +382,6 @@ public class CacheLoaderInterceptor extends JmxStatsCommandInterceptor {
          entry.setMetadata(metadata);
          // TODO shouldn't we also be setting last used and created timestamps?
          entry.setValid(true);
-         entry.setLoaded(true); // mark the entry as loaded from the store
 
          sendNotification(key, value, false, ctx, cmd);
       }

@@ -2116,6 +2116,19 @@ public class BoundedConcurrentHashMap<K, V> extends AbstractMap<K, V>
       return segmentFor(hash).remove(key, hash, null, false);
    }
 
+   public void evict(Object key) {
+      int hash = hash(keyEquivalence.hashCode(key));
+      segmentFor(hash).remove(key, hash, null, true);
+   }
+
+   public void lock(Object key) {
+      segmentFor(hash(keyEquivalence.hashCode(key))).lock();
+   }
+
+   public void unlock(Object key) {
+      segmentFor(hash(keyEquivalence.hashCode(key))).unlock();
+   }
+
    /**
     * {@inheritDoc}
     *
@@ -2628,7 +2641,7 @@ public class BoundedConcurrentHashMap<K, V> extends AbstractMap<K, V>
          put(key, value);
       }
    }
-   
+
    public void forEach(long parallelismThreshold,  final org.infinispan.commons.util.concurrent.ParallelIterableMap.KeyValueAction<? super K,? super V> action) throws InterruptedException{
       if (size() > parallelismThreshold){
          execute(executor, action);
