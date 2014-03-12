@@ -52,7 +52,6 @@
    </issueManagement>
 
    <properties>
-      
       <version.protostream>1.0.0.CR1-redhat-1</version.protostream>
       <version.aesh>0.33.8.redhat-1</version.aesh>
       <version.antlr>3.4</version.antlr>
@@ -309,11 +308,6 @@
          <dependency>
             <groupId>org.rhq</groupId>
             <artifactId>rhq-jboss-as-7-plugin</artifactId>
-            <version>${version.rhq}</version>
-         </dependency>
-         <dependency>
-            <groupId>org.rhq</groupId>
-            <artifactId>rhq-core-native-system</artifactId>
             <version>${version.rhq}</version>
          </dependency>
          
