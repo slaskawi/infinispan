@@ -64,7 +64,7 @@
       <version.gnu.getopt>1.0.13.redhat-4</version.gnu.getopt>
       <version.hibernate.search>4.4.0.Final-redhat-3</version.hibernate.search>
       <version.jansi>1.9.redhat-3</version.jansi>
-      <version.jboss.marshalling>1.4.2.Final-redhat-2</version.jboss.marshalling>
+      <version.jboss.marshalling>1.4.5.Final-redhat-1</version.jboss.marshalling>
       <version.jboss.logging>3.1.2.GA-redhat-1</version.jboss.logging>
       <version.jgroups>3.4.3.Final-redhat-1</version.jgroups>
       <version.json>20090211</version.json>
