@@ -1,6 +1,6 @@
 package org.infinispan.cli.interpreter.logging;
 
-import org.jboss.logging.Message;
+import org.jboss.logging.annotations.Message;
 import org.jboss.logging.MessageBundle;
 
 /**
