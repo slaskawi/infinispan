@@ -23,19 +23,13 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.Cache;
+import org.infinispan.commons.configuration.BuiltBy;
+import org.infinispan.commons.configuration.ConfiguredBy;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.commons.util.TypedProperties;
 import org.infinispan.compatibility.adaptor52x.Adaptor52xStoreConfigurationBuilder;
+import org.infinispan.configuration.cache.*;
 import org.infinispan.configuration.cache.BackupConfiguration.BackupStrategy;
-import org.infinispan.configuration.cache.BackupFailurePolicy;
-import org.infinispan.configuration.cache.CacheMode;
-import org.infinispan.configuration.cache.ClusterLoaderConfigurationBuilder;
-import org.infinispan.configuration.cache.Configuration;
-import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.configuration.cache.PersistenceConfigurationBuilder;
-import org.infinispan.configuration.cache.SingleFileStoreConfigurationBuilder;
-import org.infinispan.configuration.cache.SitesConfigurationBuilder;
-import org.infinispan.configuration.cache.StoreConfigurationBuilder;
 import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.configuration.parsing.ParserRegistry;
 import org.infinispan.eviction.EvictionStrategy;
@@ -594,10 +588,14 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         } else if (loaderKey.equals(ModelKeys.LOADER)) {
            String className = loader.require(ModelKeys.CLASS).asString();
            try {
-              org.infinispan.loaders.CacheLoader loaderInstance = (org.infinispan.loaders.CacheLoader) newInstance(className);
-              Adaptor52xStoreConfigurationBuilder scb = persistenceBuilder.addStore(Adaptor52xStoreConfigurationBuilder.class);
-              scb.loader(loaderInstance);
-              return scb;
+              Object instance = newInstance(className);
+              if (instance instanceof org.infinispan.loaders.CacheLoader) {
+                 Adaptor52xStoreConfigurationBuilder scb = persistenceBuilder.addStore(Adaptor52xStoreConfigurationBuilder.class);
+                 scb.loader((org.infinispan.loaders.CacheLoader)instance);
+                 return scb;
+              } else {
+                 return handleStoreOrLoaderClass(className, persistenceBuilder);
+              }
            } catch (Exception e) {
               throw InfinispanMessages.MESSAGES.invalidCacheLoader(e, className);
            }
@@ -605,6 +603,25 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
            throw new IllegalStateException();
         }
 
+    }
+
+    private StoreConfigurationBuilder handleStoreOrLoaderClass(String className,
+                                                               PersistenceConfigurationBuilder persistenceBuilder)
+          throws ClassNotFoundException {
+       Class<?> storeImplClass = CacheLoader.class.getClassLoader().loadClass(className);
+       ConfiguredBy annotation = storeImplClass.getAnnotation(ConfiguredBy.class);
+       Class<? extends StoreConfigurationBuilder> builderClass = null;
+       if (annotation != null) {
+          Class<?> configuredBy = annotation.value();
+          if (configuredBy != null) {
+             BuiltBy builtBy = configuredBy.getAnnotation(BuiltBy.class);
+             builderClass = builtBy.value().asSubclass(StoreConfigurationBuilder.class);
+          }
+       }
+       if (builderClass == null) {
+          builderClass = BaseStoreConfigurationBuilder.class;
+       }
+       return persistenceBuilder.addStore(builderClass);
     }
 
    private StoreConfigurationBuilder<?, ?> buildCacheStore(OperationContext context, PersistenceConfigurationBuilder persistenceBuilder, String containerName, ModelNode store, String storeKey, List<Dependency<?>> dependencies) throws OperationFailedException {
@@ -802,9 +819,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
                  scb.loader((org.infinispan.loaders.CacheLoader) instance);
                  storeConfigurationBuilder = scb;
               } else {
-                 Class<?> storeImplClass = CacheLoader.class.getClassLoader().loadClass(className);
-                 Class<? extends StoreConfigurationBuilder> builderClass = StoreConfigurationBuilder.class.getClassLoader().loadClass(storeImplClass.getName() + "ConfigurationBuilder").asSubclass(StoreConfigurationBuilder.class);
-                 storeConfigurationBuilder = persistenceBuilder.addStore(builderClass);
+                 storeConfigurationBuilder = handleStoreOrLoaderClass(className, persistenceBuilder);
               }
               return storeConfigurationBuilder;
            } catch (Exception e) {

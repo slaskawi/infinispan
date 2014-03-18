@@ -1041,4 +1041,7 @@ public interface Log extends BasicLogger {
    @Message(value = "%s reported that a third node was suspected, see cause for info on the node that was suspected", id = 281)
    SuspectException thirdPartySuspected(Address sender, @Cause SuspectException e);
 
+   @LogMessage(level = WARN)
+   @Message(value = "Unrecognized attribute %s. Please check your configuration. Ignoring!!", id = 282)
+   void unrecognizedAttribute(String property);
 }

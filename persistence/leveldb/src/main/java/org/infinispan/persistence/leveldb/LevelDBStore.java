@@ -1,6 +1,7 @@
 package org.infinispan.persistence.leveldb;
 
 import org.infinispan.commons.CacheConfigurationException;
+import org.infinispan.commons.configuration.ConfiguredBy;
 import org.infinispan.commons.util.Util;
 import org.infinispan.executors.ExecutorAllCompletionService;
 import org.infinispan.marshall.core.MarshalledEntry;
@@ -36,6 +37,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 /**
  * @public
  */
+@ConfiguredBy(LevelDBStoreConfiguration.class)
 public class LevelDBStore implements AdvancedLoadWriteStore {
    private static final Log log = LogFactory.getLog(LevelDBStore.class, Log.class);
 
