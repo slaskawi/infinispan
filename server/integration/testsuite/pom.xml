@@ -206,6 +206,24 @@
     </properties>
 
     <build>
+        <testResources>
+            <testResource>
+                <directory>${project.basedir}/src/test/resources</directory>
+                <filtering>true</filtering>
+                <excludes>
+                    <exclude>*.jks</exclude>
+                    <exclude>*.keystore</exclude>
+                </excludes>
+            </testResource>
+            <testResource>
+                <directory>${project.basedir}/src/test/resources</directory>
+                <filtering>false</filtering>
+                <includes>
+                    <include>*.jks</include>
+                    <include>*.keystore</include>
+                </includes>
+            </testResource>
+        </testResources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

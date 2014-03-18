@@ -65,7 +65,7 @@ import static org.junit.Assert.assertEquals;
  * Tests CLIENT-CERT security for REST endpoint as is configured via "auth-method" attribute on "rest-connector" element
  * in datagrid subsystem.
  * <p/>
- * In order to configure CLIENT-CERT security in AS7 properly, we add a new security-domain in the security subsystem
+ * In order to configure CLIENT-CERT security, we add a new security-domain in the security subsystem
  * and a new https connector in the web subsystem. This is done via XSL transformations.
  * <p/>
  * Client authenticates himself with client.keystore file. Server contains jsse.keystore file in security subsystem as a
@@ -160,18 +160,18 @@ public class RESTCertSecurityTest {
 
     private String keyAddress(String key) {
         return "https://" + server1.getRESTEndpoint().getInetAddress().getHostName() + ":8443"
-                + server1.getRESTEndpoint().getContextPath() + "/___defaultcache/" + key;
+                + server1.getRESTEndpoint().getContextPath() + "/default/" + key;
     }
 
     private String keyAddressUnsecured(String key) {
         return "http://" + server1.getRESTEndpoint().getInetAddress().getHostName() + ":8080"
-                + server1.getRESTEndpoint().getContextPath() + "/___defaultcache/" + key;
+                + server1.getRESTEndpoint().getContextPath() + "/default/" + key;
     }
 
     private HttpResponse put(CloseableHttpClient httpClient, String uri, int expectedCode) throws Exception {
         HttpResponse response;
         HttpPut put = new HttpPut(uri);
-        put.setEntity(new StringEntity("data", "application/text", "UTF-8"));
+        put.setEntity(new StringEntity("data", "UTF-8"));
         response = httpClient.execute(put);
         assertEquals(expectedCode, response.getStatusLine().getStatusCode());
         return response;
@@ -181,7 +181,7 @@ public class RESTCertSecurityTest {
         HttpResponse response;
 
         HttpPost post = new HttpPost(uri);
-        post.setEntity(new StringEntity("data", "application/text", "UTF-8"));
+        post.setEntity(new StringEntity("data", "UTF-8"));
         response = httpClient.execute(post);
         assertEquals(expectedCode, response.getStatusLine().getStatusCode());
         return response;
