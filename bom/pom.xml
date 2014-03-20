@@ -302,7 +302,12 @@
             <artifactId>org.osgi.core</artifactId>
             <version>${version.osgi}</version>
          </dependency>
-         
+         <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.compendium</artifactId>
+            <version>${version.osgi}</version>
+         </dependency>
+         <!-- Infinispan RHQ module dependencies -->
          <dependency>
             <groupId>org.rhq</groupId>
             <artifactId>rhq-core-domain</artifactId>

@@ -1,6 +1,6 @@
 package org.infinispan.config.parsing;
 
-import org.infinispan.commons.util.FileLookupFactory;
+import org.infinispan.commons.util.FileLookup;
 import org.infinispan.util.Util;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
@@ -50,7 +50,7 @@ public class ConfigFilesConvertor {
    }
 
    public void parse(InputStream is, OutputStream os, String xsltFile, ClassLoader cl) throws Exception {
-      InputStream xsltInStream = FileLookupFactory.newInstance().lookupFile(xsltFile, cl);
+      InputStream xsltInStream = new FileLookup().lookupFile(xsltFile, cl);
       if (xsltInStream == null) {
          throw new IllegalStateException("Cold not find xslt file! : " + xsltFile);
       }
@@ -66,7 +66,7 @@ public class ConfigFilesConvertor {
          StreamResult result = new StreamResult(byteArrayOutputStream);
          transformer.transform(source, result);
 
-         InputStream indentation = FileLookupFactory.newInstance().lookupFile("xslt/indent.xslt", cl);
+         InputStream indentation = new FileLookup().lookupFile("xslt/indent.xslt", cl);
          try {
             // Use a Transformer for output
             transformer = getTransformer(indentation);
@@ -87,7 +87,7 @@ public class ConfigFilesConvertor {
     * xslt file are looked up using a {@link org.infinispan.util.DefaultFileLookup}
     */
    public void parse(String inputFile, OutputStream os, String xsltFile, ClassLoader cl) throws Exception {
-      InputStream stream = FileLookupFactory.newInstance().lookupFileStrict(inputFile, cl);
+      InputStream stream = new FileLookup().lookupFileStrict(inputFile, cl);
       try {
          parse(stream, os, xsltFile, cl);
       }

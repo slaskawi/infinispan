@@ -51,7 +51,6 @@ import org.infinispan.commons.CacheException;
 import org.infinispan.commons.marshall.StreamingMarshaller;
 import org.infinispan.commons.util.Util;
 import org.infinispan.configuration.cache.Configuration;
-import org.infinispan.configuration.cache.Configurations;
 import org.infinispan.configuration.format.PropertyFormatter;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.container.DataContainer;
@@ -1458,7 +1457,7 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
 
    @Override
    public ClassLoader getClassLoader() {
-      ClassLoader classLoader = Configurations.getClassLoader(config, globalCfg);
+      ClassLoader classLoader = globalCfg.classLoader();
       return classLoader != null ? classLoader : Thread.currentThread().getContextClassLoader();
    }
 

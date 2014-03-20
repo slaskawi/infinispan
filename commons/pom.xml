@@ -32,7 +32,10 @@
       <dependency>
          <groupId>org.osgi</groupId>
          <artifactId>org.osgi.core</artifactId>
-         <optional>true</optional>
+      </dependency>
+      <dependency>
+         <groupId>org.osgi</groupId>
+         <artifactId>org.osgi.compendium</artifactId>
       </dependency>
    </dependencies>
 
@@ -56,10 +59,23 @@
          <plugin>
             <groupId>org.apache.felix</groupId>
             <artifactId>maven-bundle-plugin</artifactId>
+            <executions>
+               <execution>
+                  <phase>generate-sources</phase>
+                  <goals>
+                     <goal>cleanVersions</goal>
+                  </goals>
+                  <configuration>
+                     <versions>
+                        <project.version.osgi>${project.version}</project.version.osgi>
+                     </versions>
+                  </configuration>
+               </execution>
+            </executions>
             <configuration>
                <instructions>
                   <Export-Package>
-                     ${project.groupId}.commons.*;version=${project.version};-split-package:=error
+                     ${project.groupId}.commons.*;version=${project.version.osgi};-split-package:=error
                   </Export-Package>
                   <Import-Package>
                      javax.naming,
@@ -69,9 +85,12 @@
                      org.jboss.marshalling;version=${version.jboss.marshalling};resolution:=optional,
                      org.jboss.marshalling.reflect;version=${version.jboss.marshalling};resolution:=optional,
                      org.jboss.marshalling.river;version=${version.jboss.marshalling};resolution:=optional,
-                     org.osgi.framework;version=${version.jboss.marshalling};resolution:=optional,
+                     org.osgi.framework,
+                     org.osgi.util.tracker,
                      sun.misc;resolution:=optional
                   </Import-Package>
+                  <!-- Required for loading client classes. -->
+                  <DynamicImport-Package>*</DynamicImport-Package>
                </instructions>
             </configuration>
          </plugin>

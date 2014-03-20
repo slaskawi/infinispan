@@ -1,5 +1,17 @@
 package org.infinispan.factories;
 
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
+
 import net.jcip.annotations.ThreadSafe;
 import org.infinispan.Version;
 import org.infinispan.registry.ClusterRegistry;
@@ -21,6 +33,7 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.manager.EmbeddedCacheManagerStartupException;
 import org.infinispan.notifications.cachemanagerlistener.CacheManagerNotifier;
 import org.infinispan.notifications.cachemanagerlistener.CacheManagerNotifierImpl;
+import org.infinispan.registry.ClusterRegistry;
 import org.infinispan.remoting.transport.Transport;
 import org.infinispan.topology.ClusterTopologyManager;
 import org.infinispan.topology.LocalTopologyManager;
@@ -74,7 +87,7 @@ public class GlobalComponentRegistry extends AbstractComponentRegistry {
 
    private final ComponentMetadataRepo componentMetadataRepo;
 
-   final List<ModuleLifecycle> moduleLifecycles;
+   final Collection<ModuleLifecycle> moduleLifecycles;
 
    final ConcurrentMap<String, ComponentRegistry> namedComponents = new ConcurrentHashMap<String, ComponentRegistry>(4);
 

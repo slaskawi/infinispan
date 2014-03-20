@@ -7,6 +7,7 @@ import org.infinispan.test.fwk.CleanupAfterMethod;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import javax.transaction.HeuristicRollbackException;
 import javax.transaction.RollbackException;
 import javax.transaction.Transaction;
 
@@ -49,6 +50,8 @@ public class ReplWriteSkewTest extends AbstractClusteredWriteSkewTest {
          assert false : "Transaction should roll back";
       } catch (RollbackException re) {
          // expected
+      } catch (HeuristicRollbackException re) {
+         // expected
       }
 
       assert "world 3".equals(cache0.get("hello"));
@@ -87,6 +90,8 @@ public class ReplWriteSkewTest extends AbstractClusteredWriteSkewTest {
          assert false : "Transaction should roll back";
       } catch (RollbackException re) {
          // expected
+      } catch (HeuristicRollbackException re) {
+         // expected
       }
 
       assert cache0.get("hello").equals("world 3");
@@ -118,6 +123,8 @@ public class ReplWriteSkewTest extends AbstractClusteredWriteSkewTest {
          tm(0).commit();
          assert false : "This transaction should roll back";
       } catch (RollbackException expected) {
+         // expected
+      } catch (HeuristicRollbackException expected) {
          // expected
       }
 
@@ -154,6 +161,10 @@ public class ReplWriteSkewTest extends AbstractClusteredWriteSkewTest {
          // expected
          expected
                .printStackTrace();
+      } catch (HeuristicRollbackException expected) {
+         // expected
+         expected
+               .printStackTrace();
       }
 
       assert "world2".equals(cache0.get("hello"));
@@ -183,6 +194,8 @@ public class ReplWriteSkewTest extends AbstractClusteredWriteSkewTest {
          Assert.fail("The transaction should rollback");
       } catch (RollbackException expected) {
          //expected
+      } catch (HeuristicRollbackException expected) {
+         //expected
       }
       
       Assert.assertEquals(cache(0).get("NewKey"), "v2");
@@ -206,6 +219,8 @@ public class ReplWriteSkewTest extends AbstractClusteredWriteSkewTest {
          tm(0).commit();
          Assert.fail("The transaction should rollback");
       } catch (RollbackException expected) {
+         //expected
+      } catch (HeuristicRollbackException expected) {
          //expected
       }
 

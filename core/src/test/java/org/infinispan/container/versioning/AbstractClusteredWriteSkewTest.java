@@ -14,6 +14,7 @@ import org.infinispan.util.concurrent.IsolationLevel;
 import org.testng.AssertJUnit;
 import org.testng.annotations.Test;
 
+import javax.transaction.HeuristicRollbackException;
 import javax.transaction.RollbackException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
@@ -224,6 +225,11 @@ public abstract class AbstractClusteredWriteSkewTest extends MultipleCacheManage
             fail("Rollback expected!");
          }
       } catch (RollbackException e) {
+         if (!rollbackExpected) {
+            fail("Rollback *not* expected!");
+         }
+         //no-op
+      } catch (HeuristicRollbackException e) {
          if (!rollbackExpected) {
             fail("Rollback *not* expected!");
          }

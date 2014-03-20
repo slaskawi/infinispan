@@ -14,7 +14,7 @@ import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLStreamException;
 
 import org.infinispan.commons.marshall.Marshaller;
-import org.infinispan.commons.util.FileLookupFactory;
+import org.infinispan.commons.util.FileLookup;
 import org.infinispan.commons.util.LegacyKeySupportSystemProperties;
 import org.infinispan.commons.util.Util;
 import org.infinispan.configuration.cache.CacheMode;
@@ -81,7 +81,7 @@ public class TestCacheManagerFactory {
    }
 
    public static EmbeddedCacheManager fromXml(String xmlFile, boolean keepJmxDomainName) throws IOException {
-      InputStream is = FileLookupFactory.newInstance().lookupFileStrict(
+      InputStream is = new FileLookup().lookupFileStrict(
             xmlFile, Thread.currentThread().getContextClassLoader());
       return fromStream(is, keepJmxDomainName);
    }
@@ -97,10 +97,20 @@ public class TestCacheManagerFactory {
    }
 
    private static void markAsTransactional(boolean transactional, ConfigurationBuilder builder) {
-      builder.transaction().transactionMode(transactional ? TransactionMode.TRANSACTIONAL : TransactionMode.NON_TRANSACTIONAL);
-      if (transactional)
-         // Set volatile stores just in case...
-         JBossTransactionsUtils.setVolatileStores();
+      if (!transactional) {
+         builder.transaction().transactionMode(TransactionMode.NON_TRANSACTIONAL);
+      } else {
+         builder.transaction()
+            .transactionMode(TransactionMode.TRANSACTIONAL);
+         //Skip this step in OSGi. This operation requires internal packages of Arjuna. These are not exported from the Arjuna
+         //bundle in OSGi
+         if (!Util.isOSGiContext()) {
+            // Set volatile stores just in case...
+            JBossTransactionsUtils.setVolatileStores();
+            //automatically change default TM lookup to the desired one but only outside OSGi. In OSGi we need to use GenericTransactionManagerLookup
+            builder.transaction().transactionManagerLookup((TransactionManagerLookup) Util.getInstance(TransactionSetup.getManagerLookup(), TestCacheManagerFactory.class.getClassLoader()));
+         }
+      }
    }
 
    private static void updateTransactionSupport(boolean transactional, ConfigurationBuilder builder) {
@@ -113,7 +123,7 @@ public class TestCacheManagerFactory {
          builder.transaction().transactionManagerLookup((TransactionManagerLookup) Util.getInstance(TransactionSetup.getManagerLookup(), TestCacheManagerFactory.class.getClassLoader()));
       }
    }
-
+   
    /**
     * Creates an cache manager that does support clustering.
     */

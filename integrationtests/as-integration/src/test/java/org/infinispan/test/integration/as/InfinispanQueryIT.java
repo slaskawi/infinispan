@@ -48,7 +48,6 @@ public class InfinispanQueryIT {
    public void testCacheManager() {
       ConfigurationBuilder builder = new ConfigurationBuilder();
       builder
-            .classLoader(getClass().getClassLoader())
             .indexing()
             .enable()
             .indexLocalOnly(false)
