@@ -140,6 +140,12 @@ public interface EndpointLogger extends BasicLogger {
    @Message(id = 10019, value = "The topology update timeout configuration is ignored")
    void topologyUpdateTimeoutIgnored();
    
+   @Message(id = 10020, value = "Invalid QOP value: %s")
+   IllegalStateException invalidQOPV(String qop);
+
+   @Message(id = 10021, value = "Invalid Strength value: %s")
+   IllegalStateException invalidStrength(String strengthValue);
+
    @LogMessage(level = WARN)
    @Message(id = 10099, value = "The WebSocket connector is not available in JBoss Data Grid")
    void webSocketConnectorUnavailable();

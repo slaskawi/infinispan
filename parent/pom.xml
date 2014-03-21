@@ -121,6 +121,7 @@
       <version.jboss.logging.jboss-logging-processor>1.1.0.Final-redhat-1</version.jboss.logging.jboss-logging-processor>
       <version.jboss.logmanager>1.4.0.Final-redhat-1</version.jboss.logmanager>
       <version.jboss.remoting3>3.3.0.Final-redhat-1</version.jboss.remoting3>
+      <version.jboss.sasl>1.0.4.Final-redhat-1</version.jboss.sasl>
       <version.jboss.spec>3.0.2.Final-redhat-4</version.jboss.spec>
       <version.org.jboss.spec.javax.resource.jboss-connector-api_1.6_spec>1.0.1.Final-redhat-2</version.org.jboss.spec.javax.resource.jboss-connector-api_1.6_spec>
       <version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.0_spec>1.0.2.Final-redhat-1</version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.0_spec>
@@ -380,6 +381,12 @@
             <groupId>org.jboss.arquillian.container</groupId>
             <artifactId>arquillian-weld-ee-embedded-1.1</artifactId>
             <version>${version.arquillian.container.weld}</version>
+            <scope>test</scope>
+         </dependency>
+         <dependency>
+            <groupId>org.jboss.sasl</groupId>
+            <artifactId>jboss-sasl</artifactId>
+            <version>${version.jboss.sasl}</version>
             <scope>test</scope>
          </dependency>
          <dependency>

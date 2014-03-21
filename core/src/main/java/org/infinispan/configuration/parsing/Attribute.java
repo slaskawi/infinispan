@@ -16,6 +16,7 @@ public enum Attribute {
     ALLOW_DUPLICATE_DOMAINS("allowDuplicateDomains"),
     ALWAYS_PROVIDE_IN_MEMORY_STATE("alwaysProvideInMemoryState"),
     ASYNC_MARSHALLING("asyncMarshalling"),
+    AUDIT_LOGGER("auditLogger"),
     AUTO_COMMIT("autoCommit"),
     BEFORE("before"),
     CACHE_MANAGER_NAME("cacheManagerName"),

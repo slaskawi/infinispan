@@ -31,6 +31,7 @@ import org.infinispan.persistence.spi.CacheLoader;
 import org.infinispan.persistence.spi.CacheWriter;
 import org.infinispan.remoting.ReplicationQueue;
 import org.infinispan.remoting.transport.Transport;
+import org.infinispan.security.AuditLogger;
 import org.infinispan.security.PrincipalRoleMapper;
 import org.infinispan.transaction.LockingMode;
 import org.infinispan.transaction.TransactionMode;
@@ -1537,6 +1538,10 @@ public class Parser61 implements ConfigurationParser {
          String value = replaceProperties(reader.getAttributeValue(i));
          Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
          switch (attribute) {
+            case AUDIT_LOGGER: {
+               builder.auditLogger(Util.<AuditLogger>getInstance(value, holder.getClassLoader()));
+               break;
+            }
             case MAPPER: {
                builder.principalRoleMapper(Util.<PrincipalRoleMapper>getInstance(value, holder.getClassLoader()));
                break;

@@ -12,6 +12,11 @@ import org.infinispan.container.entries.CacheEntry
 import org.infinispan.server.hotrod.configuration.HotRodServerConfiguration
 import io.netty.buffer.ByteBuf
 import io.netty.channel.Channel
+import io.netty.channel.ChannelHandlerContext
+import javax.security.sasl.SaslServer
+import org.infinispan.server.core.security.AuthorizingCallbackHandler
+import org.infinispan.configuration.cache.Configuration
+import org.infinispan.factories.ComponentRegistry
 
 /**
  * Top level Hot Rod decoder that after figuring out the version, delegates the rest of the reading to the
@@ -21,13 +26,16 @@ import io.netty.channel.Channel
  * @since 4.1
  */
 class HotRodDecoder(cacheManager: EmbeddedCacheManager, transport: NettyTransport, server: HotRodServer)
-        extends AbstractProtocolDecoder[Array[Byte], Array[Byte]](transport) with Constants {
+        extends AbstractProtocolDecoder[Array[Byte], Array[Byte]](server.getConfiguration.authentication().enabled(), transport) with Constants {
    type SuitableHeader = HotRodHeader
 
    type SuitableParameters = RequestParameters
    private var isError = false
 
    private val isTrace = isTraceEnabled
+
+   var saslServer : SaslServer = null
+   var callbackHandler: AuthorizingCallbackHandler = null
 
    protected def createHeader: HotRodHeader = new HotRodHeader
 
@@ -89,6 +97,14 @@ class HotRodDecoder(cacheManager: EmbeddedCacheManager, transport: NettyTranspor
       header.decoder.getOptimizedCache(header, cache)
    }
 
+   override def getCacheConfiguration: Configuration = {
+      server.getCacheConfiguration(header.cacheName)
+   }
+
+   override def getCacheRegistry: ComponentRegistry = {
+      server.getCacheRegistry(header.cacheName)
+   }
+
    override def readKey(b: ByteBuf): (Array[Byte], Boolean) =
       header.decoder.readKey(header, b)
 
@@ -119,14 +135,14 @@ class HotRodDecoder(cacheManager: EmbeddedCacheManager, transport: NettyTranspor
    override def createMultiGetResponse(pairs: Map[Array[Byte], CacheEntry]): AnyRef =
       null // Unsupported
 
-   override protected def customDecodeHeader(ch: Channel, buffer: ByteBuf): AnyRef =
-      writeResponse(ch, header.decoder.customReadHeader(header, buffer, cache))
+   override protected def customDecodeHeader(ctx: ChannelHandlerContext, buffer: ByteBuf): AnyRef =
+      writeResponse(ctx.channel, header.decoder.customReadHeader(header, buffer, cache, server, ctx))
 
-   override protected def customDecodeKey(ch: Channel, buffer: ByteBuf): AnyRef =
-      writeResponse(ch, header.decoder.customReadKey(header, buffer, cache, server.getQueryFacades))
+   override protected def customDecodeKey(ctx: ChannelHandlerContext, buffer: ByteBuf): AnyRef =
+      writeResponse(ctx.channel, header.decoder.customReadKey(header, buffer, cache, server))
 
-   override protected def customDecodeValue(ch: Channel, buffer: ByteBuf): AnyRef =
-      writeResponse(ch, header.decoder.customReadValue(header, buffer, cache))
+   override protected def customDecodeValue(ctx: ChannelHandlerContext, buffer: ByteBuf): AnyRef =
+      writeResponse(ctx.channel, header.decoder.customReadValue(header, buffer, cache))
 
    override def createStatsResponse: AnyRef =
       header.decoder.createStatsResponse(header, cache.getStats, transport)

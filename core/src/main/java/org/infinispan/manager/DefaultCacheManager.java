@@ -37,8 +37,10 @@ import org.infinispan.notifications.cachemanagerlistener.CacheManagerNotifier;
 import org.infinispan.remoting.rpc.ResponseMode;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.Transport;
+import org.infinispan.security.AuditContext;
 import org.infinispan.security.AuthorizationPermission;
 import org.infinispan.security.impl.AuthorizationHelper;
+import org.infinispan.security.impl.PrincipalRoleMapperContextImpl;
 import org.infinispan.security.impl.SecureCacheImpl;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
@@ -113,6 +115,7 @@ public class DefaultCacheManager implements EmbeddedCacheManager, CacheManager {
    private final ConcurrentMap<String, Configuration> configurationOverrides = CollectionFactory.makeConcurrentMap();
    private final GlobalComponentRegistry globalComponentRegistry;
    private volatile boolean stopping;
+   private final AuthorizationHelper authzHelper;
 
    /**
     * Constructs and starts a default instance of the CacheManager, using configuration defaults.  See {@link org.infinispan.configuration.cache.Configuration Configuration}
@@ -200,6 +203,7 @@ public class DefaultCacheManager implements EmbeddedCacheManager, CacheManager {
       this.globalConfiguration = globalConfiguration == null ? new GlobalConfigurationBuilder().build() : globalConfiguration;
       this.defaultConfiguration = defaultConfiguration == null ? new ConfigurationBuilder().build() : defaultConfiguration;
       this.globalComponentRegistry = new GlobalComponentRegistry(this.globalConfiguration, this, caches.keySet());
+      this.authzHelper = new AuthorizationHelper(this.globalConfiguration.security(), AuditContext.CACHEMANAGER, this.globalConfiguration.globalJmxStatistics().cacheManagerName());
       if (start)
          start();
    }
@@ -275,6 +279,7 @@ public class DefaultCacheManager implements EmbeddedCacheManager, CacheManager {
          }
 
          globalComponentRegistry = new GlobalComponentRegistry(globalConfiguration, this, caches.keySet());
+         authzHelper = new AuthorizationHelper(globalConfiguration.security(), AuditContext.CACHEMANAGER, globalConfiguration.globalJmxStatistics().cacheManagerName());
       } catch (CacheConfigurationException ce) {
          throw ce;
       } catch (RuntimeException re) {
@@ -315,6 +320,7 @@ public class DefaultCacheManager implements EmbeddedCacheManager, CacheManager {
       }
 
       globalComponentRegistry = new GlobalComponentRegistry(this.globalConfiguration, this, caches.keySet());
+      authzHelper = new AuthorizationHelper(globalConfiguration.security(), AuditContext.CACHEMANAGER, globalConfiguration.globalJmxStatistics().cacheManagerName());
       if (start)
          start();
    }
@@ -338,7 +344,7 @@ public class DefaultCacheManager implements EmbeddedCacheManager, CacheManager {
 
    private Configuration defineConfiguration(String cacheName, Configuration configOverride,
                                              Configuration defaultConfigIfNotPresent, boolean checkExisting) {
-      AuthorizationHelper.checkPermission(globalConfiguration.security(), AuthorizationPermission.ADMIN);
+      authzHelper.checkPermission(AuthorizationPermission.ADMIN);
       assertIsNotTerminated();
       if (cacheName == null || configOverride == null)
          throw new NullPointerException("Null arguments not allowed");
@@ -419,7 +425,7 @@ public class DefaultCacheManager implements EmbeddedCacheManager, CacheManager {
 
    @Override
    public EmbeddedCacheManager startCaches(final String... cacheNames) {
-      AuthorizationHelper.checkPermission(globalConfiguration.security(), AuthorizationPermission.LIFECYCLE);
+      authzHelper.checkPermission(AuthorizationPermission.LIFECYCLE);
       List<Thread> threads = new ArrayList<Thread>(cacheNames.length);
       final AtomicReference<RuntimeException> exception = new AtomicReference<RuntimeException>(null);
       for (final String cacheName : cacheNames) {
@@ -457,7 +463,7 @@ public class DefaultCacheManager implements EmbeddedCacheManager, CacheManager {
 
    @Override
    public void removeCache(String cacheName) {
-      AuthorizationHelper.checkPermission(globalConfiguration.security(), AuthorizationPermission.ADMIN);
+      authzHelper.checkPermission(AuthorizationPermission.ADMIN);
       ComponentRegistry cacheComponentRegistry = globalComponentRegistry.getNamedComponentRegistry(cacheName);
       if (cacheComponentRegistry != null) {
          RemoveCacheCommand cmd = new RemoveCacheCommand(cacheName, this, globalComponentRegistry,
@@ -546,7 +552,7 @@ public class DefaultCacheManager implements EmbeddedCacheManager, CacheManager {
             c = getConfiguration(cacheName);
             if (c.security().authorization().enabled()) {
                // Don't even attempt to wire anything if we don't have LIFECYCLE privileges
-               AuthorizationHelper.checkPermission(globalConfiguration.security(), c.security().authorization(), AuthorizationPermission.LIFECYCLE);
+               authzHelper.checkPermission(c.security().authorization(), AuthorizationPermission.LIFECYCLE);
             }
             createdCacheWrapper = new CacheWrapper();
             if (caches.put(cacheName, createdCacheWrapper) != null) {
@@ -587,19 +593,22 @@ public class DefaultCacheManager implements EmbeddedCacheManager, CacheManager {
 
    @Override
    public void start() {
-      AuthorizationHelper.checkPermission(globalConfiguration.security(), AuthorizationPermission.LIFECYCLE);
+      authzHelper.checkPermission(AuthorizationPermission.LIFECYCLE);
       if (globalConfiguration.security().authorization().enabled() && System.getSecurityManager() == null) {
          log.authorizationEnabledWithoutSecurityManager();
       }
       globalComponentRegistry.getComponent(CacheManagerJmxRegistration.class).start();
       String clusterName = globalConfiguration.transport().clusterName();
       String nodeName = globalConfiguration.transport().nodeName();
+      if (globalConfiguration.security().authorization().enabled()) {
+         globalConfiguration.security().authorization().principalRoleMapper().setContext(new PrincipalRoleMapperContextImpl(this));
+      }
       log.debugf("Started cache manager %s on %s", clusterName, nodeName);
    }
 
    @Override
    public void stop() {
-      AuthorizationHelper.checkPermission(globalConfiguration.security(), AuthorizationPermission.LIFECYCLE);
+      authzHelper.checkPermission(AuthorizationPermission.LIFECYCLE);
       if (!stopping) {
          synchronized (this) {
             // DCL to make sure that only one thread calls stop at one time,
@@ -645,28 +654,28 @@ public class DefaultCacheManager implements EmbeddedCacheManager, CacheManager {
 
    @Override
    public void addListener(Object listener) {
-      AuthorizationHelper.checkPermission(globalConfiguration.security(), AuthorizationPermission.LISTEN);
+      authzHelper.checkPermission(AuthorizationPermission.LISTEN);
       CacheManagerNotifier notifier = globalComponentRegistry.getComponent(CacheManagerNotifier.class);
       notifier.addListener(listener);
    }
 
    @Override
    public void removeListener(Object listener) {
-      AuthorizationHelper.checkPermission(globalConfiguration.security(), AuthorizationPermission.LISTEN);
+      authzHelper.checkPermission(AuthorizationPermission.LISTEN);
       CacheManagerNotifier notifier = globalComponentRegistry.getComponent(CacheManagerNotifier.class);
       notifier.removeListener(listener);
    }
 
    @Override
    public Set<Object> getListeners() {
-      AuthorizationHelper.checkPermission(globalConfiguration.security(), AuthorizationPermission.LISTEN);
+      authzHelper.checkPermission(AuthorizationPermission.LISTEN);
       CacheManagerNotifier notifier = globalComponentRegistry.getComponent(CacheManagerNotifier.class);
       return notifier.getListeners();
    }
 
    @Override
    public ComponentStatus getStatus() {
-      AuthorizationHelper.checkPermission(globalConfiguration.security(), AuthorizationPermission.LIFECYCLE);
+      authzHelper.checkPermission(AuthorizationPermission.LIFECYCLE);
       return globalComponentRegistry.getStatus();
    }
 
