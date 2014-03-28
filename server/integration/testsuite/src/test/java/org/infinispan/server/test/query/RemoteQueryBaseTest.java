@@ -59,7 +59,7 @@ public abstract class RemoteQueryBaseTest {
             + ",component=ProtobufMetadataManager";
 
       //initialize server-side serialization context via JMX
-      byte[] descriptor = readClasspathResource("/bank.protobin");
+      byte[] descriptor = readClasspathResource("/sample_bank_account/bank.protobin");
       invokeOperation(jmxConnectionProvider, mbean, "registerProtofile", new Object[]{descriptor}, new String[]{byte[].class.getName()});
 
       //initialize client-side serialization context

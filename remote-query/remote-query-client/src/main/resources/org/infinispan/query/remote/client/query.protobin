@@ -1,10 +1,10 @@
 
-Ã
-query.proto'org.infinispan.client.hotrod.impl.querymessage-wrapping.proto"á
+÷
+.org/infinispan/query/remote/client/query.proto"org.infinispan.query.remote.client1org/infinispan/protostream/message-wrapping.proto"Ü
 QueryRequest
 
-jpqlString (	X
-sortCriteria (2B.org.infinispan.client.hotrod.impl.query.QueryRequest.SortCriteria
+jpqlString (	S
+sortCriteria (2=.org.infinispan.query.remote.client.QueryRequest.SortCriteria
 startOffset (
 
 maxResults (:
