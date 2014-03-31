@@ -972,7 +972,7 @@ public class StateConsumerImpl implements StateConsumer {
                public void processEntry(MarshalledEntry marshalledEntry, AdvancedCacheLoader.TaskContext taskContext) throws InterruptedException {
                   keysToRemove.add(marshalledEntry.getKey());
                }
-            }, false, false);
+            }, false, false, true);
          } catch (CacheException e) {
             log.failedLoadingKeysFromCacheStore(e);
          }
