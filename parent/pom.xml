@@ -122,7 +122,7 @@
       <version.shrinkwrapResolver>2.0.0-alpha-6</version.shrinkwrapResolver>
       <version.slf4j>1.7.2-redhat-1</version.slf4j>
       <version.spymemcached>2.8.0</version.spymemcached>
-      <version.testng>6.7</version.testng>
+      <version.testng>6.8</version.testng>
       <version.weld>1.1.13.Final-redhat-1</version.weld>
       <version.antlr.maven.plugin>3.4-redhat-1</version.antlr.maven.plugin>
       <version.exec.maven.plugin>1.2.1-redhat-1</version.exec.maven.plugin>
@@ -133,6 +133,7 @@
       <version.maven.genjavadoc>0.5</version.maven.genjavadoc>
       <version.maven.invoker.plugin>1.5-redhat-1</version.maven.invoker.plugin>
       <version.maven.scala>2.15.2-redhat-1</version.maven.scala>
+      <version.maven.surefire>2.14.1</version.maven.surefire>
    </properties>
    
    <dependencyManagement>
@@ -777,6 +778,7 @@
             <plugin>
                <groupId>org.apache.maven.plugins</groupId>
                <artifactId>maven-surefire-plugin</artifactId>
+               <version>${version.maven.surefire}</version>
             </plugin>
             <plugin>
                <artifactId>maven-war-plugin</artifactId>
