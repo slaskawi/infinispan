@@ -80,6 +80,8 @@
       <buildDirectory>target</buildDirectory>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+      <maven.compiler.target>1.6</maven.compiler.target>
+      <maven.compiler.source>1.6</maven.compiler.source>
       <defaultTestGroup>functional,unit,arquillian</defaultTestGroup>
       <!-- unstable and stress because we can have them inside a functional class, for example -->
       <defaultExcludedTestGroup>unstable,stress,unstable_xsite</defaultExcludedTestGroup>
@@ -109,11 +111,14 @@
       <version.httpclient>4.2.1-redhat-1</version.httpclient>
       <version.jackson>1.9.9-redhat-2</version.jackson>
       <version.javax.cache>1.0.0-PFD</version.javax.cache>
+      <version.javax.enterprise>1.0-SP4.redhat-3</version.javax.enterprise>
       <version.jboss.logging.jboss-logging-processor>1.1.0.Final-redhat-1</version.jboss.logging.jboss-logging-processor>
       <version.jboss.logmanager>1.4.0.Final-redhat-1</version.jboss.logmanager>
       <version.jboss.spec>3.0.2.Final-redhat-4</version.jboss.spec>
       <version.org.jboss.naming>5.0.5.Final-redhat-1</version.org.jboss.naming>
+      <version.org.jboss.jbossts.jbossjts>4.17.15.Final-redhat-4</version.org.jboss.jbossts.jbossjts>
       <version.jetty>6.1.25</version.jetty>
+      <version.junit>4.11</version.junit>
       <version.leveldb>0.6</version.leveldb>
       <version.leveldbjni>1.7</version.leveldbjni>
       <version.log4j>1.2.16-redhat-2</version.log4j>
@@ -126,14 +131,14 @@
       <version.spymemcached>2.8.0</version.spymemcached>
       <version.testng>6.8</version.testng>
       <version.weld>1.1.13.Final-redhat-1</version.weld>
-      <version.antlr.maven.plugin>3.4-redhat-1</version.antlr.maven.plugin>
-      <version.exec.maven.plugin>1.2.1-redhat-1</version.exec.maven.plugin>
+      <version.antlr.maven.plugin>3.4</version.antlr.maven.plugin>
+      <version.exec.maven.plugin>1.2.1</version.exec.maven.plugin>
       <version.maven.animal.sniffer>1.9</version.maven.animal.sniffer>
-      <version.maven.antrun.plugin>1.7-redhat-1</version.maven.antrun.plugin>
+      <version.maven.antrun.plugin>1.7</version.maven.antrun.plugin>
       <version.maven.buildhelper>1.8</version.maven.buildhelper>
-      <version.maven.dependency.plugin>2.8-redhat-1</version.maven.dependency.plugin>
+      <version.maven.dependency.plugin>2.8</version.maven.dependency.plugin>
       <version.maven.genjavadoc>0.5</version.maven.genjavadoc>
-      <version.maven.invoker.plugin>1.5-redhat-1</version.maven.invoker.plugin>
+      <version.maven.invoker.plugin>1.5</version.maven.invoker.plugin>
       <version.maven.scala>2.15.2-redhat-1</version.maven.scala>
       <version.maven.surefire>2.14.1</version.maven.surefire>
    </properties>
@@ -143,7 +148,7 @@
          <dependency>
             <groupId>org.jboss.component.management</groupId>
             <artifactId>jboss-dependency-management-eap</artifactId>
-            <version>6.1.1.Final-redhat-61</version>
+            <version>6.2.0.Final-redhat-91</version>
             <type>pom</type>
             <scope>import</scope>
          </dependency>
@@ -729,6 +734,11 @@
             </plugin>
             <plugin>
                <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-compiler-plugin</artifactId>
+               <version>3.1</version>
+            </plugin>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
                <artifactId>maven-install-plugin</artifactId>
             </plugin>
             <plugin>
@@ -1032,6 +1042,7 @@
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.1</version>
             <configuration>
                <source>1.6</source>
                <target>1.6</target>
