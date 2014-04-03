@@ -85,7 +85,7 @@ public class OverrideConfigurationVisitor extends AbstractConfigurationBeanVisit
                // If the original configuration option has overriden fields,
                // when overriding maintain the overriden state
                bean.overriddenConfigurationElements.add(overridenField);
-               ReflectionUtil.setValue(bean, overridenField, ReflectionUtil.getValue(overrides, overridenField));
+               SecurityActions.setValue(bean, overridenField, ReflectionUtil.getValue(overrides, overridenField));
             } catch (Exception e1) {
                throw new CacheException("Could not apply value for field " + overridenField
                         + " from instance " + overrides + " on instance " + this, e1);

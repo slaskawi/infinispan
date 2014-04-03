@@ -77,6 +77,7 @@ import org.infinispan.remoting.ReplicationQueue;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.Transport;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
+import org.infinispan.security.impl.SecureCacheImpl;
 import org.infinispan.statetransfer.StateTransferManager;
 import org.infinispan.topology.CacheTopology;
 import org.infinispan.topology.DefaultRebalancePolicy;
@@ -177,6 +178,9 @@ public class TestingUtil {
       int gracetime = 90000; // 90 seconds
       long giveup = System.currentTimeMillis() + gracetime;
       for (Cache c : caches) {
+         if (c instanceof SecureCacheImpl) {
+            c = (Cache) extractField(SecureCacheImpl.class, c, "delegate");
+         }
          StateTransferManager stateTransferManager = extractComponent(c, StateTransferManager.class);
          DefaultRebalancePolicy rebalancePolicy = (DefaultRebalancePolicy) TestingUtil.extractGlobalComponent(c.getCacheManager(), RebalancePolicy.class);
          Address cacheAddress = c.getAdvancedCache().getRpcManager().getAddress();

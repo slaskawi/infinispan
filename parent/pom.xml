@@ -93,9 +93,10 @@
       <packaging>jar</packaging>
       <module.skipComponentMetaDataProcessing>true</module.skipComponentMetaDataProcessing>
       <module.metadata.isCoreModule>false</module.metadata.isCoreModule>
-      
+      <!-- Versions for dependencies -->
+      <version.apache.ds>2.0.0-M15</version.apache.ds>
       <version.arquillian>1.0.3.Final</version.arquillian>
-      <version.arquillian.container.managed>8.0.0.Beta1</version.arquillian.container.managed>
+      <version.arquillian.container.managed>7.3.2.Final-redhat-2</version.arquillian.container.managed>
       <version.arquillian.container.weld>1.0.0.CR3</version.arquillian.container.weld>
       <version.c3p0>0.9.1.2</version.c3p0>
       <version.commons.codec>1.4-redhat-2</version.commons.codec>
@@ -112,6 +113,7 @@
       <version.jackson>1.9.9-redhat-2</version.jackson>
       <version.javax.cache>1.0.0-PFD</version.javax.cache>
       <version.javax.enterprise>1.0-SP4.redhat-3</version.javax.enterprise>
+      <version.jboss.as>7.3.2.Final-redhat-2</version.jboss.as>
       <version.jboss.logging.jboss-logging-processor>1.1.0.Final-redhat-1</version.jboss.logging.jboss-logging-processor>
       <version.jboss.logmanager>1.4.0.Final-redhat-1</version.jboss.logmanager>
       <version.jboss.spec>3.0.2.Final-redhat-4</version.jboss.spec>
@@ -126,6 +128,7 @@
       <version.mc4j>1.2.15.1</version.mc4j>
       <version.mockito>1.9.5</version.mockito>
       <version.resteasy>2.3.6.Final-redhat-1</version.resteasy>
+      <version.org.picketbox>4.0.19.SP4-redhat-1</version.org.picketbox>
       <version.shrinkwrapResolver>2.0.0-alpha-6</version.shrinkwrapResolver>
       <version.slf4j>1.7.2-redhat-1</version.slf4j>
       <version.spymemcached>2.8.0</version.spymemcached>
@@ -348,8 +351,8 @@
             <scope>import</scope>
          </dependency>
          <dependency>
-            <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-arquillian-container-managed</artifactId>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-arquillian-container-managed</artifactId>
             <version>${version.arquillian.container.managed}</version>
             <scope>test</scope>
          </dependency>
@@ -647,6 +650,18 @@
                   <groupId>org.jboss.byteman</groupId>
                </exclusion>
             </exclusions>
+         </dependency>
+         <dependency>
+            <groupId>org.apache.directory.server</groupId>
+            <artifactId>apacheds-all</artifactId>
+            <version>${version.apache.ds}</version>
+            <scope>test</scope>
+         </dependency>
+         <dependency>
+            <groupId>org.picketbox</groupId>
+            <artifactId>jbosssx-bare</artifactId>
+            <version>${version.org.picketbox}</version>
+            <scope>test</scope>
          </dependency>
       </dependencies>
    </dependencyManagement>

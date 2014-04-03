@@ -3,7 +3,7 @@
                 xmlns:logging="urn:jboss:domain:logging:1.2"
                 xmlns:p="urn:jboss:domain:1.4"
                 xmlns:jgroups="urn:jboss:domain:jgroups:1.2"
-                xmlns:core="urn:infinispan:server:core:6.0"
+                xmlns:core="urn:infinispan:server:core:6.1"
                 xmlns:threads="urn:jboss:domain:threads:1.1"
                 xmlns:endpoint="urn:infinispan:server:endpoint:6.0">
     <xsl:output method="xml" indent="yes" omit-xml-declaration="yes"/>

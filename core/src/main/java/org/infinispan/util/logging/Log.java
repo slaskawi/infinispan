@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.channels.FileChannel;
+import java.security.Permission;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -1051,4 +1052,14 @@ public interface Log extends BasicLogger {
 
    @Message(value = "A principal-to-role mapper has not been specified", id = 288)
    CacheConfigurationException invalidPrincipalRoleMapper();
+
+   @Message(value = "Attempt to add a %s permission to a SecurityPermissionCollection", id = 296)
+   IllegalArgumentException invalidPermission(Permission permission);
+
+   @Message(value = "Attempt to add a permission to a read-only SecurityPermissionCollection", id = 297)
+   SecurityException readOnlyPermissionCollection();
+
+   @LogMessage(level = WARN)
+   @Message(value = "Starting a DefaultCacheManager with authorization enabled but without a SecurityManager installed may lead to unexpected behaviour", id = 298)
+   void authorizationEnabledWithoutSecurityManager();
 }
