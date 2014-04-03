@@ -95,9 +95,7 @@ public class StateProviderImpl implements StateProvider {
 
       timeout = configuration.clustering().stateTransfer().timeout();
 
-      // ignore chunk sizes <= 0
-      int chunkSize = configuration.clustering().stateTransfer().chunkSize();
-      this.chunkSize = chunkSize > 0 ? chunkSize : Integer.MAX_VALUE;
+      this.chunkSize = configuration.clustering().stateTransfer().chunkSize();
    }
 
    public boolean isStateTransferInProgress() {
