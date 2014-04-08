@@ -1094,4 +1094,8 @@ public interface Log extends BasicLogger {
    @LogMessage(level = WARN)
    @Message(value = "Unable to apply X-Site state chunk.", id = 305)
    void unableToApplyXSiteState(@Cause Throwable cause);
+
+   @LogMessage(level = WARN)
+   @Message(value = "Unable to re-start x-site state transfer to site %s", id = 306)
+   void failedToRestartXSiteStateTransfer(String siteName, @Cause Throwable cause);
 }

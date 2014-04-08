@@ -233,6 +233,8 @@ public class CommandAwareRpcDispatcher extends RpcDispatcher {
          log.tracef("Handling command %s from remote site %s", cmd, src);
       }
 
+      ((XSiteReplicateCommand) cmd).setOriginSite(src.getSite());
+
       final BackupReceiver receiver = backupReceiverRepository.getBackupReceiver(src.getSite(),
                                                                                  ((XSiteReplicateCommand) cmd).getCacheName());
       if (preserveOrder) {

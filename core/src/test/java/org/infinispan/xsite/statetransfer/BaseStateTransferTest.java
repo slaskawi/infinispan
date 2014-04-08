@@ -495,7 +495,7 @@ public abstract class BaseStateTransferTest extends AbstractTwoSitesTest {
                   !commitManager.isTracking(Flag.PUT_FOR_X_SITE_STATE_TRANSFER) &&
                   commitManager.isEmpty();
          }
-      }, unit.toMillis(timeout));
+      }, timeout, unit);
    }
 
    private void assertNoStateTransferInSendingSite(String siteName) {
@@ -513,28 +513,7 @@ public abstract class BaseStateTransferTest extends AbstractTwoSitesTest {
          public boolean assertInCache(Cache<Object, Object> cache) {
             return extractComponent(cache, XSiteStateProvider.class).getCurrentStateSending().isEmpty();
          }
-      }, unit.toMillis(timeout));
-   }
-
-   private <K, V> void assertInSite(String siteName, AssertCondition<K, V> condition) {
-      for (Cache<K, V> cache : this.<K, V>caches(siteName)) {
-         condition.assertInCache(cache);
-      }
-   }
-
-   private <K, V> void assertEventuallyInSite(final String siteName, final EventuallyAssertCondition<K, V> condition,
-                                              long timeoutMillisecond) {
-      eventually(new Condition() {
-         @Override
-         public boolean isSatisfied() throws Exception {
-            for (Cache<K, V> cache : BaseStateTransferTest.this.<K, V>caches(siteName)) {
-               if (!condition.assertInCache(cache)) {
-                  return false;
-               }
-            }
-            return true;
-         }
-      }, timeoutMillisecond);
+      }, timeout, unit);
    }
 
    private static enum Operation {
@@ -775,14 +754,6 @@ public abstract class BaseStateTransferTest extends AbstractTwoSitesTest {
       public final Object finalValue() {
          return finalValue;
       }
-   }
-
-   private interface AssertCondition<K, V> {
-      void assertInCache(Cache<K, V> cache);
-   }
-
-   private interface EventuallyAssertCondition<K, V> {
-      boolean assertInCache(Cache<K, V> cache);
    }
 
    private static class XSiteStateProviderControl extends XSiteProviderDelegator {

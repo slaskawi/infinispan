@@ -37,10 +37,10 @@ public class CacheListenerRemovalTest extends AbstractInfinispanTest {
    public void testListenerRemoval() {
       cache.put("x", "y");
       AtomicInteger i = new AtomicInteger(0);
-      assert 0 == cache.getListeners().size();
+      assert 1 == cache.getListeners().size();
       CacheListener l = new CacheListener(i);
       cache.addListener(l);
-      assert 1 == cache.getListeners().size();
+      assert 2 == cache.getListeners().size();
       assert cache.getListeners().contains(l);
       assert 0 == i.get();
       cache.get("x");
@@ -48,7 +48,7 @@ public class CacheListenerRemovalTest extends AbstractInfinispanTest {
 
       // remove the replListener
       cache.removeListener(l);
-      assert 0 == cache.getListeners().size();
+      assert 1 == cache.getListeners().size();
       i.set(0);
       assert 0 == i.get();
       cache.get("x");

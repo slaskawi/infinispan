@@ -6,10 +6,6 @@ import java.util.Collection;
 
 /**
  * It contains the logic to send state to another site.
- * <p/>
- * // TODO testing: 1) what happen if the requestor dies? 2) what happen if the cancel arrives first than the start?
- * // TODO test: what happen if the site master dies, topology change, etc... (for second part)
- * // TODO JIRA: ISPN-4025
  *
  * @author Pedro Ruivo
  * @since 7.0
@@ -36,4 +32,9 @@ public interface XSiteStateProvider {
     * @return a site name collection with the sites in which this cache is sending state.
     */
    public Collection<String> getCurrentStateSending();
+
+   /**
+    * @return a site name collection with sites in which the coordinator is not in the {@code currentMembers}.
+    */
+   public Collection<String> getSitesMissingCoordinator(Collection<Address> currentMembers);
 }

@@ -327,33 +327,69 @@ public class Parser62 implements ConfigurationParser {
                throw ParseUtils.unexpectedElement(reader);
          }
       }
-      parseTakeOffline(reader, backup);
+
+      while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
+         Element element = Element.forName(reader.getLocalName());
+         switch (element) {
+            case TAKE_OFFLINE: {
+               this.parseTakeOffline(reader, backup);
+               break;
+            }
+            case STATE_TRANSFER: {
+               this.parseXSiteStateTransfer(reader, backup);
+               break;
+            }
+            default: {
+               throw ParseUtils.unexpectedElement(reader);
+            }
+         }
+      }
+
    }
 
    private void parseTakeOffline(XMLExtendedStreamReader reader, BackupConfigurationBuilder backup) throws XMLStreamException {
-      int count = 0;
-      while (reader.hasNext() && (reader.nextTag() != XMLStreamConstants.END_ELEMENT)) {
-         count++;
-         Element takeOffline = Element.forName(reader.getLocalName());
-         for (int i = 0; i < reader.getAttributeCount(); i++) {
-            ParseUtils.requireNoNamespaceAttribute(reader, i);
-            String value = replaceProperties(reader.getAttributeValue(i));
-            Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-            switch (attribute) {
-               case AFTER_FAILURES:
-                  backup.takeOffline().afterFailures(Integer.parseInt(value));
-                  break;
-               case MIN_TIME_TO_WAIT:
-                  backup.takeOffline().minTimeToWait(Long.parseLong(value));
-                  break;
-               default:
-                  throw ParseUtils.unexpectedElement(reader);
+      for (int i = 0; i < reader.getAttributeCount(); i++) {
+         String value = replaceProperties(reader.getAttributeValue(i));
+         Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+         switch (attribute) {
+            case AFTER_FAILURES: {
+               backup.takeOffline().afterFailures(Integer.valueOf(value));
+               break;
+            }
+            case MIN_TIME_TO_WAIT: {
+               backup.takeOffline().minTimeToWait(Long.valueOf(value));
+               break;
+            }
+            default: {
+               throw ParseUtils.unexpectedAttribute(reader, i);
             }
          }
-         ParseUtils.requireNoContent(reader);
       }
-      if (count > 1)
-         throw new CacheConfigurationException("Only one 'takeOffline' element allowed within a 'backup'");
+      ParseUtils.requireNoContent(reader);
+   }
+
+   private void parseXSiteStateTransfer(XMLExtendedStreamReader reader, BackupConfigurationBuilder backup) throws XMLStreamException {
+      for (int i = 0; i < reader.getAttributeCount(); i++) {
+         String value = replaceProperties(reader.getAttributeValue(i));
+         Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+         switch (attribute) {
+            case CHUNK_SIZE:
+               backup.stateTransfer().chunkSize(Integer.parseInt(value));
+               break;
+            case TIMEOUT:
+               backup.stateTransfer().timeout(Long.parseLong(value));
+               break;
+            case MAX_RETRIES:
+               backup.stateTransfer().maxRetries(Integer.parseInt(value));
+               break;
+            case WAIT_TIME:
+               backup.stateTransfer().waitingTimeBetweenRetries(Long.parseLong(value));
+               break;
+            default:
+               throw ParseUtils.unexpectedAttribute(reader, i);
+         }
+      }
+      ParseUtils.requireNoContent(reader);
    }
 
    private void parseCacheSecurity(XMLExtendedStreamReader reader, final ConfigurationBuilderHolder holder) throws XMLStreamException {
