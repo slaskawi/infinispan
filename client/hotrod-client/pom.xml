@@ -111,12 +111,13 @@
                       <goal>jar</goal>
                   </goals>
                   <configuration>
+                     <doctitle>JBoss Data Grid 6.3.0 Hot Rod Client API</doctitle>
                      <quiet>true</quiet>
                      <!-- In case you anyone needs to trace javadoc issues
                      <additionalJOption>-J-Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=y</additionalJOption>
                      -->
-                     <stylesheetfile>${basedir}/src/javadoc/stylesheet.css</stylesheetfile>
-                     <javadocDirectory>${basedir}/src/javadoc</javadocDirectory>
+                     <stylesheetfile>${basedir}/../src/javadoc/stylesheet.css</stylesheetfile>
+                     <javadocDirectory>${basedir}/../src/javadoc</javadocDirectory>
                      <docfilessubdirs>true</docfilessubdirs>
                      <links>
                         <link>http://java.sun.com/javase/6/docs/api/</link>
