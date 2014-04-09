@@ -17,6 +17,7 @@ import java.util.List;
  *
  * @author Dan Berindei
  * @since 7.0
+ * @private
  */
 public class InvocationContextContainerImpl implements InvocationContextContainer {
 

@@ -26,6 +26,7 @@ import java.util.List;
  *
  * @author Mircea.Markus@jboss.com
  * @since 4.0
+ * @private
  */
 public class TransactionalInvocationContextFactory extends AbstractInvocationContextFactory {
 

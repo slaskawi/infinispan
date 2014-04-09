@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * @author Mircea Markus
  * @since 6.0
+ * @private
  */
 public class PersistenceUtil {
 

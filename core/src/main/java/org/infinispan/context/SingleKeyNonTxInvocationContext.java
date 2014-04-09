@@ -14,6 +14,7 @@ import java.util.Set;
  * @author Mircea Markus
  * @author Sanne Grinovero
  * @since 5.1
+ * @private
  */
 public final class SingleKeyNonTxInvocationContext implements InvocationContext {
 

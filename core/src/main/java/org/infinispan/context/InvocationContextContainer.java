@@ -10,6 +10,7 @@ import org.infinispan.factories.scopes.Scopes;
  * @author Manik Surtani (manik AT infinispan DOT org)
  * @author Mircea.Markus@jboss.com
  * @since 4.0
+ * @private
  */
 @Scope(Scopes.NAMED_CACHE)
 public interface InvocationContextContainer {

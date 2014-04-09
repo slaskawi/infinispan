@@ -20,6 +20,7 @@ import org.infinispan.remoting.transport.Address;
  * 
  * @author Vladimir Blagojevic
  * @since 5.2
+ * @private
  */
 public interface MapReduceManager {
 

@@ -10,6 +10,7 @@ import org.infinispan.factories.annotations.DefaultFactoryFor;
  * This is an internal class, not intended to be used by clients.
  * @author Vladimir Blagojevic
  * @since 5.2
+ * @private
  */
 @DefaultFactoryFor(classes={MapReduceManager.class})
 public class MapReduceManagerFactory extends AbstractNamedCacheComponentFactory implements

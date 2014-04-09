@@ -9,6 +9,7 @@ import java.util.Map;
  *
  * @author Manik Surtani (<a href="mailto:manik@jboss.org">manik@jboss.org</a>)
  * @since 4.0
+ * @private
  */
 public interface EntryLookup {
    /**

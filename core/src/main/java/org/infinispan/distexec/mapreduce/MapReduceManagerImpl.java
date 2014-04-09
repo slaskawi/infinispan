@@ -56,6 +56,7 @@ import static org.infinispan.factories.KnownComponentNames.ASYNC_TRANSPORT_EXECU
  * This is an internal class, not intended to be used by clients.
  * @author Vladimir Blagojevic
  * @since 5.2
+ * @private
  */
 public class MapReduceManagerImpl implements MapReduceManager {
 

@@ -1,5 +1,5 @@
 /**
- * HotRod-based {@link org.infinispan.persistence.spi.AdvancedCacheWriter}
+ * HotRod-based {@link org.infinispan.persistence.spi.AdvancedLoadWriteStore}
  *
  * @public
  */

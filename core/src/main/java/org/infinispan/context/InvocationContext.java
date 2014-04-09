@@ -12,6 +12,7 @@ import org.infinispan.remoting.transport.Address;
  * @author Manik Surtani (<a href="mailto:manik@jboss.org">manik@jboss.org</a>)
  * @author Mircea.Markus@jboss.com
  * @since 4.0
+ * @private
  */
 public interface InvocationContext extends EntryLookup, Cloneable {
 

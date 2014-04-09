@@ -6,6 +6,7 @@ package org.infinispan.persistence.spi;
  *
  * @author Dan Berindei
  * @since 7.0
+ * @private
  */
 public interface LocalOnlyCacheLoader {
 }

@@ -7,6 +7,7 @@ import org.infinispan.marshall.core.MarshalledValue;
 /**
  * @author Mircea Markus
  * @since 6.0
+ * @private
  */
 public class MapReduceCacheLoaderTask implements AdvancedCacheLoader.CacheLoaderTask {
 

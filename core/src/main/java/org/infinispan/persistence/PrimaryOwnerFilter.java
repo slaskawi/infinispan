@@ -6,6 +6,7 @@ import org.infinispan.persistence.spi.AdvancedCacheLoader;
 /**
  * @author Mircea Markus
  * @since 6.0
+ * @private
  */
 public class PrimaryOwnerFilter implements AdvancedCacheLoader.KeyFilter {
 

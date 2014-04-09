@@ -3,3 +3,4 @@
  * @public
  */
 package org.infinispan.persistence.spi;
+
