@@ -591,7 +591,7 @@ public final class CacheNotifierImpl<K, V> extends AbstractListenerImpl implemen
 
          List<Address> members = manager.getMembers();
          // If we are the only member don't even worry about sending listeners
-         if (members.size() > 1) {
+         if (members != null && members.size() > 1) {
             DistributedExecutionCompletionService decs = new DistributedExecutionCompletionService(distExecutorService);
 
             log.tracef("Replicating cluster listener to other nodes %s for cluster listener with id %s",
