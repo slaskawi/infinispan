@@ -132,7 +132,7 @@ public interface ClusteringDependentLogic {
       private ReentrantPerEntryLockContainer createLockContainer(Configuration configuration) {
          //we need a lock container to synchronized the keys being moved between the data container and the persistence
          //also, it needed to merge the DeltaAware values
-         return new ReentrantPerEntryLockContainer(configuration.locking().concurrencyLevel());
+         return new ReentrantPerEntryLockContainer(configuration.locking().concurrencyLevel(), configuration.dataContainer().keyEquivalence());
       }
 
       private EntryVersionsMap totalOrderCreateNewVersionsAndCheckForWriteSkews(VersionGenerator versionGenerator, TxInvocationContext context,
