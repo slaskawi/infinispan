@@ -60,17 +60,6 @@
         <dependency>
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-core</artifactId>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.jboss.logmanager</groupId>
-                    <artifactId>jboss-logmanager</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-core</artifactId>
             <type>test-jar</type>
             <scope>test</scope>
             <exclusions>
@@ -119,6 +108,17 @@
         <dependency>
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-remote-query-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-security-integrationtests</artifactId>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.directory.server</groupId>
+            <artifactId>apacheds-all</artifactId> 
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.iq80.leveldb</groupId>
@@ -200,6 +200,7 @@
             <groupId>javax.inject</groupId>
             <artifactId>javax.inject</artifactId>
         </dependency>
+
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
@@ -230,6 +231,11 @@
         <server2.dist>${basedir}/target/server/node2</server2.dist>
         <server3.dist>${basedir}/target/server/node3</server3.dist>
         <server.old.dist>${basedir}/target/server/node_old</server.old.dist>
+        <server2.old.dist>${basedir}/target/server/node2_old</server2.old.dist>
+        <server3.old.dist>${basedir}/target/server/node3_old</server3.old.dist>
+
+        <old.server.schema.version>6.1</old.server.schema.version>
+        <new.server.schema.version>7.0</new.server.schema.version>
 
         <server.jvm>${env.JAVA_HOME}</server.jvm>
         <resources.dir>${basedir}/src/test/resources</resources.dir>
@@ -243,26 +249,30 @@
         <node0.ip>127.0.0.1</node0.ip>
         <node1.ip>127.0.0.1</node1.ip>
         <node2.ip>127.0.0.1</node2.ip>
+        <node3.ip>127.0.0.1</node3.ip>
         <mcast.ip>234.99.54.14</mcast.ip> <!-- Default multicast address. -->
         <jvm.ip.stack>-Djava.net.preferIPv4Stack=true -Djava.net.preferIPv6Addresses=false -Djboss.default.multicast.address=${mcast.ip}</jvm.ip.stack>
         <server.jvm.args>${jvm.ip.stack} ${jvm.memory.args} ${transport.stack} ${jvm.x64.args}</server.jvm.args>
         <log4j.configuration>log4j.xml</log4j.configuration>
-        <suite.manual.phase>test</suite.manual.phase>
+        <suite.manual.phase>integration-test</suite.manual.phase>
         <suite.rollups.manual.phase>none</suite.rollups.manual.phase>
-        <suite.client.local.phase>test</suite.client.local.phase>
-        <suite.client.dist.phase>test</suite.client.dist.phase>
-        <suite.client.repl.phase>test</suite.client.repl.phase>
+        <suite.client.local.phase>integration-test</suite.client.local.phase>
+        <suite.client.dist.phase>integration-test</suite.client.dist.phase>
+        <suite.client.repl.phase>integration-test</suite.client.repl.phase>
+        <suite.security.phase>none</suite.security.phase>
 
         <suite.manual.include>**/*.java</suite.manual.include>
         <suite.manual.exclude.groups>
-            org.infinispan.server.test.category.ClientLocal,org.infinispan.server.test.category.ClientClustered,org.infinispan.server.test.category.RollingUpgrades,org.infinispan.server.test.category.UnstableTest,org.infinispan.server.test.category.Osgi
+            org.infinispan.server.test.category.ClientLocal,org.infinispan.server.test.category.ClientClustered,org.infinispan.server.test.category.RollingUpgrades,org.infinispan.server.test.category.Unstable,org.infinispan.server.test.category.Osgi,
+            org.infinispan.server.test.category.Security
         </suite.manual.exclude.groups>
         <suite.client.local.config>testsuite/standalone-default-local.xml</suite.client.local.config>
         <suite.client.dist.config>testsuite/clustered-default-dist.xml</suite.client.dist.config>
         <suite.client.repl.config>testsuite/clustered-default-repl.xml</suite.client.repl.config>
         <groups.client.local>org.infinispan.server.test.category.ClientLocal</groups.client.local>
         <groups.client.clustered>org.infinispan.server.test.category.ClientClustered</groups.client.clustered>
-        <groups.unstable>org.infinispan.server.test.category.UnstableTest,org.infinispan.server.test.category.UnstableClientLocalTest,org.infinispan.server.test.category.UnstableClientClusteredTest</groups.unstable>
+        <groups.security>org.infinispan.server.test.category.Security</groups.security>
+        <groups.unstable>org.infinispan.server.test.category.Unstable,org.infinispan.server.test.category.UnstableClientLocal,org.infinispan.server.test.category.UnstableClientClustered</groups.unstable>
     </properties>
 
     <build>
@@ -273,6 +283,7 @@
                 <excludes>
                     <exclude>*.jks</exclude>
                     <exclude>*.keystore</exclude>
+                    <exclude>*.keytab</exclude>
                 </excludes>
             </testResource>
             <testResource>
@@ -281,6 +292,7 @@
                 <includes>
                     <include>*.jks</include>
                     <include>*.keystore</include>
+                    <include>*.keytab</include>
                 </includes>
             </testResource>
         </testResources>
@@ -319,7 +331,6 @@
                         <configuration>
                             <outputDirectory>${project.build.directory}/test-libs</outputDirectory>
                             <stripVersion>true</stripVersion>
-
                             <artifactItems>
                                 <artifactItem>
                                     <groupId>com.h2database</groupId>
@@ -363,6 +374,8 @@
 
                                     <property name="password.other" value="${password.other}"/>
                                     <property name="username.other" value="${username.other}"/>
+
+                                    <property name="new.server.schema.version" value="${new.server.schema.version}"/>
                                 </ant>
                                 <!-- It happens when you do not specify namespaces in the XSLT templates for the newly added nodes
                                      then the IBM jdk transformation is adding empty namespace there - not possible to influence this
@@ -380,36 +393,38 @@
                     H2 setting -->
                     <execution>
                         <id>check-h2-db-property</id>
-                        <phase>compile</phase>
+                        <phase>pre-integration-test</phase>
                         <goals>
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <target>
+                            <target name="setup-h2" description="Verify if H2 TCP server will be running">
                                 <condition property="run.h2.server">
                                     <equals arg1="${database}" arg2="h2"/>
                                 </condition>
+                                <first id="first.h2.jar">
+                                    <fileset dir="${server1.dist}/modules" includes="**/h2-*.jar" />
+                                </first>
+                                <echo>Run H2 TCP server?: ${run.h2.server}</echo>
                             </target>
                             <exportAntProperties>true</exportAntProperties>
                         </configuration>
                     </execution>
-
                     <execution>
                         <id>start-h2-tcp-server</id>
-                        <phase>process-test-resources</phase>
+                        <phase>pre-integration-test</phase>
                         <goals>
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <target if="run.h2.server">
-                                <java classname="org.h2.tools.Server" fork="true" spawn="true">
-                                    <arg value="-tcp"/>
-                                    <arg value="-tcpPort"/>
-                                    <arg value="9092"/>
-                                    <arg value="-tcpAllowOthers"/>
-                                    <classpath>
-                                        <pathelement location="${driver.dir}/${driver.jar}"/>
-                                    </classpath>
+                            <target name="start-h2" description="Starts Java H2 processes" if="run.h2.server">
+                                <echo>Starting H2 TCP server!</echo>
+                                <echo>H2 jar: ${driver.dir}/${driver.jar}</echo>
+                                <java classpath="${driver.dir}/${driver.jar}"
+                                      classname="org.h2.tools.Server"
+                                      fork="true" spawn="true">
+                                    <!--do not use forking here because surefire JVM fails and H2 running process is not killed-->
+                                    <arg line="-tcp -tcpPort 9092 -tcpAllowOthers"/>
                                     <jvmarg value="-Dh2.bindAddress=${h2.server.ip}"/>
                                 </java>
                             </target>
@@ -423,14 +438,12 @@
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <target if="run.h2.server">
-                                <java classname="org.h2.tools.Server">
-                                    <arg value="-tcpShutdown"/>
-                                    <arg value="${h2.server.address}"/>
-                                    <arg value="-tcpShutdownForce"/>
-                                    <classpath>
-                                        <pathelement location="${driver.dir}/${driver.jar}"/>
-                                    </classpath>
+                            <target name="stop-h2" description="Stops Java H2 processes" if="run.h2.server">
+                                <echo>Stopping H2 TCP server!</echo>
+                                <echo>H2 jar: ${driver.dir}/${driver.jar}</echo>
+                                <java classpath="${driver.dir}/${driver.jar}"
+                                      classname="org.h2.tools.Server">
+                                    <arg line="-tcpShutdown ${h2.server.address} -tcpShutdownForce"/>
                                 </java>
                             </target>
                         </configuration>
@@ -441,6 +454,13 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <skipTests>true</skipTests>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
                     <forkMode>once</forkMode>
                     <excludedGroups>${groups.unstable}</excludedGroups>
                     <systemPropertyVariables>
@@ -448,6 +468,10 @@
                         <server2.dist>${server2.dist}</server2.dist>
                         <server3.dist>${server3.dist}</server3.dist>
                         <server.old.dist>${server.old.dist}</server.old.dist>
+                        <server2.old.dist>${server2.old.dist}</server2.old.dist>
+                        <server3.old.dist>${server3.old.dist}</server3.old.dist>
+                        <old.server.schema.version>${old.server.schema.version}</old.server.schema.version>
+                        <new.server.schema.version>${new.server.schema.version}</new.server.schema.version>
                         <server.jvm>${server.jvm}</server.jvm>
                         <server.jvm.args>${server.jvm.args}</server.jvm.args>
                         <log4j.configuration>${log4j.configuration}</log4j.configuration>
@@ -491,17 +515,10 @@
                 </configuration>
                 <executions>
                     <execution>
-                        <id>default-test</id>
-                        <goals>
-                            <goal>test</goal>
-                        </goals>
-                        <phase>none</phase>
-                    </execution>
-                    <execution>
                         <id>suite-manual</id>
                         <phase>${suite.manual.phase}</phase>
                         <goals>
-                            <goal>test</goal>
+                            <goal>integration-test</goal>
                         </goals>
                         <configuration>
                             <includes>
@@ -518,9 +535,10 @@
                         <id>suite-rollups-manual</id>
                         <phase>${suite.rollups.manual.phase}</phase>
                         <goals>
-                            <goal>test</goal>
+                            <goal>integration-test</goal>
                         </goals>
                         <configuration>
+                            <reportNameSuffix>${old.server.schema.version}-to-${new.server.schema.version}</reportNameSuffix>
                             <groups>org.infinispan.server.test.category.RollingUpgrades</groups>
                             <excludedGroups>${groups.unstable}</excludedGroups>
                             <systemPropertyVariables>
@@ -532,7 +550,7 @@
                         <id>suite-client-local</id>
                         <phase>${suite.client.local.phase}</phase>
                         <goals>
-                            <goal>test</goal>
+                            <goal>integration-test</goal>
                         </goals>
                         <configuration>
                             <reportNameSuffix>localmode-${default.transport.stack}</reportNameSuffix>
@@ -548,7 +566,7 @@
                         <id>suite-client-dist</id>
                         <phase>${suite.client.dist.phase}</phase>
                         <goals>
-                            <goal>test</goal>
+                            <goal>integration-test</goal>
                         </goals>
                         <configuration>
                             <reportNameSuffix>distmode-${default.transport.stack}</reportNameSuffix>
@@ -564,7 +582,7 @@
                         <id>suite-client-repl</id>
                         <phase>${suite.client.repl.phase}</phase>
                         <goals>
-                            <goal>test</goal>
+                            <goal>integration-test</goal>
                         </goals>
                         <configuration>
                             <reportNameSuffix>replmode-${default.transport.stack}</reportNameSuffix>
@@ -576,9 +594,77 @@
                             </systemPropertyVariables>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>suite-security</id>
+                        <phase>${suite.security.phase}</phase>
+                        <goals>
+                            <goal>integration-test</goal>
+                        </goals>
+                        <configuration>
+                            <groups>${groups.security}</groups>
+                            <systemPropertyVariables>
+                                <arquillian.launch>${suite.security.arquillian}</arquillian.launch>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
         </plugins>
+        <pluginManagement>
+           <plugins>
+              <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+              <plugin>
+                 <groupId>org.eclipse.m2e</groupId>
+                 <artifactId>lifecycle-mapping</artifactId>
+                 <version>1.0.0</version>
+                 <configuration>
+                    <lifecycleMappingMetadata>
+                       <pluginExecutions>
+                          <pluginExecution>
+                             <pluginExecutionFilter>
+                                <groupId>org.apache.maven.plugins</groupId>
+                                <artifactId>maven-antrun-plugin</artifactId>
+                                <versionRange>[1.7,)</versionRange>
+                                <goals>
+                                   <goal>run</goal>
+                                </goals>
+                             </pluginExecutionFilter>
+                             <action>
+                                <ignore></ignore>
+                             </action>
+                          </pluginExecution>
+                          <pluginExecution>
+                             <pluginExecutionFilter>
+                                <groupId>org.apache.maven.plugins</groupId>
+                                <artifactId>maven-dependency-plugin</artifactId>
+                                <versionRange>[2.6,)</versionRange>
+                                <goals>
+                                   <goal>copy</goal>
+                                </goals>
+                             </pluginExecutionFilter>
+                             <action>
+                                <ignore></ignore>
+                             </action>
+                          </pluginExecution>
+                          <pluginExecution>
+                             <pluginExecutionFilter>
+                                <groupId>org.apache.servicemix.tooling</groupId>
+                                <artifactId>depends-maven-plugin</artifactId>
+                                <versionRange>[1.2,)</versionRange>
+                                <goals>
+                                   <goal>generate-depends-file</goal>
+                                </goals>
+                             </pluginExecutionFilter>
+                             <action>
+                                <ignore></ignore>
+                             </action>
+                          </pluginExecution>
+                       </pluginExecutions>
+                    </lifecycleMappingMetadata>
+                 </configuration>
+              </plugin>
+           </plugins>
+        </pluginManagement>
     </build>
 
     <profiles>
@@ -586,16 +672,16 @@
             <id>suite.client</id>
             <properties>
                 <suite.manual.phase>none</suite.manual.phase>
-                <suite.client.local.phase>test</suite.client.local.phase>
-                <suite.client.dist.phase>test</suite.client.dist.phase>
-                <suite.client.repl.phase>test</suite.client.repl.phase>
+                <suite.client.local.phase>integration-test</suite.client.local.phase>
+                <suite.client.dist.phase>integration-test</suite.client.dist.phase>
+                <suite.client.repl.phase>integration-test</suite.client.repl.phase>
             </properties>
         </profile>
         <profile>
             <id>suite.client.local</id>
             <properties>
                 <suite.manual.phase>none</suite.manual.phase>
-                <suite.client.local.phase>test</suite.client.local.phase>
+                <suite.client.local.phase>integration-test</suite.client.local.phase>
                 <suite.client.dist.phase>none</suite.client.dist.phase>
                 <suite.client.repl.phase>none</suite.client.repl.phase>
             </properties>
@@ -605,7 +691,7 @@
             <properties>
                 <suite.manual.phase>none</suite.manual.phase>
                 <suite.client.local.phase>none</suite.client.local.phase>
-                <suite.client.dist.phase>test</suite.client.dist.phase>
+                <suite.client.dist.phase>integration-test</suite.client.dist.phase>
                 <suite.client.repl.phase>none</suite.client.repl.phase>
             </properties>
         </profile>
@@ -615,23 +701,23 @@
                 <suite.manual.phase>none</suite.manual.phase>
                 <suite.client.local.phase>none</suite.client.local.phase>
                 <suite.client.dist.phase>none</suite.client.dist.phase>
-                <suite.client.repl.phase>test</suite.client.repl.phase>
+                <suite.client.repl.phase>integration-test</suite.client.repl.phase>
             </properties>
         </profile>
         <profile>
             <id>suite.examples</id>
             <properties>
-                <suite.manual.phase>test</suite.manual.phase>
+                <suite.manual.phase>integration-test</suite.manual.phase>
                 <suite.client.local.phase>none</suite.client.local.phase>
                 <suite.client.dist.phase>none</suite.client.dist.phase>
                 <suite.client.repl.phase>none</suite.client.repl.phase>
-                <suite.manual.include>org/infinispan/server/test/configs/ExampleConfigsTest.java</suite.manual.include>
+                <suite.manual.include>org/infinispan/server/test/configs/ExampleConfigsIT.java</suite.manual.include>
             </properties>
         </profile>
         <profile>
             <id>suite.others</id>
             <properties>
-                <suite.manual.phase>test</suite.manual.phase>
+                <suite.manual.phase>integration-test</suite.manual.phase>
                 <suite.client.local.phase>none</suite.client.local.phase>
                 <suite.client.dist.phase>none</suite.client.dist.phase>
                 <suite.client.repl.phase>none</suite.client.repl.phase>
@@ -640,9 +726,9 @@
         <profile>
             <id>suite.leveldb-client</id>
             <properties>
-                <suite.client.local.phase>test</suite.client.local.phase>
-                <suite.client.dist.phase>test</suite.client.dist.phase>
-                <suite.client.repl.phase>test</suite.client.repl.phase>
+                <suite.client.local.phase>integration-test</suite.client.local.phase>
+                <suite.client.dist.phase>integration-test</suite.client.dist.phase>
+                <suite.client.repl.phase>integration-test</suite.client.repl.phase>
                 <suite.client.local.config>testsuite/standalone-leveldb-local.xml</suite.client.local.config>
                 <suite.client.dist.config>testsuite/clustered-leveldb-dist.xml</suite.client.dist.config>
                 <suite.client.repl.config>testsuite/clustered-leveldb-repl.xml</suite.client.repl.config>
@@ -651,7 +737,7 @@
         <profile>
             <id>suite.cachestore</id>
             <properties>
-                <suite.manual.phase>test</suite.manual.phase>
+                <suite.manual.phase>integration-test</suite.manual.phase>
                 <suite.manual.include.groups>org.infinispan.server.test.category.CacheStore</suite.manual.include.groups>
                 <suite.client.local.phase>none</suite.client.local.phase>
                 <suite.client.dist.phase>none</suite.client.dist.phase>
@@ -662,7 +748,7 @@
             <id>suite.rolling.upgrades</id>
             <properties>
                 <suite.manual.phase>none</suite.manual.phase>
-                <suite.rollups.manual.phase>test</suite.rollups.manual.phase>
+                <suite.rollups.manual.phase>integration-test</suite.rollups.manual.phase>
                 <suite.client.local.phase>none</suite.client.local.phase>
                 <suite.client.dist.phase>none</suite.client.dist.phase>
                 <suite.client.repl.phase>none</suite.client.repl.phase>
@@ -672,9 +758,9 @@
             <id>client.rest</id>
             <properties>
                 <suite.manual.phase>none</suite.manual.phase>
-                <suite.client.local.phase>test</suite.client.local.phase>
-                <suite.client.dist.phase>test</suite.client.dist.phase>
-                <suite.client.repl.phase>test</suite.client.repl.phase>
+                <suite.client.local.phase>integration-test</suite.client.local.phase>
+                <suite.client.dist.phase>integration-test</suite.client.dist.phase>
+                <suite.client.repl.phase>integration-test</suite.client.repl.phase>
                 <groups.client.local>org.infinispan.server.test.category.RESTLocal</groups.client.local>
                 <groups.client.clustered>org.infinispan.server.test.category.RESTClustered</groups.client.clustered>
             </properties>
@@ -683,9 +769,9 @@
             <id>client.hotrod</id>
             <properties>
                 <suite.manual.phase>none</suite.manual.phase>
-                <suite.client.local.phase>test</suite.client.local.phase>
-                <suite.client.dist.phase>test</suite.client.dist.phase>
-                <suite.client.repl.phase>test</suite.client.repl.phase>
+                <suite.client.local.phase>integration-test</suite.client.local.phase>
+                <suite.client.dist.phase>integration-test</suite.client.dist.phase>
+                <suite.client.repl.phase>integration-test</suite.client.repl.phase>
                 <groups.client.local>org.infinispan.server.test.category.HotRodLocal</groups.client.local>
                 <groups.client.clustered>org.infinispan.server.test.category.HotRodClustered</groups.client.clustered>
             </properties>
@@ -694,23 +780,45 @@
             <id>client.memcached</id>
             <properties>
                 <suite.manual.phase>none</suite.manual.phase>
-                <suite.client.local.phase>test</suite.client.local.phase>
-                <suite.client.dist.phase>test</suite.client.dist.phase>
-                <suite.client.repl.phase>test</suite.client.repl.phase>
+                <suite.client.local.phase>integration-test</suite.client.local.phase>
+                <suite.client.dist.phase>integration-test</suite.client.dist.phase>
+                <suite.client.repl.phase>integration-test</suite.client.repl.phase>
                 <groups.client.local>org.infinispan.server.test.category.MemcachedLocal</groups.client.local>
                 <groups.client.clustered>org.infinispan.server.test.category.MemcachedClustered</groups.client.clustered>
             </properties>
         </profile>
         <profile>
+            <id>suite.security</id>
+            <properties>
+                <suite.manual.phase>none</suite.manual.phase>
+                <suite.client.local.phase>none</suite.client.local.phase>
+                <suite.client.dist.phase>none</suite.client.dist.phase>
+                <suite.client.repl.phase>none</suite.client.repl.phase>
+                <suite.security.phase>integration-test</suite.security.phase>
+                <suite.security.arquillian>suite-security</suite.security.arquillian>
+            </properties>
+        </profile>
+        <profile>
+            <id>suite.security.manual</id>
+            <properties>
+                <suite.manual.phase>none</suite.manual.phase>
+                <suite.client.local.phase>none</suite.client.local.phase>
+                <suite.client.dist.phase>none</suite.client.dist.phase>
+                <suite.client.repl.phase>none</suite.client.repl.phase>
+                <suite.security.phase>integration-test</suite.security.phase>
+                <suite.security.arquillian>suite-security-manual</suite.security.arquillian>
+            </properties>
+        </profile>
+        <profile>
             <id>client.hotrod.osgi</id>
             <properties>
-                <suite.manual.phase>test</suite.manual.phase>
+                <suite.manual.phase>integration-test</suite.manual.phase>
                 <suite.client.local.phase>none</suite.client.local.phase>
                 <suite.client.dist.phase>none</suite.client.dist.phase>
                 <suite.client.repl.phase>none</suite.client.repl.phase>
                 <suite.manual.exclude.groups></suite.manual.exclude.groups>
                 <suite.manual.include.groups>org.infinispan.server.test.category.Osgi</suite.manual.include.groups>
-                <suite.manual.include>org/infinispan/server/test/client/hotrod/osgi/RemoteCacheOsgiTest.java</suite.manual.include>
+                <suite.manual.include>org/infinispan/server/test/client/hotrod/osgi/RemoteCacheOsgiIT.java</suite.manual.include>
             </properties>
             <build>
                 <plugins>
@@ -843,37 +951,20 @@
         </profile>
 
         <profile>
-            <id>testsuite-jdk6</id>
-            <properties>
-                <server.jvm>${env.JAVA_HOME_16}</server.jvm>
-            </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <jvm>${env.JAVA_HOME_16}/bin/java</jvm>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
             <id>test-unstable</id>
             <properties>
                 <groups.unstable></groups.unstable>
                 <suite.manual.exclude.groups></suite.manual.exclude.groups>
-                <suite.manual.include.groups>org.infinispan.server.test.category.UnstableTest</suite.manual.include.groups>
-                <groups.client.local>org.infinispan.server.test.category.UnstableClientLocalTest</groups.client.local>
-                <groups.client.clustered>org.infinispan.server.test.category.UnstableClientClusteredTest</groups.client.clustered>
+                <suite.manual.include.groups>org.infinispan.server.test.category.Unstable</suite.manual.include.groups>
+                <groups.client.local>org.infinispan.server.test.category.UnstableClientLocal</groups.client.local>
+                <groups.client.clustered>org.infinispan.server.test.category.UnstableClientClustered</groups.client.clustered>
             </properties>
             <!-- don't fail if there are no unstable tests (applies to all surefire executions) -->
             <build>
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
                             <failIfNoTests>false</failIfNoTests>
                         </configuration>

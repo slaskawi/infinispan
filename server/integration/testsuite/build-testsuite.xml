@@ -11,13 +11,14 @@
     <property name="datasource.parts" value="file:///${resources.configs}/datasource" />
     <property name="other.parts" value="file:///${resources.configs}/parts" />
     <property name="leveldb.compression" value="SNAPPY" />
-    <property name="leveldb.impl" value="JNI" />
+    <property name="leveldb.impl" value="JAVA" />
     <property name="leveldb.patch" value="false" />
     <property name="zip.dist" value="false" />
     <property name="zip.dist.old" value="false" />
     <property name="log.level.infinispan" value="INFO"/>
     <property name="log.level.jgroups" value="INFO"/>
     <property name="log.level.console" value="INFO"/>
+    <property name="new.server.schema.version" value="${new.server.schema.version}"/>
 
     <filterset id="commonFilters" begintoken="${" endtoken="}">
         <filter token="leveldb.compression" value="${leveldb.compression}" />
@@ -113,11 +114,13 @@
                 <include name="*.jks" />
                 <include name="*.properties"/>
                 <include name="*.keystore"/>
+            	<include name="*.keytab"/>
+            	<include name="*.conf"/>
             </fileset>
         </copy>
     </target>
 
-    <target name="create-all-distros" depends="transform-distro1-configs" description="Create all Infinispan server home directories used in the testsuite">
+    <target name="create-all-distros" depends="transform-distro1-configs" description="Create all Infinispan server home directories used in the testsuite">	
         <copy todir="${server2.dist}">
             <fileset dir="${server1.dist}" />
         </copy>
@@ -146,6 +149,13 @@
                 <delete dir="${server.old.dist}-tmp" />
                 <transform transformDir="${server.old.dist}/standalone/configuration" in="standalone.xml" out="standalone.xml"
                            removeRestSecurity="true"/>
+
+                <copy todir="${server2.old.dist}">
+                    <fileset dir="${server.old.dist}" />
+                </copy>
+                <copy todir="${server3.old.dist}">
+                    <fileset dir="${server.old.dist}" />
+                </copy>
             </else>
         </if>
     </target>
@@ -157,10 +167,16 @@
         <transform in="examples/clustered-xsite.xml" out="examples/clustered-xsite2.xml" modifyInfinispan="${infinispan.parts}/xsite-server2.xml"/>
         <transform in="examples/clustered-xsite.xml" out="examples/clustered-xsite3.xml"
                    modifyInfinispan="${infinispan.parts}/xsite-server3.xml" modifyRelay="${other.parts}/xsite-relay-server3.xml"
-                   modifyMulticastAddress="${other.parts}/xsite-multicast-address-server3.xml"/>
+                   modifyMulticastAddress="${other.parts}/switch-multicast-address.xml"/>
         <transform in="examples/standalone-rcs-local.xml" out="examples/standalone-rcs-local.xml" modifyRemoteDestination="${other.parts}/rcs-remote-destination.xml"/>
         <transform in="examples/standalone-hotrod-rolling-upgrade.xml" out="examples/standalone-hotrod-rolling-upgrade.xml"
                    modifyRemoteDestination="${other.parts}/rcs-remote-destination.xml"/>
+        <transform in="clustered.xml" out="examples/clustered-hotrod-rolling-upgrade.xml"
+                   modifyRemoteDestination="${other.parts}/rcs-remote-destination.xml"
+                   modifyInfinispan="${infinispan.parts}/rolling-upgrades-clustered-${new.server.schema.version}.xml"
+                   infinispanServerEndpoint="${other.parts}/rolling-upgrades-server-endpoint-${new.server.schema.version}.xml"
+                   addNewHotrodSocketBinding="${other.parts}/socket-binding-hotrod-store.xml"
+                   modifyMulticastAddress="${other.parts}/switch-multicast-address.xml"/>
         <transform in="examples/standalone-rest-rolling-upgrade.xml" out="examples/standalone-rest-rolling-upgrade.xml"
                    modifyRemoteDestination="${other.parts}/rest-remote-destination.xml" removeRestSecurity="true"/>
         <transform in="examples/standalone-compatibility-mode.xml" out="examples/standalone-compatibility-mode.xml"/>
@@ -293,6 +309,14 @@
                 <configure-jdbc in="@{in}" tablePrefix="STRING_INVALIDATION"/>
             </jdbc-conf>
         </transform>
+    	<transform in="standalone.xml" out="testsuite/hotrod-auth.xml" 
+    	    modifyInfinispan="${infinispan.parts}/local-secured.xml"    
+    	    hotrodAuth="${infinispan.parts}/hotrod-auth.xml" />
+    	<transform in="standalone.xml" out="testsuite/hotrod-auth-krb.xml" 
+    	    modifyInfinispan="${infinispan.parts}/local-secured.xml"
+            hotrodAuth="${infinispan.parts}/hotrod-auth-krb.xml" 
+    	    addKrbOpts="${other.parts}/kerberos-properties.xml"
+    	    addKrbSecDomain="${other.parts}/kerberos-security-domain.xml" />
     </target>
 
     <macrodef name="transform">
@@ -309,12 +333,15 @@
         <attribute name="modifyRemoteDestination" default="false"/>
         <attribute name="modifyOutboundSocketBindingHotRod" default="false"/>
         <attribute name="addHotrodSocketBinding" default="false"/>
+        <attribute name="addNewHotrodSocketBinding" default="false"/>
         <attribute name="removeRestSecurity" default="true"/>
         <attribute name="infinispanServerEndpoint" default="false"/>
         <attribute name="infinispanFile" default="false"/>
         <attribute name="filtering" default="false"/>
-        <attribute name="addAuth" default="false"/>
         <attribute name="addEncrypt" default="false"/>
+        <attribute name="hotrodAuth" default="false"/>
+    	<attribute name="addKrbOpts" default="false"/>
+    	<attribute name="addKrbSecDomain" default="false"/>
         <element name="jdbc-conf" optional="yes"/>
         <element name="rest-sec" optional="yes"/>
 
@@ -325,12 +352,15 @@
                 <param name="modifyDataSource" expression="@{modifyDataSource}"/>
                 <param name="modifyStack" expression="@{modifyStack}"/>
                 <param name="modifyRelay" expression="@{modifyRelay}"/>
-                <param name="addAuth" expression="@{addAuth}"/>
                 <param name="addEncrypt" expression="@{addEncrypt}"/>
+                <param name="hotrodAuth" expression="@{hotrodAuth}"/>
+            	<param name="addKrbOpts" expression="@{addKrbOpts}"/>
+            	<param name="addKrbSecDomain" expression="@{addKrbSecDomain}"/>
                 <param name="modifyMulticastAddress" expression="@{modifyMulticastAddress}"/>
                 <param name="modifyRemoteDestination" expression="@{modifyRemoteDestination}"/>
                 <param name="modifyOutboundSocketBindingHotRod" expression="@{modifyOutboundSocketBindingHotRod}"/>
                 <param name="addHotrodSocketBinding" expression="@{addHotrodSocketBinding}"/>
+                <param name="addNewHotrodSocketBinding" expression="@{addNewHotrodSocketBinding}"/>
                 <param name="removeRestSecurity" expression="@{removeRestSecurity}"/>
                 <param name="infinispanServerEndpoint" expression="@{infinispanServerEndpoint}"/>
                 <param name="infinispanFile" expression="@{infinispanFile}"/>

@@ -13,12 +13,18 @@ Currently these subsets are predefined:
   -P suite.examples                  (Example config tests)
   -P suite.leveldb-client            (LevelDB cache store tests - the whole suite.client with leveldb configs)
   -P suite.cachestore                (Tests that use different cachestore configurations, remote, leveldb apod)
-  -P suite.rolling.upgrades          (Rolling upgrades specific tests, mandatory specification of: -Dzip.dist.old=path/to/old_distro.zip)
+
+  -P suite.rolling.upgrades          (Rolling upgrades specific tests, mandatory specification of: -Dzip.dist.old=path/to/old_distro.zip
+                                      NOTE: there are 2 properties defined with default values:
+                                      1) -Dold.server.schema.version=6.1 -- used for failsafe report suffix
+                                      2) -Dnew.server.schema.version=7.0 -- used to decide which snippet to use during
+                                          transformation of a configuration for new servers in the clustered scenario
+                                      Configuration snippets for new cluster are prepared for versions: 6.0, 6.1, 7.0)
 
   -P suite.others                    (Tests that do not belong to any of the suites above. Useful when running a single test that's outside
                                       of any pre-defined group)
 
-Runnins with specific server zip distribution
+Running with specific server zip distribution
 ---------------------------------------------
 
 If you specify -Dzip.dist=path/to/distro.zip the test server directories target/server/node* will be based on the contents of this zip file.
@@ -94,7 +100,7 @@ properties:
   leveldb.impl        - sets implementation type, allowed values: AUTO, JAVA, JNI
   leveldb.patch       - used with -Dzip.dist. Patches the zip distribution with dependencies of leveldb cache store taken from upstream build.
 
-Runnig test in JDK 6
+Running test in JDK 6
 --------------------
 
 When want to run testsuite on JDK 6, you have to set following profile
