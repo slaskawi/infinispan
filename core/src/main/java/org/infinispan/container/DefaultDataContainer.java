@@ -381,7 +381,7 @@ public class DefaultDataContainer implements DataContainer {
          throw new IllegalArgumentException("No action specified");
 
       ParallelIterableMap<Object, InternalCacheEntry> map = (ParallelIterableMap<Object, InternalCacheEntry>) entries;
-      map.forEach(512, new ParallelIterableMap.KeyValueAction<Object, InternalCacheEntry>() {
+      map.forEach(32, new ParallelIterableMap.KeyValueAction<Object, InternalCacheEntry>() {     
          @Override
          public void apply(Object key, InternalCacheEntry value) {
             if (filter.shouldLoadKey((K)key)) {
