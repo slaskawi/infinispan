@@ -44,6 +44,7 @@ import org.infinispan.distribution.ch.ReplicatedConsistentHashFactory;
 import org.infinispan.distribution.ch.SyncConsistentHashFactory;
 import org.infinispan.distribution.ch.TopologyAwareConsistentHashFactory;
 import org.infinispan.distribution.ch.TopologyAwareSyncConsistentHashFactory;
+import org.infinispan.distexec.mapreduce.MapReduceManagerImpl;
 import org.infinispan.factories.GlobalComponentRegistry;
 import org.infinispan.factories.annotations.ComponentName;
 import org.infinispan.factories.annotations.Inject;
@@ -307,6 +308,8 @@ public class ExternalizerTable implements ObjectTable {
       addInternalExternalizer(new KeyFilterAsKeyValueFilter.Externalizer());
       addInternalExternalizer(new CollectionKeyFilter.Externalizer());
       addInternalExternalizer(new CompositeKeyValueFilter.Externalizer());
+      addInternalExternalizer(new MapReduceManagerImpl.DeltaListExternalizer());
+      addInternalExternalizer(new MapReduceManagerImpl.DeltaAwareListExternalizer());
    }
 
    void addInternalExternalizer(AdvancedExternalizer<?> ext) {

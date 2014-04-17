@@ -120,4 +120,6 @@ public interface Ids extends org.infinispan.commons.marshall.Ids {
    int SIMPLE_COLLECTION_KEY_FILTER = 123;
    int KEY_FILTER_AS_KEY_VALUE_FILTER = 124;
    int COMPOSITE_KEY_VALUE_FILTER = 130;
+   int DELTA_MAPREDUCE_LIST_ID = 131;
+   int DELTA_AWARE_MAPREDUCE_LIST_ID = 132;
 }
