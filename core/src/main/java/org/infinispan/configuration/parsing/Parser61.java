@@ -626,6 +626,9 @@ public class Parser61 implements ConfigurationParser {
             case MAX_ENTRIES:
                storeBuilder.maxEntries(Integer.parseInt(value));
                break;
+            case FRAGMENTATION_FACTOR:
+               storeBuilder.fragmentationFactor(Float.parseFloat(value));
+               break;
             default:
                parseCommonStoreAttributes(reader, storeBuilder, attrName, value, i);
                break;

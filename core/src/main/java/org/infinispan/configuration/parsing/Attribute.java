@@ -34,6 +34,7 @@ public enum Attribute {
     FETCH_PERSISTENT_STATE("fetchPersistentState"),
     AWAIT_INITIAL_TRANSFER("awaitInitialTransfer"),
     FLUSH_LOCK_TIMEOUT("flushLockTimeout"),
+    FRAGMENTATION_FACTOR("fragmentation-factor"),
     FSYNC_INTERVAL("fsyncInterval"),
     FSYNC_MODE("fsyncMode"),
     HASH_FUNCTION_CLASS("hashFunctionClass"),

@@ -74,7 +74,7 @@ public class SingleFileStoreFunctionalTest extends BaseStoreFunctionalTest {
             "<default>\n" +
             "<eviction maxEntries=\"100\"/>" +
             "<persistence passivation=\"false\"> \n" +
-            "<singleFile maxEntries=\"100\" shared=\"false\" preload=\"true\" location=\"other-location\"/> \n" +
+            "<singleFile maxEntries=\"100\" shared=\"false\" preload=\"true\" location=\"other-location\" fragmentation-factor=\"0.75\"/> \n" +
             "</persistence>\n" +
             "</default>\n" + INFINISPAN_END_TAG;
       InputStream is = new ByteArrayInputStream(config.getBytes());
@@ -87,6 +87,7 @@ public class SingleFileStoreFunctionalTest extends BaseStoreFunctionalTest {
             SingleFileStore store = (SingleFileStore) TestingUtil.getFirstLoader(cache);
             assertEquals("other-location", store.getConfiguration().location());
             assertEquals(100, store.getConfiguration().maxEntries());
+            assertEquals(0.75f, store.getConfiguration().fragmentationFactor(), 0f);
          }
       });
    }
