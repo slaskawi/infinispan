@@ -175,7 +175,7 @@
             </exclusions>
         </dependency>
         <!-- TODO: Make it possible to use a different version of Karaf -->
-        <!--dependency>
+        <dependency>
             <groupId>org.apache.karaf</groupId>
             <artifactId>apache-karaf</artifactId>
             <type>zip</type>
@@ -195,7 +195,7 @@
         <dependency>
             <groupId>org.ops4j.pax.exam</groupId>
             <artifactId>pax-exam-inject</artifactId>
-        </dependency-->
+        </dependency>
         <dependency>
             <groupId>javax.inject</groupId>
             <artifactId>javax.inject</artifactId>
