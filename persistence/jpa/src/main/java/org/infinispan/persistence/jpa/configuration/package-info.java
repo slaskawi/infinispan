@@ -1,6 +1,6 @@
 /**
- * Simple filesystem-based {@link CacheStore} implementation.
+ * Configuration for {@link org.infinispan.persistence.jpa.JpaStore}
  *
  * @public
  */
-package org.infinispan.persistence.file;
+package org.infinispan.persistence.jpa.configuration;

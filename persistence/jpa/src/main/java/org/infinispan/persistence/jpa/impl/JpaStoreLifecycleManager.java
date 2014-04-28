@@ -1,4 +1,4 @@
-package org.infinispan.persistence.jpa;
+package org.infinispan.persistence.jpa.impl;
 
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.factories.GlobalComponentRegistry;

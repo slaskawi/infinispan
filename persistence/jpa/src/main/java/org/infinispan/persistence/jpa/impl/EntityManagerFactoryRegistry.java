@@ -1,4 +1,4 @@
-package org.infinispan.persistence.jpa;
+package org.infinispan.persistence.jpa.impl;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;

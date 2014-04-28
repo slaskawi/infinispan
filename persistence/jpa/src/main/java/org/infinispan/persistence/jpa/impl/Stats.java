@@ -1,4 +1,4 @@
-package org.infinispan.persistence.jpa;
+package org.infinispan.persistence.jpa.impl;
 
 import java.util.concurrent.atomic.AtomicLong;
 

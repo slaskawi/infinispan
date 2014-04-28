@@ -8,6 +8,7 @@ import org.infinispan.persistence.DummyInitializationContext;
 import org.infinispan.persistence.jpa.configuration.JpaStoreConfiguration;
 import org.infinispan.persistence.jpa.configuration.JpaStoreConfigurationBuilder;
 import org.infinispan.persistence.jpa.entity.KeyValueEntity;
+import org.infinispan.persistence.jpa.impl.EntityManagerFactoryRegistry;
 import org.infinispan.persistence.spi.AdvancedLoadWriteStore;
 import org.infinispan.persistence.spi.PersistenceException;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
@@ -55,7 +56,7 @@ public class JpaStoreTest extends BaseStoreTest {
 
    @Override
    public String unwrap(Object wrapper) {
-      return ((KeyValueEntity) wrapper).value;
+      return ((KeyValueEntity) wrapper).getValue();
    }
 
    @Test(enabled = false)
