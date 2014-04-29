@@ -10,14 +10,12 @@ public class L1Configuration {
    private final boolean enabled;
    private final int invalidationThreshold;
    private final long lifespan;
-   private final boolean onRehash;
    private final long cleanupTaskFrequency;
 
    L1Configuration(boolean enabled, int invalidationThreshold, long lifespan, boolean onRehash, long cleanupTaskFrequency) {
       this.enabled = enabled;
       this.invalidationThreshold = invalidationThreshold;
       this.lifespan = lifespan;
-      this.onRehash = onRehash;
       this.cleanupTaskFrequency = cleanupTaskFrequency;
    }
 
@@ -63,7 +61,7 @@ public class L1Configuration {
     * altogether. Enabled by default.
     */
    public boolean onRehash() {
-      return onRehash;
+      return false;
    }
 
    @Override
@@ -72,7 +70,7 @@ public class L1Configuration {
             "enabled=" + enabled +
             ", invalidationThreshold=" + invalidationThreshold +
             ", lifespan=" + lifespan +
-            ", onRehash=" + onRehash +
+            ", onRehash=" + false +
             ", cleanupTaskFrequency=" + cleanupTaskFrequency +
             '}';
    }
@@ -87,7 +85,6 @@ public class L1Configuration {
       if (enabled != that.enabled) return false;
       if (invalidationThreshold != that.invalidationThreshold) return false;
       if (lifespan != that.lifespan) return false;
-      if (onRehash != that.onRehash) return false;
       if (cleanupTaskFrequency != that.cleanupTaskFrequency) return false;
 
       return true;
@@ -98,7 +95,6 @@ public class L1Configuration {
       int result = (enabled ? 1 : 0);
       result = 31 * result + invalidationThreshold;
       result = 31 * result + (int) (lifespan ^ (lifespan >>> 32));
-      result = 31 * result + (onRehash ? 1 : 0);
       result = 31 * result + (int) (cleanupTaskFrequency ^ (cleanupTaskFrequency >>> 32));
       return result;
    }

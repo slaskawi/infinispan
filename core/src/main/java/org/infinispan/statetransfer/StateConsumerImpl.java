@@ -102,7 +102,6 @@ public class StateConsumerImpl implements StateConsumer {
    private boolean isTransactional;
    private boolean isInvalidationMode;
    private boolean isTotalOrder;
-   private boolean isL1OnRehash;
    private volatile KeyInvalidationListener keyInvalidationListener; //for test purpose only!
 
    private volatile CacheTopology cacheTopology;
@@ -256,7 +255,6 @@ public class StateConsumerImpl implements StateConsumer {
 
       isTransactional = configuration.transaction().transactionMode().isTransactional();
       isTotalOrder = configuration.transaction().transactionProtocol().isTotalOrder();
-      isL1OnRehash = configuration.clustering().l1().onRehash();
 
       timeout = configuration.clustering().stateTransfer().timeout();
    }
@@ -875,23 +873,6 @@ public class StateConsumerImpl implements StateConsumer {
          } else if (!newSegments.contains(keySegment)) {
             keysToRemove.add(key);
          }
-
-         // If l1 on rehash is enabled we need to add the requestors for the previous owner who is now not an owner if
-         // we are an owner
-         if (isL1OnRehash) {
-            List<Address> owners = newCH.locateOwnersForSegment(keySegment);
-            if (owners.contains(rpcManager.getAddress())) {
-               log.tracef("L1 on rehash is enabled - checking if previous owners for key %s need to be added to requestors",
-                          key);
-               for (Address address : prevCH.locateOwnersForSegment(keySegment)) {
-                  if (!owners.contains(address)) {
-                     log.tracef("Adding previous owner %s to L1 requestors for key %s as it is no longer an owner",
-                                address, key);
-                     l1Manager.addRequestor(key, address);
-                  }
-               }
-            }
-         }
       }
 
       // gather all keys from cache store that belong to the segments that are being removed/moved to L1
@@ -914,9 +895,7 @@ public class StateConsumerImpl implements StateConsumer {
          log.failedLoadingKeysFromCacheStore(e);
       }
 
-      if (isL1OnRehash) {
-         log.debugf("Moving to L1 state for segments %s of cache %s", segmentsToL1, cacheName);
-      } else {
+      if (log.isDebugEnabled()) {
          log.debugf("Removing state for segments %s of cache %s", segmentsToL1, cacheName);
       }
       if (!keysToL1.isEmpty()) {

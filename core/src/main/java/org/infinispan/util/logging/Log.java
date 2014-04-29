@@ -1062,4 +1062,8 @@ public interface Log extends BasicLogger {
    @LogMessage(level = WARN)
    @Message(value = "Starting a DefaultCacheManager with authorization enabled but without a SecurityManager installed may lead to unexpected behaviour", id = 298)
    void authorizationEnabledWithoutSecurityManager();
+
+   @LogMessage(level = WARN)
+   @Message(value = "L1 on Rehash is deprecated - setting is ignored", id = 299)
+   void l1OnRehashDeprecated();
 }
