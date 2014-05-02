@@ -82,28 +82,7 @@ import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.batch.BatchedCommand;
 import org.jboss.as.cli.batch.impl.DefaultBatchManager;
 import org.jboss.as.cli.batch.impl.DefaultBatchedCommand;
-import org.jboss.as.cli.handlers.ArchiveHandler;
-import org.jboss.as.cli.handlers.ClearScreenHandler;
-import org.jboss.as.cli.handlers.CommandCommandHandler;
-import org.jboss.as.cli.handlers.ConnectHandler;
-import org.jboss.as.cli.handlers.DeployHandler;
-import org.jboss.as.cli.handlers.DeploymentInfoHandler;
-import org.jboss.as.cli.handlers.DeploymentOverlayHandler;
-import org.jboss.as.cli.handlers.EchoDMRHandler;
-import org.jboss.as.cli.handlers.GenericTypeOperationHandler;
-import org.jboss.as.cli.handlers.HelpHandler;
-import org.jboss.as.cli.handlers.HistoryHandler;
-import org.jboss.as.cli.handlers.LsHandler;
-import org.jboss.as.cli.handlers.OperationRequestHandler;
-import org.jboss.as.cli.handlers.PrefixHandler;
-import org.jboss.as.cli.handlers.PrintWorkingNodeHandler;
-import org.jboss.as.cli.handlers.QuitHandler;
-import org.jboss.as.cli.handlers.ReadAttributeHandler;
-import org.jboss.as.cli.handlers.ReadOperationHandler;
-import org.jboss.as.cli.handlers.ReloadHandler;
-import org.jboss.as.cli.handlers.ShutdownHandler;
-import org.jboss.as.cli.handlers.UndeployHandler;
-import org.jboss.as.cli.handlers.VersionHandler;
+import org.jboss.as.cli.handlers.*;
 import org.jboss.as.cli.handlers.batch.BatchClearHandler;
 import org.jboss.as.cli.handlers.batch.BatchDiscardHandler;
 import org.jboss.as.cli.handlers.batch.BatchEditLineHandler;
@@ -119,8 +98,6 @@ import org.jboss.as.cli.handlers.ifelse.IfHandler;
 import org.jboss.as.cli.handlers.jca.JDBCDriverNameProvider;
 import org.jboss.as.cli.handlers.jca.JDBCDriverInfoHandler;
 import org.jboss.as.cli.handlers.jca.XADataSourceAddCompositeHandler;
-import org.jboss.as.cli.handlers.jms.CreateJmsResourceHandler;
-import org.jboss.as.cli.handlers.jms.DeleteJmsResourceHandler;
 import org.jboss.as.cli.handlers.module.ASModuleHandler;
 import org.jboss.as.cli.handlers.trycatch.CatchHandler;
 import org.jboss.as.cli.handlers.trycatch.EndTryHandler;
@@ -352,7 +329,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
 
     private void initCommands() {
         cmdRegistry.registerHandler(new PrefixHandler(), "cd", "cn");
-        cmdRegistry.registerHandler(new ClearScreenHandler(), "clear", "cls");
+        cmdRegistry.registerHandler(new ClearScreenHandler(), "clear-screen", "cls");
         cmdRegistry.registerHandler(new CommandCommandHandler(cmdRegistry), "command");
         cmdRegistry.registerHandler(new ConnectHandler(), "connect");
         cmdRegistry.registerHandler(new EchoDMRHandler(), "echo-dmr");
@@ -366,7 +343,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         cmdRegistry.registerHandler(new ReadOperationHandler(this), "read-operation");
         cmdRegistry.registerHandler(new ReloadHandler(this), "reload");
         cmdRegistry.registerHandler(new ShutdownHandler(this), "shutdown");
-        cmdRegistry.registerHandler(new VersionHandler(), "version");
+        cmdRegistry.registerHandler(new VersionHandler(), "cli-version");
 
         // batch commands
         cmdRegistry.registerHandler(new BatchHandler(this), "batch");
@@ -412,6 +389,10 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
 
         // supported but hidden from tab-completion until stable implementation
         cmdRegistry.registerHandler(new ArchiveHandler(this), false, "archive");
+
+        CliInterpreterCommandHandler.registerCommands(cmdRegistry, this);
+        cmdRegistry.registerHandler(new ContainerCommandHandler(this), true, "container");
+        cmdRegistry.registerHandler(new UnsupportedCommandHandler(), "disconnect");
 
         registerExtraHandlers();
     }
@@ -798,6 +779,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
                     newClient = tempClient;
                 }
                 initNewClient(newClient, host, port);
+                notifyListeners(CliEvent.CONNECTED);
             } catch (IOException e) {
                 throw new CommandLineException("Failed to resolve host '" + host + "': " + e.getLocalizedMessage());
             }

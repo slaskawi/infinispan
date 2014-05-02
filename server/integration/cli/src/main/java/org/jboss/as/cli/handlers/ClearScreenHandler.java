@@ -30,7 +30,7 @@ import org.jboss.as.cli.CommandContext;
 public class ClearScreenHandler extends CommandHandlerWithHelp {
 
     public ClearScreenHandler() {
-        super("clear");
+        super("clear-screen");
     }
 
     /* (non-Javadoc)

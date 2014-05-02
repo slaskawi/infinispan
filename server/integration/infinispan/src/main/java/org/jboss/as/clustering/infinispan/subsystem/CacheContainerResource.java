@@ -140,13 +140,16 @@ public class CacheContainerResource extends SimpleResourceDefinition {
             .setParameters(NAME)
             .build();
 
-   static final SimpleAttributeDefinition PROTO_URL =
+    static final SimpleAttributeDefinition PROTO_URL =
          new SimpleAttributeDefinitionBuilder("proto-url", ModelType.STRING, true)
                .setAllowExpression(false)
                .build();
 
     static final OperationDefinition UPLOAD_PROTO = new SimpleOperationDefinitionBuilder("upload-proto-file", InfinispanExtension.getResourceDescriptionResolver("cache-container"))
           .setParameters(PROTO_URL)
+          .build();
+
+    static final OperationDefinition CLI_INTERPRETER = new SimpleOperationDefinitionBuilder("cli-interpreter", InfinispanExtension.getResourceDescriptionResolver(ModelKeys.CACHE_CONTAINER))
           .build();
 
     private final ResolvePathHandler resolvePathHandler;
@@ -183,6 +186,7 @@ public class CacheContainerResource extends SimpleResourceDefinition {
         resourceRegistration.registerOperationHandler(CacheContainerResource.ALIAS_ADD, AddAliasCommand.INSTANCE);
         resourceRegistration.registerOperationHandler(CacheContainerResource.ALIAS_REMOVE, RemoveAliasCommand.INSTANCE);
         resourceRegistration.registerOperationHandler(CacheContainerResource.UPLOAD_PROTO, UploadProtoFileOperationHandler.INSTANCE);
+        resourceRegistration.registerOperationHandler(CLI_INTERPRETER, CliInterpreterHandler.INSTANCE);
     }
 
     @Override

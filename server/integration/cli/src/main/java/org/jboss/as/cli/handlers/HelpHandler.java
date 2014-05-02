@@ -21,6 +21,9 @@
  */
 package org.jboss.as.cli.handlers;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -31,6 +34,7 @@ import org.jboss.as.cli.CommandHandler;
 import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.cli.CommandRegistry;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
+import org.jboss.as.protocol.StreamUtils;
 
 /**
  * Help command handler. Reads 'help/help.txt' and prints its content to the output stream.
@@ -69,6 +73,7 @@ public class HelpHandler extends CommandHandlerWithHelp {
         } catch (CommandFormatException e) {
             throw new CommandFormatException(e.getLocalizedMessage());
         }
+      String cacheCommand = getCacheCommandArgument(ctx);
 
         if(printCommands) {
             final List<String> commands = new ArrayList<String>();
@@ -83,6 +88,8 @@ public class HelpHandler extends CommandHandlerWithHelp {
             ctx.printLine("Commands available in the current context:");
             ctx.printColumns(commands);
             ctx.printLine("To read a description of a specific command execute 'command_name --help'.");
+        } else if (cacheCommand != null) {
+            printCacheCommandHelp(ctx, cacheCommand);
         } else {
             printHelp(ctx);
         }
@@ -90,5 +97,92 @@ public class HelpHandler extends CommandHandlerWithHelp {
 
     @Override
     protected void doHandle(CommandContext ctx) {
+    }
+
+   //for backwards compatibility
+   private String getCacheCommandArgument(CommandContext context) {
+      String args = context.getArgumentsString();
+      if (args == null) {
+         return null;
+      }
+      return args.split("\\s+", 2)[0];
+   }
+
+   private void printCacheCommandHelp(CommandContext ctx, String command) throws CommandFormatException {
+      String filePath = "help/" + command + ".txt";
+      InputStream helpInput = SecurityActions.getClassLoader(CommandHandlerWithHelp.class)
+            .getResourceAsStream(filePath);
+      if (helpInput != null) {
+         BufferedReader reader = new BufferedReader(new InputStreamReader(helpInput));
+         try {
+            String helpLine = reader.readLine();
+            while (helpLine != null) {
+               prettyPrintLine(helpLine, ctx);
+               helpLine = reader.readLine();
+            }
+         } catch (java.io.IOException e) {
+            throw new CommandFormatException("Failed to read " + filePath + ": " + e.getLocalizedMessage());
+         } finally {
+            StreamUtils.safeClose(reader);
+         }
+      } else {
+         throw new CommandFormatException("Failed to locate command description " + command);
+      }
+   }
+
+   private void prettyPrintLine(String line, CommandContext ctx) {
+      if (line.isEmpty()) {
+         ctx.printLine("");
+         return;
+      }
+      int width = ctx.getTerminalWidth() - 8;
+      if (width <= 0) {
+         width = 72 - 8;
+      }
+      int ident = 0;
+      for (int i = 0; i < line.length(); ++i) {
+         if (line.charAt(i) == ' ') {
+            ident ++;
+         } else {
+            break;
+         }
+      }
+      line = line.substring(ident);
+
+      StringBuilder builder = new StringBuilder();
+      for (int i = 0; i < ident; ++i) {
+         builder.append(' ');
+      }
+
+      while (line.length() > 0) {
+         if (builder.length() + line.length() <= width) {
+            builder.append(line);
+            ctx.printLine(builder.toString());
+            return;
+         }
+
+         int lastSpace = line.lastIndexOf(' ', width - builder.length());
+         if (lastSpace > 0) {
+            builder.append(line.substring(0, lastSpace));
+            ctx.printLine(builder.toString());
+            builder = new StringBuilder();
+            for (int i = 0; i < ident; ++i) {
+               builder.append(' ');
+            }
+            line = line.substring(lastSpace + 1);
+         } else {
+            ctx.printLine("");
+            builder = new StringBuilder();
+            for (int i = 0; i < ident; ++i) {
+               builder.append(' ');
+            }
+            builder.append(line);
+            ctx.printLine(builder.toString());
+            return;
+         }
+      }
+      if (builder.length() > 0) {
+         ctx.printLine(builder.toString());
+      }
     }
 }
