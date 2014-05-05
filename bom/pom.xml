@@ -69,6 +69,7 @@
       <version.jgroups>3.4.3.Final-redhat-1</version.jgroups>
       <version.json>20090211</version.json>
       <version.jta>1.0.1.Final-redhat-2</version.jta>
+      <version.leveldbjni>1.8-redhat.002</version.leveldbjni>
       <version.netty>4.0.18.Final-redhat-1</version.netty>
       <version.osgi>4.2.0-redhat-3</version.osgi>
       <version.rhq>4.4.0.JON310GA</version.rhq>
@@ -342,6 +343,18 @@
             <groupId>org.infinispan.protostream</groupId>
             <artifactId>sample-domain-implementation</artifactId>
             <version>${version.protostream}</version>
+         </dependency>
+         
+         <dependency>
+            <groupId>org.fusesource.leveldbjni</groupId>
+            <artifactId>leveldbjni-all</artifactId>
+            <version>${version.leveldbjni}</version>
+            <exclusions>
+               <exclusion>
+                  <groupId>org.iq80.leveldb</groupId>
+                  <artifactId>leveldb-api</artifactId>
+               </exclusion>
+            </exclusions>
          </dependency>
          
          <dependency>

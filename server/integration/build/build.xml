@@ -132,6 +132,7 @@
       </module-def>
 
       <module-def name="org.fusesource.leveldbjni-all" src="${infinispan.server.modules.dir}">
+         <maven-resource group="org.fusesource.leveldbjni" artifact="leveldbjni-all" />
       </module-def>
 
       <module-def name="org.infinispan.commons" src="${infinispan.server.modules.dir}">
@@ -216,9 +217,6 @@
 
       <module-def name="org.infinispan.server.rest" src="${infinispan.server.modules.dir}">
          <maven-resource-with-classifier group="org.infinispan" artifact="infinispan-server-rest" classifier="classes" />
-      </module-def>
-
-      <module-def name="org.iq80.leveldb" src="${infinispan.server.modules.dir}">
       </module-def>
 
       <module-def name="org.scala-lang.library" src="${infinispan.server.modules.dir}">

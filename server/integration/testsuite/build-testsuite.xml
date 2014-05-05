@@ -11,7 +11,7 @@
     <property name="datasource.parts" value="file:///${resources.configs}/datasource" />
     <property name="other.parts" value="file:///${resources.configs}/parts" />
     <property name="leveldb.compression" value="SNAPPY" />
-    <property name="leveldb.impl" value="JAVA" />
+    <property name="leveldb.impl" value="JNI" />
     <property name="leveldb.patch" value="false" />
     <property name="zip.dist" value="false" />
     <property name="zip.dist.old" value="false" />

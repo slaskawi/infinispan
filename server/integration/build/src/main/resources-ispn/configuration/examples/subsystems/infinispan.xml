@@ -81,8 +81,6 @@
                <expiration lifespan="2000" max-idle="1000" />
                <leveldb-store path="leveldb-nc" block-size="1024" cache-size="50000" clear-threshold="100000">
                   <expiration path="leveldb-nc-expired" queue-size="2000"/>
-                  <compression type="SNAPPY"/>
-                  <implementation type="JAVA"/>
                </leveldb-store>
             </local-cache>
          </cache-container>
@@ -283,3 +281,4 @@
       <remote-destination host="remote-host" port="8080" />
    </outbound-socket-binding>
 </config>
+
