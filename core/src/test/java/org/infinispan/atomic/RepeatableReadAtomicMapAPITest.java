@@ -24,4 +24,10 @@ public class RepeatableReadAtomicMapAPITest extends AtomicMapAPITest {
             .locking().lockAcquisitionTimeout(2000l);
       createClusteredCaches(2, "atomic", c);
    }
+
+   @Test(groups = "unstable", description = "See ISPN-3990")
+   @Override
+   public void testConcurrentTx() throws Exception {
+      super.testConcurrentTx();
+   }
 }
