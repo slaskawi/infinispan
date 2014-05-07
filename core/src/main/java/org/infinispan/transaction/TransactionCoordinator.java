@@ -139,7 +139,9 @@ public class TransactionCoordinator {
          //after prepare failed.
          rollback(localTransaction);
          // XA_RBROLLBACK tells the TM that we've rolled back already: the TM shouldn't call rollback after this.
-         throw new XAException(XAException.XA_RBROLLBACK);
+         XAException xe = new XAException(XAException.XA_RBROLLBACK);
+         xe.initCause(e);
+         throw xe;
       }
    }
 
@@ -179,7 +181,9 @@ public class TransactionCoordinator {
          if (transaction != null) {
             txTable.failureCompletingTransaction(transaction);
          }
-         throw new XAException(XAException.XAER_RMERR);
+         XAException xe = new XAException(XAException.XAER_RMERR);
+         xe.initCause(e);
+         throw xe;
       }
    }
 
@@ -202,11 +206,16 @@ public class TransactionCoordinator {
       } catch (Throwable e1) {
          log.couldNotRollbackPrepared1PcTransaction(localTransaction, e1);
          // inform the TM that a resource manager error has occurred in the transaction branch (XAER_RMERR).
-         throw new XAException(XAException.XAER_RMERR);
+         XAException xe = new XAException(XAException.XAER_RMERR);
+         xe.initCause(e);
+         xe.addSuppressed(e1);
+         throw xe;
       } finally {
          txTable.failureCompletingTransaction(localTransaction.getTransaction());
       }
-      throw new XAException(XAException.XA_HEURRB); //this is a heuristic rollback
+      XAException xe = new XAException(XAException.XA_HEURRB);
+      xe.initCause(e);
+      throw xe; //this is a heuristic rollback
    }
 
    private void commitInternal(LocalTransaction localTransaction) throws XAException {

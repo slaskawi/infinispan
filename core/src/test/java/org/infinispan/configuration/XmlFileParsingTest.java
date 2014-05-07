@@ -505,7 +505,7 @@ public class XmlFileParsingTest extends AbstractInfinispanTest {
       assertTrue(c.transaction().transactionManagerLookup() instanceof GenericTransactionManagerLookup);
       assertTrue(c.transaction().useEagerLocking());
       assertTrue(c.transaction().eagerLockingSingleNode());
-      assertTrue(!c.transaction().syncRollbackPhase());
+      assertTrue(c.transaction().syncRollbackPhase());
       if (!deprecated) {
          assertReaperAndTimeoutInfo(defaultCfg);
       }
