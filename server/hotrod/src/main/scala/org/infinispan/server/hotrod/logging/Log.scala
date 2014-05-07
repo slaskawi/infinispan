@@ -1,6 +1,8 @@
 package org.infinispan.server.hotrod.logging
 
 import org.infinispan.util.logging.LogFactory
+import org.infinispan.notifications.cachelistener.event.Event
+import org.infinispan.server.hotrod._
 
 /**
  * A logging facade for Scala code.
@@ -21,4 +23,7 @@ trait Log extends org.infinispan.server.core.logging.Log {
    def warnConditionalOperationNonTransactional(op: String) = log.warnConditionalOperationNonTransactional(op)
 
    def warnForceReturnPreviousNonTransactional(op: String) = log.warnForceReturnPreviousNonTransactional(op)
+
+   def unexpectedEvent(e: Event[Bytes, Bytes]) = log.unexpectedEvent(e)
+
 }

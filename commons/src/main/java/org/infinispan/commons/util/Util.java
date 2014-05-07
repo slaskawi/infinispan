@@ -478,6 +478,10 @@ public final class Util {
       }
    }
 
+   public static String printArray(byte[] array) {
+      return printArray(array, false);
+   }
+
    public static String printArray(byte[] array, boolean withHash) {
       if (array == null) return "null";
 

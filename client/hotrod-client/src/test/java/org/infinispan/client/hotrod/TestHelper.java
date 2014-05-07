@@ -5,6 +5,7 @@ import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.commons.util.Util;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.server.hotrod.HotRodServer;
+import org.infinispan.server.hotrod.configuration.HotRodServerConfigurationBuilder;
 import org.infinispan.server.hotrod.test.HotRodTestingUtil;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
@@ -29,7 +30,7 @@ public class TestHelper {
     */
    private static final AtomicInteger uniquePort = new AtomicInteger(15232);
 
-   public static HotRodServer startHotRodServer(EmbeddedCacheManager cacheManager) {
+   public static HotRodServer startHotRodServer(EmbeddedCacheManager cacheManager, HotRodServerConfigurationBuilder builder) {
       // TODO: This is very rudimentary!! HotRodTestingUtil needs a more robust solution where ports are generated randomly and retries if already bound
       HotRodServer server = null;
       int maxTries = 10;
@@ -37,7 +38,7 @@ public class TestHelper {
       ChannelException lastException = null;
       while (server == null && currentTries < maxTries) {
          try {
-            server = HotRodTestingUtil.startHotRodServer(cacheManager, uniquePort.incrementAndGet());
+            server = HotRodTestingUtil.startHotRodServer(cacheManager, uniquePort.incrementAndGet(), builder);
          } catch (ChannelException e) {
             if (!(e.getCause() instanceof BindException)) {
                throw e;
@@ -52,6 +53,10 @@ public class TestHelper {
          throw lastException;
 
       return server;
+   }
+
+   public static HotRodServer startHotRodServer(EmbeddedCacheManager cacheManager) {
+      return startHotRodServer(cacheManager, new HotRodServerConfigurationBuilder());
    }
 
    public static String getServersString(HotRodServer... servers) {

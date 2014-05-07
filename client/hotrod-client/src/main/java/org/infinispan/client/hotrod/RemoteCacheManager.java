@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.ServerConfiguration;
+import org.infinispan.client.hotrod.event.ClientListenerNotifier;
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
 import org.infinispan.client.hotrod.impl.ConfigurationProperties;
 import org.infinispan.client.hotrod.impl.RemoteCacheImpl;
@@ -147,6 +148,7 @@ public class RemoteCacheManager implements BasicCacheContainer {
    private Marshaller marshaller;
    private TransportFactory transportFactory;
    private ExecutorService asyncExecutorService;
+   private ClientListenerNotifier listenerNotifier;
 
    /**
     *
@@ -552,7 +554,6 @@ public class RemoteCacheManager implements BasicCacheContainer {
 
       transportFactory = Util.getInstance(configuration.transportFactory());
 
-      transportFactory.start(codec, configuration, topologyId);
       if (marshaller == null) {
          marshaller = configuration.marshaller();
          if (marshaller == null) {
@@ -568,6 +569,9 @@ public class RemoteCacheManager implements BasicCacheContainer {
          asyncExecutorService = executorFactory.getExecutor(configuration.asyncExecutorFactory().properties());
       }
 
+      listenerNotifier = new ClientListenerNotifier(asyncExecutorService, codec, marshaller);
+      transportFactory.start(codec, configuration, topologyId, listenerNotifier);
+
       synchronized (cacheName2RemoteCache) {
          for (RemoteCacheHolder rcc : cacheName2RemoteCache.values()) {
             startRemoteCache(rcc);
@@ -580,9 +584,15 @@ public class RemoteCacheManager implements BasicCacheContainer {
       started = true;
    }
 
+   /**
+    * Stop the remote cache manager, disconnecting all existing connections.
+    * As part of the disconnection, all registered client cache listeners will
+    * be removed since client no longer can receive callbacks.
+    */
    @Override
    public void stop() {
       if (isStarted()) {
+         listenerNotifier.stop();
          transportFactory.destroy();
          asyncExecutorService.shutdownNow();
       }
@@ -638,7 +648,8 @@ public class RemoteCacheManager implements BasicCacheContainer {
    private void startRemoteCache(RemoteCacheHolder remoteCacheHolder) {
       RemoteCacheImpl<?, ?> remoteCache = remoteCacheHolder.remoteCache;
       OperationsFactory operationsFactory = new OperationsFactory(
-            transportFactory, remoteCache.getName(), topologyId, remoteCacheHolder.forceReturnValue, codec);
+            transportFactory, remoteCache.getName(), topologyId, remoteCacheHolder.forceReturnValue,
+            codec, listenerNotifier);
       remoteCache.init(marshaller, asyncExecutorService, operationsFactory, configuration.keySizeEstimate(), configuration.valueSizeEstimate());
    }
 
