@@ -137,9 +137,10 @@
       <version.mockito>1.9.5</version.mockito>
       <version.resteasy>2.3.6.Final-redhat-1</version.resteasy>
       <version.org.picketbox>4.0.19.SP4-redhat-1</version.org.picketbox>
-      <version.shrinkwrapResolver>2.0.0-alpha-6</version.shrinkwrapResolver>
+      <version.shrinkwrapResolver>2.0.0</version.shrinkwrapResolver>
       <version.slf4j>1.7.2-redhat-1</version.slf4j>
       <version.spymemcached>2.8.0</version.spymemcached>
+      <version.stringtemplate>3.2.1-redhat-1</version.stringtemplate>
       <version.testng>6.8</version.testng>
       <version.weld>1.1.13.Final-redhat-1</version.weld>
       <version.antlr.maven.plugin>3.4</version.antlr.maven.plugin>

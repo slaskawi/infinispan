@@ -28,15 +28,14 @@ public class InfinispanCoreIT {
 
    @Deployment
    public static Archive<?> deployment() {
-      WebArchive archive = ShrinkWrap
+      return ShrinkWrap
             .create(WebArchive.class, "simple.war")
             .addClass(InfinispanCoreIT.class)
             .add(manifest(), "META-INF/MANIFEST.MF");
-      return archive;
    }
 
    private static Asset manifest() {
-      String manifest = Descriptors.create(ManifestDescriptor.class).attribute("Dependencies", "org.infinispan:" + Version.MAJOR_MINOR + " services").exportAsString();
+      String manifest = Descriptors.create(ManifestDescriptor.class).attribute("Dependencies", "org.infinispan:" + Version.MODULE_SLOT + " services").exportAsString();
       return new StringAsset(manifest);
    }
 

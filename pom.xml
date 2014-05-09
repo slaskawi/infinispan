@@ -44,15 +44,18 @@
       <module>cli/cli-server</module>
       <module>cli/cli-client</module>
       <module>cdi/extension</module>
-      <module>as-modules</module>
-      <module>integrationtests/luceneintegration</module>
-      <module>integrationtests/compatibility-mode-it</module>
+      <module>as-modules/as-modules-library</module>
+      <module>as-modules/as-modules-remote-client</module>
       <module>compatibility52x</module>
       <module>compatibility52x/adaptor52x</module>
       <module>compatibility52x/custom52x-store</module>
       <module>integrationtests/security-it</module>
       <module>integrationtests/security-manager-it</module>
       <module>server/integration</module>
+      <module>integrationtests/as-integration</module>
+      <module>integrationtests/as-integration-remote-client</module>
+      <module>integrationtests/luceneintegration</module>
+      <module>integrationtests/compatibility-mode-it</module>
    </modules>
 
    <profiles>

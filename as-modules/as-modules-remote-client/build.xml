@@ -1,0 +1,61 @@
+<project name="as-modules" basedir="." default="clean">
+
+    <property name="output.dir" value="${project.build.directory}/infinispan-as-modules" />
+
+    <import file="lib.xml" />
+
+    <major-minor version="6.3.0" property="infinispan.slot" prefix="jdg-"/>
+    <major-minor version="6.3.0" property="jgroups.slot" prefix="jdg-"/>
+
+    <target name="clean">
+        <delete dir="${output.dir}" />
+    </target>
+
+    <target name="copy-files">
+        <!-- Copy the resource files -->
+        <copy todir="${output.dir}">
+            <fileset dir="${basedir}/src/main/resources">
+                <include name="**/*.txt" />
+            </fileset>
+        </copy>
+    </target>
+
+    <!-- These modules are for JDG-specific functionality -->
+    <target name="modules">
+
+        <filterset id="module-filter">
+            <filter token="infinispan.slot" value="${infinispan.slot}" />
+            <filter token="jgroups.slot" value="${jgroups.slot}" />
+        </filterset>
+
+        <module-def name="org.infinispan" slot="${infinispan.slot}">
+            <maven-resource group="org.infinispan" artifact="infinispan-core" />
+        </module-def>
+
+        <module-def name="org.infinispan.client.hotrod" slot="${infinispan.slot}">
+             <maven-resource group="org.infinispan" artifact="infinispan-client-hotrod" />
+        </module-def>
+
+        <module-def name="org.infinispan.commons" slot="${infinispan.slot}">
+            <maven-resource group="org.infinispan" artifact="infinispan-commons" />
+        </module-def>
+
+        <module-def name="org.apache.commons.pool" slot="${infinispan.slot}">
+            <maven-resource group="commons-pool" artifact="commons-pool"/>
+        </module-def>
+
+        <module-def name="org.infinispan.query.dsl" slot="${infinispan.slot}">
+            <maven-resource group="org.infinispan" artifact="infinispan-query-dsl" />
+        </module-def>
+
+        <module-def name="org.jboss.marshalling" slot="${infinispan.slot}">
+            <maven-resource group="org.jboss.marshalling" artifact="jboss-marshalling" />
+        </module-def>
+
+        <module-def name="org.jboss.marshalling.river" slot="${infinispan.slot}">
+            <maven-resource group="org.jboss.marshalling" artifact="jboss-marshalling-river" />
+        </module-def>
+    </target>
+
+    <target name="all" depends="clean, copy-files, modules" />
+</project>

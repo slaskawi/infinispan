@@ -41,17 +41,11 @@
       </dependency>
       <dependency>
          <groupId>org.infinispan</groupId>
-         <artifactId>infinispan-jcache</artifactId>
-         <scope>test</scope>
+         <artifactId>infinispan-cachestore-leveldb</artifactId>
       </dependency>
       <dependency>
          <groupId>org.infinispan</groupId>
          <artifactId>infinispan-query</artifactId>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>org.infinispan</groupId>
-         <artifactId>infinispan-tree</artifactId>
          <scope>test</scope>
       </dependency>
       <dependency>
@@ -76,8 +70,8 @@
          <scope>test</scope>
       </dependency>
       <dependency>
-         <groupId>org.wildfly</groupId>
-         <artifactId>wildfly-arquillian-container-managed</artifactId>
+         <groupId>org.jboss.as</groupId>
+         <artifactId>jboss-as-arquillian-container-managed</artifactId>
          <scope>test</scope>
       </dependency>
       <dependency>
@@ -89,6 +83,11 @@
          <groupId>javax.cache</groupId>
          <artifactId>cache-api</artifactId>
          <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.jboss.as</groupId>
+         <artifactId>jboss-as-protocol</artifactId>
+         <version>${version.jboss.as}</version>
       </dependency>
    </dependencies>
 
@@ -143,20 +142,20 @@
                   <configuration>
                      <artifactItems>
                         <artifactItem>
-                           <groupId>org.wildfly</groupId>
-                           <artifactId>wildfly-dist</artifactId>
-                           <version>${version.wildfly}</version>
-                           <type>zip</type>
+                           <groupId>org.jboss.as</groupId>
+                           <artifactId>jboss-as-dist</artifactId>
+                            <version>${version.jboss.as}</version>
+                            <type>zip</type>
                            <overWrite>false</overWrite>
                            <outputDirectory>${project.build.directory}</outputDirectory>
                         </artifactItem>
                         <artifactItem>
                            <groupId>org.infinispan</groupId>
-                           <artifactId>infinispan-as-modules</artifactId>
+                           <artifactId>infinispan-as-modules-library</artifactId>
                            <version>${project.version}</version>
                            <type>zip</type>
                            <overWrite>false</overWrite>
-                           <outputDirectory>${project.build.directory}/wildfly-${version.wildfly}/modules</outputDirectory>
+                           <outputDirectory>${project.build.directory}/jboss-eap-6.2/modules/</outputDirectory>
                         </artifactItem>
                      </artifactItems>
                   </configuration>
@@ -176,7 +175,7 @@
                      <goal>copy-resources</goal>
                   </goals>
                   <configuration>
-                     <outputDirectory>${project.build.directory}/wildfly-${version.wildfly}</outputDirectory>
+                     <outputDirectory>${project.build.directory}/jboss-eap-6.2</outputDirectory>
                      <overwrite>true</overwrite>
                      <resources>
                         <resource>
