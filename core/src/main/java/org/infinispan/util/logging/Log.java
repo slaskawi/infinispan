@@ -785,7 +785,7 @@ public interface Log extends BasicLogger {
    void noLiveOwnersFoundForSegment(int segmentId, String cacheName, Collection<Address> owners, Collection<Address> faultySources);
 
    @LogMessage(level = WARN)
-   @Message(value = "Failed to retrieve transactions for segments %s of cache %s from node %s (node will not be retried)", id=209)
+   @Message(value = "Failed to retrieve transactions for segments %s of cache %s from node %s", id=209)
    void failedToRetrieveTransactionsForSegments(Collection<Integer> segments, String cacheName, Address source, @Cause Exception e);
 
    @LogMessage(level = WARN)
@@ -1066,4 +1066,8 @@ public interface Log extends BasicLogger {
    @LogMessage(level = WARN)
    @Message(value = "L1 on Rehash is deprecated - setting is ignored", id = 299)
    void l1OnRehashDeprecated();
+
+   @LogMessage(level = WARN)
+   @Message(value = "Issue when retrieving transactions from %s, response was %s", id = 302)
+   CacheException unsuccessfulResponseRetrievingTransactionsForSegments(Address address, Response response);
 }
