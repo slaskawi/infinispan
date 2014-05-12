@@ -40,6 +40,11 @@
          <artifactId>jbosssx-bare</artifactId>
          <scope>test</scope>
       </dependency>
+      <dependency>
+         <groupId>org.jboss.as</groupId>
+         <artifactId>jboss-as-protocol</artifactId>
+         <version>${version.jboss.as}</version>
+      </dependency>
    </dependencies>
 
    <build>
