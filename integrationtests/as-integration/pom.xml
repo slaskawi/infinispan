@@ -41,6 +41,11 @@
       </dependency>
       <dependency>
          <groupId>org.infinispan</groupId>
+         <artifactId>infinispan-cachestore-jpa</artifactId>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.infinispan</groupId>
          <artifactId>infinispan-cachestore-leveldb</artifactId>
       </dependency>
       <dependency>
@@ -83,6 +88,11 @@
          <groupId>javax.cache</groupId>
          <artifactId>cache-api</artifactId>
          <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.hibernate.javax.persistence</groupId>
+         <artifactId>hibernate-jpa-2.0-api</artifactId>
+         <scope>provided</scope>
       </dependency>
       <dependency>
          <groupId>org.jboss.as</groupId>

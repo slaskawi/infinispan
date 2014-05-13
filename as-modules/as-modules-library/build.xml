@@ -37,6 +37,10 @@
             <maven-resource group="org.infinispan" artifact="infinispan-cachestore-jdbc" />
         </module-def>
 
+        <module-def name="org.infinispan.persistence.jpa" slot="${infinispan.slot}">
+            <maven-resource group="org.infinispan" artifact="infinispan-cachestore-jpa" />
+        </module-def>
+
         <module-def name="org.infinispan.persistence.leveldb" slot="${infinispan.slot}">
             <maven-resource group="org.infinispan" artifact="infinispan-cachestore-leveldb" />
         </module-def>
