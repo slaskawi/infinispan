@@ -29,6 +29,7 @@
          </includes>
          <excludes>
             <exclude>client/**</exclude>
+            <exclude>README-CLIENT.md</exclude>
          </excludes>
       </fileSet>
    </fileSets>

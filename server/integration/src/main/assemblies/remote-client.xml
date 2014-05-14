@@ -27,6 +27,7 @@
          <includes>
             <include>client/**</include>
             <include>LICENSE.txt</include>
+            <include>README-CLIENT.md</include>
          </includes>
       </fileSet>
    </fileSets>

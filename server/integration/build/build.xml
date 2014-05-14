@@ -22,6 +22,7 @@
             <include name="rest/**" />
             <include name="standalone/configuration/**.properties" />
             <include name="README.txt" />
+            <include name="README-CLIENT.md" />
          </fileset>
          <fileset dir="${generated.configs}">
             <include name="standalone/configuration/**.xml" />

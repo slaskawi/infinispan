@@ -1,6 +1,6 @@
 <project name="as-modules" basedir="." default="clean">
-
-    <property name="output.dir" value="${project.build.directory}/infinispan-as-modules" />
+    <property name="root.dir" value="${project.build.directory}/infinispan-as-modules" />
+    <property name="output.dir" value="${root.dir}/modules" />
 
     <import file="lib.xml" />
 
@@ -8,14 +8,15 @@
     <major-minor version="6.3.0" property="jgroups.slot" prefix="jdg-"/>
 
     <target name="clean">
-        <delete dir="${output.dir}" />
+        <delete dir="${root.dir}" />
     </target>
 
     <target name="copy-files">
         <!-- Copy the resource files -->
-        <copy todir="${output.dir}">
+        <copy todir="${root.dir}">
             <fileset dir="${basedir}/src/main/resources">
                 <include name="**/*.txt" />
+                <include name="**/*.md" />
             </fileset>
         </copy>
     </target>

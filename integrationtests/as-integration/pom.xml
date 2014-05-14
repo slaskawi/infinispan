@@ -165,7 +165,7 @@
                            <version>${project.version}</version>
                            <type>zip</type>
                            <overWrite>false</overWrite>
-                           <outputDirectory>${project.build.directory}/jboss-eap-6.2/modules/</outputDirectory>
+                           <outputDirectory>${project.build.directory}/jboss-eap-6.2</outputDirectory>
                         </artifactItem>
                      </artifactItems>
                   </configuration>

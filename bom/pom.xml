@@ -273,6 +273,11 @@
             <version>${version.jboss.marshalling}</version>
          </dependency>
          <dependency>
+            <groupId>org.jboss.marshalling</groupId>
+            <artifactId>jboss-marshalling-osgi</artifactId>
+            <version>${version.jboss.marshalling}</version>
+         </dependency>
+         <dependency>
             <groupId>org.jgroups</groupId>
             <artifactId>jgroups</artifactId>
             <version>${version.jgroups}</version>
