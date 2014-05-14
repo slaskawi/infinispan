@@ -29,10 +29,6 @@
             <filter token="jgroups.slot" value="${jgroups.slot}" />
         </filterset>
 
-        <module-def name="org.infinispan" slot="${infinispan.slot}">
-            <maven-resource group="org.infinispan" artifact="infinispan-core" />
-        </module-def>
-
         <module-def name="org.infinispan.client.hotrod" slot="${infinispan.slot}">
              <maven-resource group="org.infinispan" artifact="infinispan-client-hotrod" />
         </module-def>
@@ -55,6 +51,18 @@
 
         <module-def name="org.jboss.marshalling.river" slot="${infinispan.slot}">
             <maven-resource group="org.jboss.marshalling" artifact="jboss-marshalling-river" />
+        </module-def>
+
+        <module-def name="org.infinispan.protostream" slot="${infinispan.slot}">
+            <maven-resource group="org.infinispan.protostream" artifact="protostream"/>
+        </module-def>
+
+        <module-def name="org.infinispan.query.remote.client" slot="${infinispan.slot}">
+            <maven-resource group="org.infinispan" artifact="infinispan-remote-query-client"/>
+        </module-def>
+
+        <module-def name="com.google.protobuf" slot="${infinispan.slot}">
+            <maven-resource group="com.google.protobuf" artifact="protobuf-java"/>
         </module-def>
     </target>
 

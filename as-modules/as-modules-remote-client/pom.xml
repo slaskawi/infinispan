@@ -34,6 +34,22 @@
       </dependency>
 
       <dependency>
+         <groupId>org.infinispan</groupId>
+         <artifactId>infinispan-remote-query-client</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>org.infinispan.protostream</groupId>
+         <artifactId>protostream</artifactId>
+      </dependency>
+
+      <dependency>
+         <groupId>com.google.protobuf</groupId>
+         <artifactId>protobuf-java</artifactId>
+         <version>${version.protobuf}</version>
+      </dependency>
+
+      <dependency>
          <groupId>org.jboss.marshalling</groupId>
          <artifactId>jboss-marshalling-river</artifactId>
       </dependency>
