@@ -332,6 +332,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         cmdRegistry.registerHandler(new ClearScreenHandler(), "clear-screen", "cls");
         cmdRegistry.registerHandler(new CommandCommandHandler(cmdRegistry), "command");
         cmdRegistry.registerHandler(new ConnectHandler(), "connect");
+        cmdRegistry.registerHandler(new DisconnectHandler(), "disconnect");
         cmdRegistry.registerHandler(new EchoDMRHandler(), "echo-dmr");
         cmdRegistry.registerHandler(new HelpHandler(cmdRegistry), "help", "h");
         cmdRegistry.registerHandler(new HistoryHandler(), "history");
@@ -392,7 +393,6 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
 
         CliInterpreterCommandHandler.registerCommands(cmdRegistry, this);
         cmdRegistry.registerHandler(new ContainerCommandHandler(this), true, "container");
-        cmdRegistry.registerHandler(new UnsupportedCommandHandler(), "disconnect");
 
         registerExtraHandlers();
     }
