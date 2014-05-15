@@ -6,7 +6,7 @@
                 xmlns:core="urn:infinispan:server:core:6.1"
                 xmlns:threads="urn:jboss:domain:threads:1.1"
                 xmlns:datasources="urn:jboss:domain:datasources:1.1"
-                xmlns:endpoint="urn:infinispan:server:endpoint:6.0">
+                xmlns:endpoint="urn:infinispan:server:endpoint:6.1">
     <xsl:output method="xml" indent="yes" omit-xml-declaration="yes"/>
 
     <!-- Parameter declarations with defaults set -->
