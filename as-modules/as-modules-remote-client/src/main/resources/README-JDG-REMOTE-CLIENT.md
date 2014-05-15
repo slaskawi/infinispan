@@ -43,4 +43,4 @@ Dependencies: org.infinispan.commons:jdg-6.3 services, org.infinispan.client.hot
 * HotRod client with Remote Query functionality
 
 Manifest-Version: 1.0
-Dependencies: org.infinispan.commons:jdg-6.3 services, org.infinispan.client.hotrod:jdg-6.3 services, org.infinispan.query.remote.client:jdg-6.3 services, org.infinispan.query.dsl:jdg-6.3 services
+Dependencies: org.infinispan.commons:jdg-6.3 services, org.infinispan.client.hotrod:jdg-6.3 services, org.infinispan.query.dsl:jdg-6.3 services, org.jboss.remoting3
