@@ -226,6 +226,7 @@
                         </goals>
                         <phase>generate-resources</phase>
                         <configuration>
+                            <skip>${maven.test.skip.exec}</skip>
                             <target>
                                 <echo message="Creating test server distro at ${server.dist}"/>
                                 <echo message="Using distribution ${server.build.dist}"/>
@@ -261,9 +262,10 @@
                             <goal>run</goal>
                         </goals>
                         <configuration>
+                            <skip>${maven.test.skip.exec}</skip>
                             <target>
                                 <echo>Starting Infinispan server from ${server.dist}</echo>
-                                <exec dir="${server.dist}/bin" spawn="true" executable="chmod" osfamily="unix">
+                                <exec dir="${server.dist}/bin" spawn="false" executable="chmod" osfamily="unix">
                                     <arg value="+x"/>
                                     <arg value="../bin"/>
                                     <arg value="standalone.sh"/>
@@ -294,6 +296,7 @@
                             <goal>run</goal>
                         </goals>
                         <configuration>
+                            <skip>${maven.test.skip.exec}</skip>
                             <target>
                                 <exec executable="${server.jvm}/bin/jps" output="jps.pid" osfamily="unix"/>
                                 <loadfile srcfile="jps.pid" property="pid" failonerror="false">
