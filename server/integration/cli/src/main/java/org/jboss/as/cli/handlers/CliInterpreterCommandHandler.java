@@ -9,6 +9,7 @@ import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.jboss.as.cli.util.CliCommandBuffer;
+import org.jboss.as.cli.util.InfinispanUtil;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -36,6 +37,11 @@ public class CliInterpreterCommandHandler extends BaseOperationCommand {
    }
 
    @Override
+   public boolean isAvailable(CommandContext ctx) {
+      return super.isAvailable(ctx) && InfinispanUtil.getCacheInfo(ctx).getContainer() != null;
+   }
+
+   @Override
    public boolean isBatchMode(CommandContext ctx) {
       return false;
    }
@@ -54,19 +60,24 @@ public class CliInterpreterCommandHandler extends BaseOperationCommand {
 
    @Override
    protected ModelNode buildRequestWithoutHeaders(CommandContext ctx) throws CommandFormatException {
-      OperationRequestAddress requestAddress = getAddress(ctx);
-      ModelNode req = Util.buildRequest(ctx, requestAddress, "cli-interpreter");
-      updateRequest(req, ctx, buffer.getCommandAndReset());
-      return req;
+      try {
+         return InfinispanUtil.buildCliRequest(ctx, buffer.getCommandAndReset());
+      } catch (CommandLineException e) {
+         throw new CommandFormatException(e);
+      }
    }
 
    @Override
    protected void handleResponse(CommandContext ctx, ModelNode response, boolean composite) throws CommandLineException {
+      if (cacheCommand == CacheCommand.CACHE) {
+         InfinispanUtil.changeToCache(ctx, InfinispanUtil.getCacheInfo(ctx).getContainer(), ctx.getArgumentsString());
+      }
+
       if (!response.has(Util.RESULT)) {
          return;
       }
       ModelNode result = response.get(Util.RESULT);
-      updateStateFromResponse(result, ctx);
+      InfinispanUtil.updateStateFromResponse(result, ctx);
 
       if (!result.has("result")) {
          return;
@@ -81,42 +92,6 @@ public class CliInterpreterCommandHandler extends BaseOperationCommand {
       }
       command.append('\n');
       return command.toString();
-   }
-
-   private void updateRequest(ModelNode request, CommandContext context, String command) {
-      copyFromContextToModelNode("cacheName", request, context);
-      copyFromContextToModelNode("sessionId", request, context);
-      setInModelNode(request, "command", command);
-   }
-
-   private void updateStateFromResponse(ModelNode node, CommandContext context) {
-      copyFromModelNodeToContext("sessionId", node, context);
-      copyFromModelNodeToContext("cacheName", node, context);
-      copyFromModelNodeToContext("container", node, context);
-   }
-
-   private static void copyFromModelNodeToContext(String key, ModelNode node, CommandContext context) {
-      if (node.has(key)) {
-         context.set(key, node.get(key).asString());
-      }
-   }
-
-   private static void copyFromContextToModelNode(String key, ModelNode node, CommandContext context) {
-      setInModelNode(node, key, (String) context.get(key));
-   }
-
-   private static void setInModelNode(ModelNode node, String key, String value) {
-      if (value != null) {
-         node.get(key).set(value);
-      }
-   }
-
-   private OperationRequestAddress getAddress(CommandContext ctx) throws OperationFormatException {
-      String container = (String) ctx.get("container");
-      if (container == null) {
-         throw new IllegalArgumentException("The remote server does not expose any CacheManagers");
-      }
-      return buildOperationRequest(ctx, container);
    }
 
    private static OperationRequestAddress buildOperationRequest(CommandContext ctx, String containerAddress) throws OperationFormatException {

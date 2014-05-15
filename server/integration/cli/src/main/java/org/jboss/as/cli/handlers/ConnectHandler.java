@@ -28,6 +28,8 @@ import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.cli.operation.ParsedCommandLine;
+import org.jboss.as.cli.util.ConnectionUrl;
+import org.jboss.as.cli.util.InfinispanUtil;
 
 /**
  * Connect handler.
@@ -59,9 +61,7 @@ public class ConnectHandler extends CommandHandlerWithHelp {
 
     @Override
     protected void doHandle(CommandContext ctx) throws CommandLineException {
-
-        int port = -1;
-        String host = null;
+        ConnectionUrl connectionUrl = ConnectionUrl.DEFAULT;
         final ParsedCommandLine parsedCmd = ctx.getParsedCommandLine();
         final List<String> args = parsedCmd.getOtherProperties();
 
@@ -70,48 +70,18 @@ public class ConnectHandler extends CommandHandlerWithHelp {
                 throw new CommandFormatException("The command expects only one argument but got " + args);
             }
             final String arg = args.get(0);
-            String portStr = null;
-            int colonIndex = arg.lastIndexOf(':');
-            if(colonIndex < 0) {
-                // default port
-                host = arg;
-            } else if(colonIndex == 0) {
-                // default host
-                portStr = arg.substring(1).trim();
-            } else {
-                final boolean hasPort;
-                int closeBracket = arg.lastIndexOf(']');
-                if (closeBracket != -1) {
-                    //possible ip v6
-                    if (closeBracket > colonIndex) {
-                        hasPort = false;
-                    } else {
-                        hasPort = true;
-                    }
-                } else {
-                    //probably ip v4
-                    hasPort = true;
-                }
-                if (hasPort) {
-                    host = arg.substring(0, colonIndex).trim();
-                    portStr = arg.substring(colonIndex + 1).trim();
-                } else {
-                    host = arg;
-                }
-            }
-
-            if(portStr != null) {
-                try {
-                    port = Integer.parseInt(portStr);
-                } catch(NumberFormatException e) {
-                    throw new CommandFormatException("The port must be a valid non-negative integer: '" + args + "'");
-                }
-                if(port < 0) {
-                    throw new CommandFormatException("The port must be a valid non-negative integer: '" + args + "'");
-                }
-            }
+            connectionUrl = ConnectionUrl.parse(arg);
         }
 
-        ctx.connectController(host, port);
+        ctx.connectController(connectionUrl.getHost(), connectionUrl.getPort(), connectionUrl.getUser(), connectionUrl.getPass());
+        try {
+            InfinispanUtil.connect(ctx, connectionUrl.getContainer(), connectionUrl.getCache());
+        } catch (CommandLineException e) {
+           ctx.disconnectController();
+           throw e;
+        } catch (Exception e) {
+            ctx.disconnectController();
+            throw new CommandLineException(e);
+        }
     }
 }

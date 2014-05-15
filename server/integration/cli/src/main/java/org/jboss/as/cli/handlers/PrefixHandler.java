@@ -31,6 +31,7 @@ import org.jboss.as.cli.operation.OperationRequestCompleter;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
+import org.jboss.as.cli.util.InfinispanUtil;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -77,6 +78,10 @@ public class PrefixHandler extends CommandHandlerWithHelp {
                     prefix.toNodeType(node.getType());
                 }
             }
+        }
+        InfinispanUtil.CacheInfo cacheInfo = InfinispanUtil.getCacheInfo(ctx);
+        if (cacheInfo.getCache() != null) {
+             InfinispanUtil.cliRequest(ctx, "cache " + cacheInfo.getCache() + '\n');
         }
     }
 

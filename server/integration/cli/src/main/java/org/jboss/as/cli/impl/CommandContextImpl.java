@@ -392,7 +392,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         cmdRegistry.registerHandler(new ArchiveHandler(this), false, "archive");
 
         CliInterpreterCommandHandler.registerCommands(cmdRegistry, this);
-        cmdRegistry.registerHandler(new ContainerCommandHandler(this), true, "container");
+        cmdRegistry.registerHandler(new ContainerCommandHandler(), true, "container");
 
         registerExtraHandlers();
     }
@@ -755,38 +755,51 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
 
     @Override
     public void connectController(String host, int port) throws CommandLineException {
-        if (host == null) {
-            host = defaultControllerHost;
-        }
-
-        if (port < 0) {
-            port = defaultControllerPort;
-        }
-
-        boolean retry;
-        do {
-            retry = false;
-            try {
-                ModelControllerClient newClient = null;
-                CallbackHandler cbh = new AuthenticationCallbackHandler(username, password);
-                if(log.isDebugEnabled()) {
-                    log.debug("connecting to " + host + ':' + port + " as " + username);
-                }
-                ModelControllerClient tempClient = ModelControllerClientFactory.CUSTOM.
-                        getClient(host, port, cbh, disableLocalAuth, sslContext, connectionTimeout, this);
-                retry = tryConnection(tempClient, host, port);
-                if(!retry) {
-                    newClient = tempClient;
-                }
-                initNewClient(newClient, host, port);
-                notifyListeners(CliEvent.CONNECTED);
-            } catch (IOException e) {
-                throw new CommandLineException("Failed to resolve host '" + host + "': " + e.getLocalizedMessage());
-            }
-        } while (retry);
+        connectController(host, port, null, null);
     }
 
-    @Override
+   @Override
+   public void connectController(String host, int port, String user, char[] pass) throws CommandLineException {
+      if (host == null) {
+         host = defaultControllerHost;
+      }
+
+      if (port < 0) {
+         port = defaultControllerPort;
+      }
+
+      if (user == null) {
+         user = username;
+      }
+
+      if (pass == null) {
+         pass = password;
+      }
+
+      boolean retry;
+      do {
+         retry = false;
+         try {
+            ModelControllerClient newClient = null;
+            CallbackHandler cbh = new AuthenticationCallbackHandler(user, pass);
+            if(log.isDebugEnabled()) {
+               log.debug("connecting to " + host + ':' + port + " as " + user);
+            }
+            ModelControllerClient tempClient = ModelControllerClientFactory.CUSTOM.
+                  getClient(host, port, cbh, disableLocalAuth, sslContext, connectionTimeout, this);
+            retry = tryConnection(tempClient, host, port);
+            if(!retry) {
+               newClient = tempClient;
+            }
+            initNewClient(newClient, host, port);
+            notifyListeners(CliEvent.CONNECTED);
+         } catch (IOException e) {
+            throw new CommandLineException("Failed to resolve host '" + host + "': " + e.getLocalizedMessage());
+         }
+      } while (retry);
+   }
+
+   @Override
     public void bindClient(ModelControllerClient newClient) {
         initNewClient(newClient, null, -1);
     }

@@ -23,20 +23,18 @@ package org.jboss.as.cli.impl;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import org.jboss.as.cli.CliInitializationException;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandContextFactory;
 import org.jboss.as.cli.CommandLineException;
-import org.jboss.as.cli.Util;
-import org.jboss.as.cli.gui.GuiMain;
 import org.jboss.as.cli.handlers.VersionHandler;
+import org.jboss.as.cli.util.ConnectionUrl;
+import org.jboss.as.cli.util.InfinispanUtil;
 import org.jboss.as.protocol.StreamUtils;
 
 /**
@@ -48,88 +46,33 @@ public class CliLauncher {
     public static void main(String[] args) throws Exception {
         int exitCode = 0;
         CommandContext cmdCtx = null;
-        boolean gui = false;
         try {
             String argError = null;
-            List<String> commands = null;
             File file = null;
             boolean connect = false;
-            String defaultControllerHost = null;
-            int defaultControllerPort = -1;
             boolean version = false;
-            String username = null;
-            char[] password = null;
             boolean noLocalAuth = false;
             int connectionTimeout = -1;
+            boolean help = false;
+            ConnectionUrl connectionUrl = ConnectionUrl.DEFAULT;
 
-            for(String arg : args) {
-                if(arg.startsWith("--controller=") || arg.startsWith("controller=")) {
-                    final String value;
-                    if(arg.startsWith("--")) {
-                        value = arg.substring(13);
-                    } else {
-                        value = arg.substring(11);
-                    }
-                    String portStr = null;
-                    int colonIndex = value.lastIndexOf(':');
-                    if(colonIndex < 0) {
-                        // default port
-                        defaultControllerHost = value;
-                    } else if(colonIndex == 0) {
-                        // default host
-                        portStr = value.substring(1);
-                    } else {
-                        final boolean hasPort;
-                        int closeBracket = value.lastIndexOf(']');
-                        if (closeBracket != -1) {
-                            //possible ip v6
-                            if (closeBracket > colonIndex) {
-                                hasPort = false;
-                            } else {
-                                hasPort = true;
-                            }
-                        } else {
-                            //probably ip v4
-                            hasPort = true;
-                        }
-                        if (hasPort) {
-                            defaultControllerHost = value.substring(0, colonIndex).trim();
-                            portStr = value.substring(colonIndex + 1).trim();
-                        } else {
-                            defaultControllerHost = value;
-                        }
-                    }
-
-                    if(portStr != null) {
-                        int port = -1;
-                        try {
-                            port = Integer.parseInt(portStr);
-                            if(port < 0) {
-                                argError = "The port must be a valid non-negative integer: '" + args + "'";
-                            } else {
-                                defaultControllerPort = port;
-                            }
-                        } catch(NumberFormatException e) {
-                            argError = "The port must be a valid non-negative integer: '" + arg + "'";
-                        }
-                    }
-                } else if("--connect".equals(arg) || "-c".equals(arg)) {
+            final Queue<String> arguments = new LinkedList<String>(Arrays.asList(args));
+            while(!arguments.isEmpty()) {
+                String arg = arguments.poll();
+                if(arg.startsWith("--connect") || "-c".equals(arg)) {
+                    final String value = extractValue(arguments, arg, "connect", "c");
+                    connectionUrl = ConnectionUrl.parse(value);
                     connect = true;
-                } else if("--version".equals(arg)) {
+                    noLocalAuth = connectionUrl.getUser() != null;
+                } else if("--version".equals(arg) || "-v".equals(arg)) {
                     version = true;
-                } else if ("--gui".equals(arg)) {
-                    gui = true;
-                } else if(arg.startsWith("--file=") || arg.startsWith("file=")) {
+                } else if(arg.startsWith("--file") || "-f".equals(arg)) {
                     if(file != null) {
                         argError = "Duplicate argument '--file'.";
                         break;
                     }
-                    if(commands != null) {
-                        argError = "Only one of '--file', '--commands' or '--command' can appear as the argument at a time.";
-                        break;
-                    }
 
-                    final String fileName = arg.startsWith("--") ? arg.substring(7) : arg.substring(5);
+                    final String fileName = extractValue(arguments, arg, "file", "f");
                     if(!fileName.isEmpty()) {
                         file = new File(fileName);
                         if(!file.exists()) {
@@ -140,91 +83,11 @@ public class CliLauncher {
                         argError = "Argument '--file' is missing value.";
                         break;
                     }
-                } else if(arg.startsWith("--commands=") || arg.startsWith("commands=")) {
-                    if(file != null) {
-                        argError = "Only one of '--file', '--commands' or '--command' can appear as the argument at a time.";
-                        break;
-                    }
-                    if(commands != null) {
-                        argError = "Duplicate argument '--command'/'--commands'.";
-                        break;
-                    }
-                    final String value = arg.startsWith("--") ? arg.substring(11) : arg.substring(9);
-                    commands = Util.splitCommands(value);
-                } else if(arg.startsWith("--command=") || arg.startsWith("command=")) {
-                    if(file != null) {
-                        argError = "Only one of '--file', '--commands' or '--command' can appear as the argument at a time.";
-                        break;
-                    }
-                    if(commands != null) {
-                        argError = "Duplicate argument '--command'/'--commands'.";
-                        break;
-                    }
-                    final String value = arg.startsWith("--") ? arg.substring(10) : arg.substring(8);
-                    commands = Collections.singletonList(value);
-                } else if (arg.startsWith("--user=")) {
-                    username = arg.startsWith("--") ? arg.substring(7) : arg.substring(5);
-                    noLocalAuth = true;
-                } else if (arg.startsWith("--password=")) {
-                    password = (arg.startsWith("--") ? arg.substring(11) : arg.substring(9)).toCharArray();
-                } else if (arg.equals("--no-local-auth")) {
-                    noLocalAuth = true;
-                } else if (arg.startsWith("--timeout=")) {
-                    if (connectionTimeout > 0) {
-                        argError = "Duplicate argument '--timeout'";
-                        break;
-                    }
-                    final String value = arg.substring(10);
-                    try {
-                        connectionTimeout = Integer.parseInt(value);
-                    } catch (final NumberFormatException e) {
-                        //
-                    }
-                    if (connectionTimeout <= 0) {
-                        argError = "The timeout must be a valid positive integer: '" + value + "'";
-                    }
                 } else if (arg.equals("--help") || arg.equals("-h")) {
-                    commands = Collections.singletonList("help");
-                } else if (arg.startsWith("--properties=")) {
-                    final String value  = arg.substring(13);
-                    final File propertiesFile = new File(value);
-                    if(!propertiesFile.exists()) {
-                        argError = "File doesn't exist: " + propertiesFile.getAbsolutePath();
-                        break;
-                    }
-                    final Properties props = new Properties();
-                    FileInputStream fis = null;
-                    try {
-                        fis = new FileInputStream(propertiesFile);
-                        props.load(fis);
-                    } catch(FileNotFoundException e) {
-                        argError = e.getLocalizedMessage();
-                        break;
-                    } catch(java.io.IOException e) {
-                        argError = "Failed to load properties from " + propertiesFile.getAbsolutePath() + ": " + e.getLocalizedMessage();
-                        break;
-                    } finally {
-                        if(fis != null) {
-                            try {
-                                fis.close();
-                            } catch(java.io.IOException e) {
-                            }
-                        }
-                    }
-                    for(Object prop : props.keySet()) {
-                        SecurityActions.setSystemProperty((String)prop, (String)props.get(prop));
-                    }
-                } else if(!(arg.startsWith("-D") || arg.equals("-XX:"))) {// skip system properties and jvm options
-                    // assume it's commands
-                    if(file != null) {
-                        argError = "Only one of '--file', '--commands' or '--command' can appear as the argument at a time: " + arg;
-                        break;
-                    }
-                    if(commands != null) {
-                        argError = "Duplicate argument '--command'/'--commands'.";
-                        break;
-                    }
-                    commands = Util.splitCommands(arg);
+                    help = true;
+                } else {
+                    argError = "Unknown argument " + arg;
+                    break;
                 }
             }
 
@@ -234,32 +97,35 @@ public class CliLauncher {
                 return;
             }
 
+            if (help) {
+                cmdCtx = initCommandContext(connectionUrl, noLocalAuth, false, connect, connectionTimeout);
+                cmdCtx.printLine("Usage: ispn-cli [OPTION]...");
+                cmdCtx.printLine("Command-line interface for interacting with a running instance of Infinispan");
+                cmdCtx.printLine("");
+                cmdCtx.printLine("Options:");
+                cmdCtx.printLine(" -c, --connect=URL    connects to a running instance of Infinispan.");
+                cmdCtx.printLine("                      JMX over RMI jmx://[username[:password]]@host:port[/container[/cache]]");
+                cmdCtx.printLine("                      JMX over JBoss remoting remoting://[username[:password]]@host:port[/container[/cache]]");
+                cmdCtx.printLine(" -f, --file=FILE      reads input from the specified file instead of using interactive mode.");
+                cmdCtx.printLine(" -h, --help           shows this help page.");
+                cmdCtx.printLine(" -v, --version        shows version information.");
+                return;
+            }
+
             if(version) {
-                cmdCtx = initCommandContext(defaultControllerHost, defaultControllerPort, username, password, noLocalAuth, false, connect, connectionTimeout);
+                cmdCtx = initCommandContext(connectionUrl, noLocalAuth, false, connect, connectionTimeout);
                 VersionHandler.INSTANCE.handle(cmdCtx);
                 return;
             }
 
             if(file != null) {
-                cmdCtx = initCommandContext(defaultControllerHost, defaultControllerPort, username, password, noLocalAuth, false, connect, connectionTimeout);
+                cmdCtx = initCommandContext(connectionUrl, noLocalAuth, false, connect, connectionTimeout);
                 processFile(file, cmdCtx);
                 return;
             }
 
-            if(commands != null) {
-                cmdCtx = initCommandContext(defaultControllerHost, defaultControllerPort, username, password, noLocalAuth, false, connect, connectionTimeout);
-                processCommands(commands, cmdCtx);
-                return;
-            }
-
-            if (gui) {
-                cmdCtx = initCommandContext(defaultControllerHost, defaultControllerPort, username, password, noLocalAuth, false, true, connectionTimeout);
-                processGui(cmdCtx);
-                return;
-            }
-
             // Interactive mode
-            cmdCtx = initCommandContext(defaultControllerHost, defaultControllerPort, username, password, noLocalAuth, true, connect, connectionTimeout);
+            cmdCtx = initCommandContext(connectionUrl, noLocalAuth, true, connect, connectionTimeout);
             cmdCtx.interact();
         } catch(Throwable t) {
             t.printStackTrace();
@@ -268,18 +134,27 @@ public class CliLauncher {
             if(cmdCtx != null && cmdCtx.getExitCode() != 0) {
                 exitCode = cmdCtx.getExitCode();
             }
-            if (!gui) {
-                System.exit(exitCode);
-            }
         }
         System.exit(exitCode);
     }
 
-    private static CommandContext initCommandContext(String defaultHost, int defaultPort, String username, char[] password, boolean disableLocalAuth, boolean initConsole, boolean connect, final int connectionTimeout) throws CliInitializationException {
-        final CommandContext cmdCtx = CommandContextFactory.getInstance().newCommandContext(defaultHost, defaultPort, username, password, disableLocalAuth, initConsole, connectionTimeout);
+    private static String extractValue(Queue<String> args, String arg, String key, String shortKey) {
+       //formats: --<key>=<value> or --<key> <value> or -<skey> <value>
+       if (arg.equals("--" + key) || arg.equals("-" + shortKey)) {
+          //--<key> <value> or -<skey> <value>
+          return args.isEmpty() ? "" : args.poll();
+       } else {
+          //--<key>=<value>
+          return arg.substring(key.length() + 3);
+       }
+    }
+
+    private static CommandContext initCommandContext(ConnectionUrl connectionUrl, boolean disableLocalAuth, boolean initConsole, boolean connect, final int connectionTimeout) throws Exception {
+        final CommandContext cmdCtx = CommandContextFactory.getInstance().newCommandContext(connectionUrl.getHost(), connectionUrl.getPort(), connectionUrl.getUser(), connectionUrl.getPass(), disableLocalAuth, initConsole, connectionTimeout);
         if(connect) {
             try {
                 cmdCtx.connectController();
+                InfinispanUtil.connect(cmdCtx, connectionUrl.getContainer(), connectionUrl.getCache());
             } catch (CommandLineException e) {
                 throw new CliInitializationException("Failed to connect to the controller", e);
             }
@@ -287,25 +162,6 @@ public class CliLauncher {
         return cmdCtx;
     }
 
-    private static void processGui(final CommandContext cmdCtx) {
-        try {
-            GuiMain.start(cmdCtx);
-        } catch(Throwable t) {
-            t.printStackTrace();
-        }
-    }
-
-    private static void processCommands(List<String> commands, CommandContext cmdCtx) {
-        int i = 0;
-        try {
-            while (cmdCtx.getExitCode() == 0 && i < commands.size() && !cmdCtx.isTerminated()) {
-                cmdCtx.handleSafe(commands.get(i));
-                ++i;
-            }
-        } finally {
-            cmdCtx.terminateSession();
-        }
-    }
 
     private static void processFile(File file, final CommandContext cmdCtx) {
 

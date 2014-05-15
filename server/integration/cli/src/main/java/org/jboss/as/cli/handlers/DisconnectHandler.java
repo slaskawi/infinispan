@@ -26,8 +26,7 @@ import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.cli.operation.ParsedCommandLine;
-
-import java.util.List;
+import org.jboss.as.cli.util.InfinispanUtil;
 
 /**
  * Disconnect handler.
@@ -37,26 +36,18 @@ import java.util.List;
  */
 public class DisconnectHandler extends CommandHandlerWithHelp {
 
-    public DisconnectHandler() {
-        this("disconnect");
-    }
+   public DisconnectHandler() {
+      this("disconnect");
+   }
 
-    public DisconnectHandler(String command) {
-        super(command);
-    }
+   public DisconnectHandler(String command) {
+      super(command);
+   }
 
-    @Override
-    public boolean hasArgument(CommandContext ctx, int index) {
-        return false;
-    }
-
-    @Override
-    protected void recognizeArguments(CommandContext ctx) throws CommandFormatException {
-        final ParsedCommandLine parsedCmd = ctx.getParsedCommandLine();
-        if(parsedCmd.getOtherProperties().size() > 0) {
-            throw new CommandFormatException("The command accepts zero argument but received: " + parsedCmd.getOtherProperties());
-        }
-    }
+   @Override
+   public boolean hasArgument(CommandContext ctx, int index) {
+      return false;
+   }
 
    @Override
    public boolean isAvailable(CommandContext ctx) {
@@ -64,7 +55,16 @@ public class DisconnectHandler extends CommandHandlerWithHelp {
    }
 
    @Override
-    protected void doHandle(CommandContext ctx) throws CommandLineException {
-       ctx.disconnectController();
-    }
+   protected void recognizeArguments(CommandContext ctx) throws CommandFormatException {
+      final ParsedCommandLine parsedCmd = ctx.getParsedCommandLine();
+      if (parsedCmd.getOtherProperties().size() > 0) {
+         throw new CommandFormatException("The command accepts zero argument but received: " + parsedCmd.getOtherProperties());
+      }
+   }
+
+   @Override
+   protected void doHandle(CommandContext ctx) throws CommandLineException {
+      ctx.disconnectController();
+      ctx.getCurrentNodePath().reset();
+   }
 }
