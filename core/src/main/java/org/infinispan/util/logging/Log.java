@@ -1069,5 +1069,5 @@ public interface Log extends BasicLogger {
 
    @LogMessage(level = WARN)
    @Message(value = "Issue when retrieving transactions from %s, response was %s", id = 302)
-   CacheException unsuccessfulResponseRetrievingTransactionsForSegments(Address address, Response response);
+   void unsuccessfulResponseRetrievingTransactionsForSegments(Address address, Response response);
 }
