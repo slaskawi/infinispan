@@ -28,7 +28,7 @@ import org.jboss.msc.service.ServiceController;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
 
-public class PropertyResource extends SimpleResourceDefinition {
+public class PropertyResourceDefinition extends SimpleResourceDefinition {
 
     static final PathElement PROPERTY_PATH = PathElement.pathElement(ModelKeys.PROPERTY);
 
@@ -45,14 +45,14 @@ public class PropertyResource extends SimpleResourceDefinition {
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
             context.removeResource(PathAddress.EMPTY_ADDRESS);
             reloadRequiredStep(context);
-            context.completeStep();
+            context.stepCompleted();
         }
     };
 
     static final AbstractAddStepHandler PROTOCOL_PROPERTY_ADD = new AbstractAddStepHandler() {
         @Override
         protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-            PropertyResource.VALUE.validateAndSet(operation, model);
+            PropertyResourceDefinition.VALUE.validateAndSet(operation, model);
         }
 
         @Override
@@ -61,14 +61,14 @@ public class PropertyResource extends SimpleResourceDefinition {
         }
     };
 
-    static final PropertyResource INSTANCE = new PropertyResource() ;
+    static final PropertyResourceDefinition INSTANCE = new PropertyResourceDefinition() ;
 
     // registration
-    PropertyResource() {
+    PropertyResourceDefinition() {
         super(PROPERTY_PATH,
                 JGroupsExtension.getResourceDescriptionResolver(ModelKeys.PROPERTY),
-                PropertyResource.PROTOCOL_PROPERTY_ADD,
-                PropertyResource.REMOVE);
+                PropertyResourceDefinition.PROTOCOL_PROPERTY_ADD,
+                PropertyResourceDefinition.REMOVE);
     }
 
     @Override
@@ -98,7 +98,7 @@ public class PropertyResource extends SimpleResourceDefinition {
                     // add some condition here if reload needs to be conditional on context
                     // e.g. if a service is not installed, don't do a reload
                     context.reloadRequired();
-                    context.completeStep();
+                    context.stepCompleted();
                 }
             }, OperationContext.Stage.RUNTIME);
         }

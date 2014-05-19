@@ -220,6 +220,10 @@
          <maven-resource-with-classifier group="org.infinispan" artifact="infinispan-server-rest" classifier="classes" />
       </module-def>
 
+      <module-def name="org.jgroups" src="${infinispan.server.modules.dir}">
+         <maven-resource group="org.jgroups" artifact="jgroups"/>
+      </module-def>
+
       <module-def name="org.scala-lang.library" src="${infinispan.server.modules.dir}">
          <maven-resource group="org.scala-lang" artifact="scala-library" />
       </module-def>
