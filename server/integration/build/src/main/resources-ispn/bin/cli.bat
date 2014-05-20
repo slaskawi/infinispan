@@ -35,7 +35,7 @@ set DIRNAME=
 if "%OS%" == "Windows_NT" (
   set "PROGNAME=%~nx0%"
 ) else (
-  set "PROGNAME=jboss-cli.bat"
+  set "PROGNAME=cli.bat"
 )
 
 rem Setup JBoss specific properties
@@ -59,7 +59,7 @@ if exist "%JBOSS_HOME%\jboss-modules.jar" (
 )
 
 rem Add base package for L&F
-set "JAVA_OPTS=%JAVA_OPTS% -Djboss.modules.system.pkgs=com.sun.java.swing -Dlogging.configuration=file:%JBOSS_HOME%\bin\ispn-cli-logging.properties"
+set "JAVA_OPTS=%JAVA_OPTS% -Djboss.modules.system.pkgs=com.sun.java.swing -Dlogging.configuration=file:%JBOSS_HOME%\bin\cli-logging.properties"
 
 "%JAVA%" %JAVA_OPTS% ^
     -jar "%JBOSS_HOME%\jboss-modules.jar" ^

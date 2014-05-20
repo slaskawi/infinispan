@@ -1,8 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
 
-<!--
-   JBoss AS7 Command-line Interface configuration.
--->
 <jboss-cli xmlns="urn:jboss:cli:1.2">
 
     <!-- The default controller to connect to when 'connect' command is executed w/o arguments -->
@@ -20,7 +17,7 @@
     <!-- Command and operation history log configuration -->
     <history>
         <enabled>true</enabled>
-        <file-name>.jboss-cli-history</file-name>
+        <file-name>.jdg-cli-history</file-name>
         <file-dir>${user.home}</file-dir>
         <max-size>500</max-size>
     </history>

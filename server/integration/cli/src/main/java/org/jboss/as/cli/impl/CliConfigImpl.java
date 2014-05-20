@@ -51,7 +51,7 @@ class CliConfigImpl implements CliConfig {
 
     private static final String JBOSS_XML_CONFIG = "jboss.cli.config";
     private static final String CURRENT_WORKING_DIRECTORY = "user.dir";
-    private static final String JBOSS_CLI_FILE = "ispn-cli.xml";
+    private static final String JBOSS_CLI_FILE = "cli.xml";
 
     private static final String DEFAULT_CONTROLLER = "default-controller";
     private static final String ENABLED = "enabled";
