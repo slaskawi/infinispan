@@ -31,6 +31,8 @@ import org.infinispan.factories.GlobalComponentRegistry;
 import org.infinispan.factories.KnownComponentNames;
 import org.infinispan.commons.io.ExposedByteArrayOutputStream;
 import org.infinispan.commons.io.UnsignedNumeric;
+import org.infinispan.iteration.EntryRequestCommand;
+import org.infinispan.iteration.EntryResponseCommand;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.commons.marshall.AbstractExternalizer;
 import org.infinispan.commons.marshall.BufferSizePredictor;
@@ -80,7 +82,8 @@ public final class CacheRpcCommandExternalizer extends AbstractExternalizer<Cach
                VersionedPrepareCommand.class, CreateCacheCommand.class, CancelCommand.class,
                VersionedCommitCommand.class, XSiteAdminCommand.class, TotalOrderNonVersionedPrepareCommand.class,
                TotalOrderVersionedPrepareCommand.class, TotalOrderCommitCommand.class,
-               TotalOrderVersionedCommitCommand.class, TotalOrderRollbackCommand.class);
+               TotalOrderVersionedCommitCommand.class, TotalOrderRollbackCommand.class,
+               EntryRequestCommand.class, EntryResponseCommand.class);
       // Only interested in cache specific replicable commands
       coreCommands.addAll(gcr.getModuleProperties().moduleCacheRpcCommands());
       return coreCommands;

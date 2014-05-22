@@ -409,11 +409,17 @@ public class PersistenceManagerImpl implements PersistenceManager {
    @Override
    public void processOnAllStores(AdvancedCacheLoader.KeyFilter keyFilter, AdvancedCacheLoader.CacheLoaderTask task,
                                   boolean fetchValue, boolean fetchMetadata) {
+      processOnAllStores(persistenceExecutor, keyFilter, task, fetchValue, fetchMetadata);
+   }
+
+   @Override
+   public void processOnAllStores(Executor executor, AdvancedCacheLoader.KeyFilter keyFilter, AdvancedCacheLoader.CacheLoaderTask task,
+                                  boolean fetchValue, boolean fetchMetadata) {
       storesMutex.readLock().lock();
       try {
          for (CacheLoader loader : loaders) {
             if (loader instanceof AdvancedCacheLoader) {
-               ((AdvancedCacheLoader) loader).process(keyFilter, task, persistenceExecutor, fetchValue, fetchMetadata);
+               ((AdvancedCacheLoader) loader).process(keyFilter, task, executor, fetchValue, fetchMetadata);
             }
          }
       } finally {

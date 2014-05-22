@@ -51,6 +51,9 @@ import org.infinispan.factories.annotations.Start;
 import org.infinispan.factories.annotations.Stop;
 import org.infinispan.factories.scopes.Scope;
 import org.infinispan.factories.scopes.Scopes;
+import org.infinispan.filter.CollectionKeyFilter;
+import org.infinispan.filter.CompositeKeyValueFilter;
+import org.infinispan.filter.KeyFilterAsKeyValueFilter;
 import org.infinispan.marshall.exts.ArrayExternalizers;
 import org.infinispan.marshall.exts.EnumSetExternalizer;
 import org.infinispan.marshall.exts.ListExternalizer;
@@ -300,6 +303,10 @@ public class ExternalizerTable implements ObjectTable {
       addInternalExternalizer(new KeyValuePair.Externalizer());
       addInternalExternalizer(new InternalMetadataImpl.Externalizer());
       addInternalExternalizer(new MarshalledEntryImpl.Externalizer(globalMarshaller));
+
+      addInternalExternalizer(new KeyFilterAsKeyValueFilter.Externalizer());
+      addInternalExternalizer(new CollectionKeyFilter.Externalizer());
+      addInternalExternalizer(new CompositeKeyValueFilter.Externalizer());
    }
 
    void addInternalExternalizer(AdvancedExternalizer<?> ext) {

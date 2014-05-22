@@ -121,6 +121,13 @@ public interface ConsistentHash {
    Set<Integer> getSegmentsForOwner(Address owner);
 
    /**
+    * Returns the segments that this cache member is the primary owner for.
+    * @param owner the address of the member
+    * @return a non-null set of segment IDs
+    */
+   Set<Integer> getPrimarySegmentsForOwner(Address owner);
+
+   /**
     * Returns a string containing all the segments and their associated addresses.
     */
    String getRoutingTableAsString();

@@ -1,6 +1,10 @@
 package org.infinispan.util.mocks;
 
 import org.infinispan.Cache;
+import org.infinispan.filter.Converter;
+import org.infinispan.filter.KeyValueFilter;
+import org.infinispan.iteration.EntryRequestCommand;
+import org.infinispan.iteration.EntryResponseCommand;
 import org.infinispan.metadata.Metadata;
 import org.infinispan.atomic.Delta;
 import org.infinispan.commands.CancelCommand;
@@ -308,6 +312,16 @@ public class ControlledCommandFactory implements CommandsFactory {
    @Override
    public CancelCommand buildCancelCommandCommand(UUID commandUUID) {
       return actual.buildCancelCommandCommand(commandUUID);
+   }
+
+   @Override
+   public <K, V, C> EntryRequestCommand<K, V, C> buildEntryRequestCommand(UUID identifier, Set<Integer> segments, KeyValueFilter<? super K, ? super V> filter, Converter<? super K, ? super V, C> converter) {
+      return actual.buildEntryRequestCommand(identifier, segments, filter, converter);
+   }
+
+   @Override
+   public <K, C> EntryResponseCommand buildEntryResponseCommand(UUID identifier, Set<Integer> completedSegments, Set<Integer> inDoubtSegments, Collection<Map.Entry<K, C>> values) {
+      return actual.buildEntryResponseCommand(identifier, completedSegments, inDoubtSegments, values);
    }
 
    @Override

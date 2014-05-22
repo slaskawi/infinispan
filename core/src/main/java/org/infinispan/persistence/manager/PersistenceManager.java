@@ -2,6 +2,7 @@ package org.infinispan.persistence.manager;
 
 import java.util.Collection;
 import java.util.Set;
+import java.util.concurrent.Executor;
 
 import org.infinispan.context.InvocationContext;
 import org.infinispan.lifecycle.Lifecycle;
@@ -45,6 +46,8 @@ public interface PersistenceManager extends Lifecycle {
    boolean deleteFromAllStores(Object key, boolean skipSharedStores);
 
    void processOnAllStores(AdvancedCacheLoader.KeyFilter keyFilter, AdvancedCacheLoader.CacheLoaderTask task, boolean fetchValue, boolean fetchMetadata);
+
+   void processOnAllStores(Executor executor, AdvancedCacheLoader.KeyFilter keyFilter, AdvancedCacheLoader.CacheLoaderTask task, boolean fetchValue, boolean fetchMetadata);
 
    boolean activate(Object key);
 

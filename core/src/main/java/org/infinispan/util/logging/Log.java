@@ -1068,6 +1068,14 @@ public interface Log extends BasicLogger {
    void l1OnRehashDeprecated();
 
    @LogMessage(level = WARN)
+   @Message(value = "There was an exception while processing retrieval of entry values", id = 300)
+   void exceptionProcessingEntryRetrievalValues(@Cause Throwable cause);
+
+   @LogMessage(level = WARN)
+   @Message(value = "Iterator response for identifier %s encountered unexpected exception", id = 301)
+   void exceptionProcessingIteratorResponse(UUID identifier, @Cause Throwable cause);
+
+   @LogMessage(level = WARN)
    @Message(value = "Issue when retrieving transactions from %s, response was %s", id = 302)
    void unsuccessfulResponseRetrievingTransactionsForSegments(Address address, Response response);
 }

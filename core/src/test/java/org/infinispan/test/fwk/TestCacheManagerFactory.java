@@ -61,7 +61,7 @@ public class TestCacheManagerFactory {
       }
    };
 
-   private static DefaultCacheManager newDefaultCacheManager(boolean start, GlobalConfigurationBuilder gc, ConfigurationBuilder c, boolean keepJmxDomain) {
+   public static DefaultCacheManager newDefaultCacheManager(boolean start, GlobalConfigurationBuilder gc, ConfigurationBuilder c, boolean keepJmxDomain) {
       if (!keepJmxDomain) {
          gc.globalJmxStatistics().jmxDomain("infinispan-" + UUID.randomUUID());
       }
@@ -351,7 +351,7 @@ public class TestCacheManagerFactory {
       }
    }
 
-   private static DefaultCacheManager newDefaultCacheManager(boolean start, GlobalConfigurationBuilder gc, ConfigurationBuilder c) {
+   public static DefaultCacheManager newDefaultCacheManager(boolean start, GlobalConfigurationBuilder gc, ConfigurationBuilder c) {
       DefaultCacheManager defaultCacheManager = new DefaultCacheManager(gc.build(), c.build(), start);
       return addThreadCacheManager(defaultCacheManager);
    }

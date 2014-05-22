@@ -1,5 +1,9 @@
 package org.infinispan.commands;
 
+import org.infinispan.filter.Converter;
+import org.infinispan.filter.KeyValueFilter;
+import org.infinispan.iteration.EntryRequestCommand;
+import org.infinispan.iteration.EntryResponseCommand;
 import org.infinispan.metadata.Metadata;
 import org.infinispan.atomic.Delta;
 import org.infinispan.commands.control.LockControlCommand;
@@ -367,4 +371,11 @@ public interface CommandsFactory {
     * @return created CancelCommandCommand
     */
    CancelCommand buildCancelCommandCommand(UUID commandUUID);
+
+   <K, V, C> EntryRequestCommand<K, V, C> buildEntryRequestCommand(UUID identifier, Set<Integer> segments,
+                                                                   KeyValueFilter<? super K, ? super V> filter,
+                                                                   Converter<? super K, ? super V, C> converter);
+
+   <K, C> EntryResponseCommand buildEntryResponseCommand(UUID identifier, Set<Integer> completedSegments,
+                                                         Set<Integer> inDoubtSegments, Collection<Map.Entry<K, C>> values);
 }

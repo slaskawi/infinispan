@@ -69,6 +69,11 @@ public class GroupingConsistentHash implements ConsistentHash {
    }
 
    @Override
+   public Set<Integer> getPrimarySegmentsForOwner(Address owner) {
+      return ch.getPrimarySegmentsForOwner(owner);
+   }
+
+   @Override
    public String getRoutingTableAsString() {
       return ch.getRoutingTableAsString();
    }

@@ -2,6 +2,11 @@ package org.infinispan.commands;
 
 import org.infinispan.Cache;
 import org.infinispan.context.InvocationContextFactory;
+import org.infinispan.filter.Converter;
+import org.infinispan.filter.KeyValueFilter;
+import org.infinispan.iteration.EntryRequestCommand;
+import org.infinispan.iteration.EntryResponseCommand;
+import org.infinispan.iteration.EntryRetriever;
 import org.infinispan.metadata.Metadata;
 import org.infinispan.atomic.Delta;
 import org.infinispan.commands.control.LockControlCommand;
@@ -115,6 +120,7 @@ public class CommandsFactoryImpl implements CommandsFactory {
    private BackupSender backupSender;
    private CancellationService cancellationService;
    private TimeService timeService;
+   private EntryRetriever entryRetriever;
 
    private Map<Byte, ModuleCommandInitializer> moduleCommandInitializers;
 
@@ -126,7 +132,7 @@ public class CommandsFactoryImpl implements CommandsFactory {
                                  RecoveryManager recoveryManager, StateProvider stateProvider, StateConsumer stateConsumer,
                                  LockManager lockManager, InternalEntryFactory entryFactory, MapReduceManager mapReduceManager, 
                                  StateTransferManager stm, BackupSender backupSender, CancellationService cancellationService,
-                                 TimeService timeService) {
+                                 TimeService timeService, EntryRetriever entryRetriever) {
       this.dataContainer = container;
       this.notifier = notifier;
       this.cache = cache;
@@ -146,6 +152,7 @@ public class CommandsFactoryImpl implements CommandsFactory {
       this.backupSender = backupSender;
       this.cancellationService = cancellationService;
       this.timeService = timeService;
+      this.entryRetriever = entryRetriever;
    }
 
    @Start(priority = 1)
@@ -422,6 +429,14 @@ public class CommandsFactoryImpl implements CommandsFactory {
             CancelCommand cancelCommand = (CancelCommand)c;
             cancelCommand.init(cancellationService);
             break;
+         case EntryRequestCommand.COMMAND_ID:
+            EntryRequestCommand entryRequestCommand = (EntryRequestCommand) c;
+            entryRequestCommand.init(entryRetriever);
+            break;
+         case EntryResponseCommand.COMMAND_ID:
+            EntryResponseCommand entryResponseCommand = (EntryResponseCommand) c;
+            entryResponseCommand.init(entryRetriever);
+            break;
          default:
             ModuleCommandInitializer mci = moduleCommandInitializers.get(c.getCommandId());
             if (mci != null) {
@@ -523,5 +538,21 @@ public class CommandsFactoryImpl implements CommandsFactory {
    @Override
    public CancelCommand buildCancelCommandCommand(UUID commandUUID) {
       return new CancelCommand(cacheName, commandUUID);
+   }
+
+   @Override
+   public <K, V, C> EntryRequestCommand<K, V, C> buildEntryRequestCommand(UUID identifier, Set<Integer> segments,
+                                                                          KeyValueFilter<? super K, ? super V> filter,
+                                                                          Converter<? super K, ? super V, C> converter) {
+      return new EntryRequestCommand<K, V, C>(cacheName, identifier, cache.getCacheManager().getAddress(), segments,
+                                              filter, converter);
+   }
+
+   @Override
+   public <K, C> EntryResponseCommand buildEntryResponseCommand(UUID identifier, Set<Integer> completedSegments,
+                                                                Set<Integer> inDoubtSegments,
+                                                                Collection<Map.Entry<K, C>> values) {
+      return new EntryResponseCommand(cache.getCacheManager().getAddress(), cacheName, identifier, completedSegments,
+                                      inDoubtSegments, values);
    }
 }

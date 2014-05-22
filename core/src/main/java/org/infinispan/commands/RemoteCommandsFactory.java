@@ -33,6 +33,8 @@ import org.infinispan.factories.annotations.ComponentName;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.scopes.Scope;
 import org.infinispan.factories.scopes.Scopes;
+import org.infinispan.iteration.EntryRequestCommand;
+import org.infinispan.iteration.EntryResponseCommand;
 import org.infinispan.persistence.manager.PersistenceManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.statetransfer.StateRequestCommand;
@@ -224,6 +226,12 @@ public class RemoteCommandsFactory {
                break;
             case CancelCommand.COMMAND_ID:
                command = new CancelCommand(cacheName);
+               break;
+            case EntryRequestCommand.COMMAND_ID:
+               command = new EntryRequestCommand(cacheName);
+               break;
+            case EntryResponseCommand.COMMAND_ID:
+               command = new EntryResponseCommand(cacheName);
                break;
             default:
                throw new CacheException("Unknown command id " + id + "!");
