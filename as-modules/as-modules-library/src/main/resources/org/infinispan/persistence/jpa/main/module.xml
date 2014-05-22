@@ -15,6 +15,7 @@
         <module name="javax.transaction.api"/>
         <module name="org.hibernate"/>
         <module name="org.infinispan" slot="${slot}"/>
+        <module name="org.javassist"/>
         <module name="org.jboss.logging"/>
     </dependencies>
 </module>
