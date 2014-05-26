@@ -23,6 +23,7 @@ package org.jboss.as.cli.handlers;
 
 import java.io.IOException;
 
+import org.jboss.as.cli.CliInterpreterException;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.cli.Util;
@@ -81,7 +82,11 @@ public class PrefixHandler extends CommandHandlerWithHelp {
         }
         InfinispanUtil.CacheInfo cacheInfo = InfinispanUtil.getCacheInfo(ctx);
         if (cacheInfo.getCache() != null) {
-             InfinispanUtil.cliRequest(ctx, "cache " + cacheInfo.getCache() + '\n');
+           try {
+              InfinispanUtil.cliRequest(ctx, "cache " + cacheInfo.getCache() + '\n');
+           } catch (CliInterpreterException e) {
+              throw new CommandLineException(e.getLocalizedMessage());
+           }
         }
     }
 

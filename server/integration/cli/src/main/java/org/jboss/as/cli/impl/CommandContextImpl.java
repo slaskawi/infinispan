@@ -117,6 +117,7 @@ import org.jboss.as.cli.operation.impl.DefaultOperationRequestParser;
 import org.jboss.as.cli.operation.impl.DefaultPrefixFormatter;
 import org.jboss.as.cli.operation.impl.RolloutPlanCompleter;
 import org.jboss.as.cli.parsing.operation.OperationFormat;
+import org.jboss.as.cli.handlers.cachecommands.CacheCommand;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
@@ -391,8 +392,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         // supported but hidden from tab-completion until stable implementation
         cmdRegistry.registerHandler(new ArchiveHandler(this), false, "archive");
 
-        CliInterpreterCommandHandler.registerCommands(cmdRegistry, this);
-        cmdRegistry.registerHandler(new ContainerCommandHandler(), true, "container");
+        CacheCommand.registerCacheCommands(cmdRegistry);
 
         registerExtraHandlers();
     }

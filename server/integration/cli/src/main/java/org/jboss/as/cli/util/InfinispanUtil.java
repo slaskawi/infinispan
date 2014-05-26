@@ -1,5 +1,6 @@
 package org.jboss.as.cli.util;
 
+import org.jboss.as.cli.CliInterpreterException;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineException;
@@ -96,6 +97,9 @@ public class InfinispanUtil {
       } catch (CommandLineException e) {
          ctx.getCurrentNodePath().reset();
          throw e;
+      } catch (CliInterpreterException e) {
+         ctx.getCurrentNodePath().reset();
+         throw new CommandLineException(e.getLocalizedMessage());
       }
    }
 
@@ -103,7 +107,7 @@ public class InfinispanUtil {
       ctx.getCurrentNodePath().reset();
    }
 
-   public static ModelNode cliRequest(CommandContext ctx, String command) throws CommandLineException {
+   public static ModelNode cliRequest(CommandContext ctx, String command) throws CommandLineException, CliInterpreterException {
       final ModelNode request = buildCliRequest(ctx, command);
 
       final ModelControllerClient client = ctx.getModelControllerClient();
@@ -121,7 +125,7 @@ public class InfinispanUtil {
       }
       ModelNode result = response.get(Util.RESULT);
       if (Boolean.parseBoolean(result.get("isError").asString())) {
-         throw new CommandLineException(result.get("result").asString());
+         throw new CliInterpreterException(result.get("result").asString());
       }
       updateStateFromResponse(result, ctx);
       return result;
