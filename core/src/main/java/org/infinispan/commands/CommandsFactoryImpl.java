@@ -60,6 +60,8 @@ import org.infinispan.factories.annotations.ComponentName;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.annotations.Start;
 import org.infinispan.interceptors.InterceptorChain;
+import org.infinispan.partionhandling.impl.PartitionHandlingManager;
+import org.infinispan.partionhandling.impl.PartitionStateControlCommand;
 import org.infinispan.statetransfer.StateProvider;
 import org.infinispan.statetransfer.StateConsumer;
 import org.infinispan.statetransfer.StateRequestCommand;
@@ -135,6 +137,7 @@ public class CommandsFactoryImpl implements CommandsFactory {
    private XSiteStateProvider xSiteStateProvider;
    private XSiteStateConsumer xSiteStateConsumer;
    private XSiteStateTransferManager xSiteStateTransferManager;
+   private PartitionHandlingManager partitionHandlingManager;
 
    private Map<Byte, ModuleCommandInitializer> moduleCommandInitializers;
 
@@ -148,7 +151,8 @@ public class CommandsFactoryImpl implements CommandsFactory {
                                  StateTransferManager stm, BackupSender backupSender, CancellationService cancellationService,
                                  TimeService timeService, EntryRetriever entryRetriever,
                                  XSiteStateProvider xSiteStateProvider, XSiteStateConsumer xSiteStateConsumer,
-                                 XSiteStateTransferManager xSiteStateTransferManager) {
+                                 XSiteStateTransferManager xSiteStateTransferManager,
+                                 PartitionHandlingManager partitionHandlingManager) {
       this.dataContainer = container;
       this.notifier = notifier;
       this.cache = cache;
@@ -168,6 +172,7 @@ public class CommandsFactoryImpl implements CommandsFactory {
       this.backupSender = backupSender;
       this.cancellationService = cancellationService;
       this.timeService = timeService;
+      this.partitionHandlingManager = partitionHandlingManager;
       this.entryRetriever = entryRetriever;
       this.xSiteStateConsumer = xSiteStateConsumer;
       this.xSiteStateProvider = xSiteStateProvider;
@@ -465,6 +470,10 @@ public class CommandsFactoryImpl implements CommandsFactory {
             XSiteStatePushCommand xSiteStatePushCommand = (XSiteStatePushCommand) c;
             xSiteStatePushCommand.initialize(xSiteStateConsumer);
             break;
+         case PartitionStateControlCommand.COMMAND_ID:
+            PartitionStateControlCommand stateControlCommand = (PartitionStateControlCommand) c;
+            stateControlCommand.init(partitionHandlingManager);
+            break;
          default:
             ModuleCommandInitializer mci = moduleCommandInitializers.get(c.getCommandId());
             if (mci != null) {
@@ -496,8 +505,8 @@ public class CommandsFactoryImpl implements CommandsFactory {
    }
 
    @Override
-   public StateResponseCommand buildStateResponseCommand(Address sender, int viewId, Collection<StateChunk> stateChunks) {
-      return new StateResponseCommand(cacheName, sender, viewId, stateChunks);
+   public StateResponseCommand buildStateResponseCommand(Address sender, int topologyId, Collection<StateChunk> stateChunks) {
+      return new StateResponseCommand(cacheName, sender, topologyId, stateChunks);
    }
 
    @Override
