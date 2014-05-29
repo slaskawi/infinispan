@@ -307,7 +307,7 @@ public class StateConsumerImpl implements StateConsumer {
          }
          rebalanceInProgress.set(true);
          cacheNotifier.notifyDataRehashed(cacheTopology.getCurrentCH(), cacheTopology.getPendingCH(),
-               cacheTopology.getTopologyId(), true);
+               cacheTopology.getUnionCH(), cacheTopology.getTopologyId(), true);
 
          //in total order, we should wait for remote transactions before proceeding
          if (isTotalOrder) {
@@ -415,7 +415,7 @@ public class StateConsumerImpl implements StateConsumer {
                if (changed) {
                   // if the coordinator changed, we might get two concurrent topology updates,
                   // but we only want to notify the @DataRehashed listeners once
-                  cacheNotifier.notifyDataRehashed(previousReadCh, cacheTopology.getCurrentCH(),
+                  cacheNotifier.notifyDataRehashed(previousReadCh, cacheTopology.getCurrentCH(), previousWriteCh,
                         cacheTopology.getTopologyId(), false);
                   if (log.isTraceEnabled()) {
                      log.tracef("Unlock State Transfer in Progress for topology ID %s", cacheTopology.getTopologyId());

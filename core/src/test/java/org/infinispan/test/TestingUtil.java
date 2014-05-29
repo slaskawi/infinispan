@@ -175,7 +175,7 @@ public class TestingUtil {
    }
 
    public static void waitForRehashToComplete(Cache... caches) {
-      int gracetime = 90000; // 90 seconds
+      int gracetime = 180000; // 180 seconds
       long giveup = System.currentTimeMillis() + gracetime;
       for (Cache c : caches) {
          if (c instanceof SecureCacheImpl) {

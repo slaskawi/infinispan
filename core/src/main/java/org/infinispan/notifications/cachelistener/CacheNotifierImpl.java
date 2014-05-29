@@ -14,6 +14,7 @@ import org.infinispan.notifications.AbstractListenerImpl;
 import org.infinispan.notifications.KeyFilter;
 import org.infinispan.notifications.cachelistener.annotation.*;
 import org.infinispan.notifications.cachelistener.event.*;
+import org.infinispan.topology.CacheTopology;
 import org.infinispan.transaction.xa.GlobalTransaction;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
@@ -398,24 +399,27 @@ public final class CacheNotifierImpl extends AbstractListenerImpl implements Cac
    }
 
    @Override
-   public void notifyDataRehashed(ConsistentHash oldCH, ConsistentHash newCH, int newTopologyId, boolean pre) {
+   public void notifyDataRehashed(ConsistentHash readCH, ConsistentHash writeCH, ConsistentHash unionCH, int newTopologyId, boolean pre) {
       if (!dataRehashedListeners.isEmpty()) {
          EventImpl<Object, Object> e = EventImpl.createEvent(cache, DATA_REHASHED);
          e.setPre(pre);
-         e.setConsistentHashAtStart(oldCH);
-         e.setConsistentHashAtEnd(newCH);
+         e.setConsistentHashAtStart(readCH);
+         e.setConsistentHashAtEnd(writeCH);
+         e.setUnionConsistentHash(unionCH);
          e.setNewTopologyId(newTopologyId);
          for (ListenerInvocation listener : dataRehashedListeners) listener.invoke(e);
       }
    }
 
    @Override
-   public void notifyTopologyChanged(ConsistentHash oldConsistentHash, ConsistentHash newConsistentHash, int newTopologyId, boolean pre) {
+   public void notifyTopologyChanged(CacheTopology oldTopology, CacheTopology newTopology, int newTopologyId, boolean pre) {
       if (!topologyChangedListeners.isEmpty()) {
          EventImpl<Object, Object> e = EventImpl.createEvent(cache, TOPOLOGY_CHANGED);
          e.setPre(pre);
-         e.setConsistentHashAtStart(oldConsistentHash);
-         e.setConsistentHashAtEnd(newConsistentHash);
+         if (oldTopology != null) {
+            e.setConsistentHashAtStart(oldTopology.getReadConsistentHash());
+         }
+         e.setConsistentHashAtEnd(newTopology.getWriteConsistentHash());
          e.setNewTopologyId(newTopologyId);
          for (ListenerInvocation listener : topologyChangedListeners) listener.invoke(e);
       }

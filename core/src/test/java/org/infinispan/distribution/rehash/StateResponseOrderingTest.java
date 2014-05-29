@@ -109,7 +109,7 @@ public class StateResponseOrderingTest extends MultipleCacheManagersTest {
       sequencer.enter("st:simulate_old_response");
 
       assertNotNull(stm0.getCacheTopology().getPendingCH());
-      assertEquals(Arrays.asList(address(1), address(2), address(3), address(0)), stm0.getCacheTopology().getPendingCH().locateOwners("k1"));
+      assertEquals(Arrays.asList(address(1), address(2), address(3), address(0)), stm0.getCacheTopology().getWriteConsistentHash().locateOwners("k1"));
 
       // Cache 0 didn't manage to send any StateRequestCommand yet.
       // We'll pretend it got a StateResponseCommand with an older topology id.
