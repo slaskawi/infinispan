@@ -58,7 +58,7 @@
    </issueManagement>
 
    <properties>
-      <version.protostream>1.0.1.Final-redhat-2</version.protostream>
+      <version.protostream>1.0.2.Final-redhat-1</version.protostream>
       <version.aesh>0.33.8.redhat-1</version.aesh>
       <version.commons.pool>1.6.redhat-6</version.commons.pool>
       <version.protobuf>2.5.0</version.protobuf>
