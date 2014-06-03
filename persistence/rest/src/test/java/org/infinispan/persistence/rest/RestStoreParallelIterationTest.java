@@ -50,15 +50,43 @@ public class RestStoreParallelIterationTest  extends ParallelIterationTest {
     */
 
    @Test(groups = "unstable", description = "don't know why but it is still running this test even the class is marked as unstable")
-   @Override
-   public void testParallelIteration() {
-      super.testParallelIteration();
+   public void testParallelIterationWithValueAndMetadata() {
+      super.testParallelIterationWithValueAndMetadata();
    }
 
    @Test(groups = "unstable", description = "don't know why but it is still running this test even the class is marked as unstable")
-   @Override
-   public void testSequentialIteration() {
-      super.testSequentialIteration();
+   public void testParallelIterationWithValueWithoutMetadata() {
+      super.testParallelIterationWithValueWithoutMetadata();
+   }
+
+   @Test(groups = "unstable", description = "don't know why but it is still running this test even the class is marked as unstable")
+   public void testSequentialIterationWithValueAndMetadata() {
+      super.testSequentialIterationWithValueAndMetadata();
+   }
+
+   @Test(groups = "unstable", description = "don't know why but it is still running this test even the class is marked as unstable")
+   public void testSequentialIterationWithValueWithoutMetadata() {
+      super.testSequentialIterationWithValueWithoutMetadata();
+   }
+
+   @Test(groups = "unstable", description = "don't know why but it is still running this test even the class is marked as unstable")
+   public void testParallelIterationWithoutValueWithMetadata() {
+      super.testParallelIterationWithoutValueWithMetadata();
+   }
+
+   @Test(groups = "unstable", description = "don't know why but it is still running this test even the class is marked as unstable")
+   public void testParallelIterationWithoutValueOrMetadata() {
+      super.testParallelIterationWithoutValueOrMetadata();
+   }
+
+   @Test(groups = "unstable", description = "don't know why but it is still running this test even the class is marked as unstable")
+   public void testSequentialIterationWithoutValueWithMetadata() {
+      super.testSequentialIterationWithoutValueWithMetadata();
+   }
+
+   @Test(groups = "unstable", description = "don't know why but it is still running this test even the class is marked as unstable")
+   public void testSequentialIterationWithoutValueOrMetadata() {
+      super.testSequentialIterationWithoutValueOrMetadata();
    }
 
    @Test(groups = "unstable")

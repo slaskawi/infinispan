@@ -37,8 +37,9 @@ public class JpaStoreTest extends BaseStoreTest {
             .getDefaultCacheConfiguration(false)
                .persistence()
                   .addStore(JpaStoreConfigurationBuilder.class)
-                     .persistenceUnitName("org.infinispan.persistence.jpa")
+                     .persistenceUnitName(getPersistenceUnitName())
                      .entityClass(KeyValueEntity.class)
+                     .storeMetadata(storeMetadata())
                      .create();
       Cache cache = getCache();
       cache.getAdvancedCache().getComponentRegistry().getGlobalComponentRegistry()
@@ -47,6 +48,14 @@ public class JpaStoreTest extends BaseStoreTest {
             new MarshalledEntryFactoryImpl(getMarshaller())));
       store.start();
       return store;
+   }
+
+   protected boolean storeMetadata() {
+      return true;
+   }
+
+   protected String getPersistenceUnitName() {
+      return "org.infinispan.persistence.jpa";
    }
 
    @Override
