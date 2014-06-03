@@ -75,7 +75,7 @@
       <version.netty>4.0.18.Final-redhat-1</version.netty>
       <version.osgi>4.2.0-redhat-3</version.osgi>
       <version.rhq>4.4.0.JON310GA</version.rhq>
-      <version.scala>2.10.2.redhat-1</version.scala>
+      <version.scala>2.10.4-redhat-1</version.scala>
       <version.xstream>1.4.7-redhat-1</version.xstream>
    </properties>
 
