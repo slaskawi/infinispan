@@ -191,7 +191,12 @@ public class MockCommandContext implements CommandContext {
         throw new UnsupportedOperationException();
     }
 
-    @Override
+   @Override
+   public void connectController(String host, int port, String username, char[] password) throws CommandLineException {
+      throw new UnsupportedOperationException();
+   }
+
+   @Override
     public void bindClient(ModelControllerClient newClient) {
         throw new UnsupportedOperationException();
     }

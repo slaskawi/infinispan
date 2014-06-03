@@ -130,6 +130,8 @@ public interface CommandContext {
      */
     void connectController(String host, int port) throws CommandLineException;
 
+    void connectController(String host, int port, String username, char[] password) throws CommandLineException;
+
     /**
      * Bind the controller to an existing, connected client.
      */

@@ -63,6 +63,7 @@ public class CliInterpreterHandler implements OperationStepHandler {
       setInModelNode(node, "cacheName", response.get(ResultKeys.CACHE.toString()));
       setInModelNode(node, "result", response.get(ResultKeys.OUTPUT.toString()));
       setInModelNode(node, "result", response.get(ResultKeys.ERROR.toString()));
+      setInModelNode(node, "isError", Boolean.toString(response.get(ResultKeys.ERROR.toString()) != null));
    }
 
    private static void setInModelNode(ModelNode node, String key, String value) {
