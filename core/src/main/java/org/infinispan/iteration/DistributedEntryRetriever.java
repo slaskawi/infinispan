@@ -5,6 +5,7 @@ import org.infinispan.commands.CommandsFactory;
 import org.infinispan.commons.util.CloseableIterator;
 import org.infinispan.commons.util.CollectionFactory;
 import org.infinispan.commons.util.concurrent.ParallelIterableMap;
+import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.container.entries.ImmortalCacheEntry;
 import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.distribution.DistributionManager;
@@ -236,8 +237,8 @@ public class DistributedEntryRetriever<K, V> extends LocalEntryRetriever<K, V> {
 
                   startRetrievingValuesLocal(identifier, processSegments, status, new SegmentBatchHandler<K, Object>() {
                      @Override
-                     public void handleBatch(UUID identifier, boolean complete, Set<Integer> completedSegments, Set<Integer> inDoubtSegments, Collection<Map.Entry<K, Object>> entries) {
-                     processData(identifier, localAddress, completedSegments, inDoubtSegments, entries);
+                     public void handleBatch(UUID identifier, boolean complete, Set<Integer> completedSegments, Set<Integer> inDoubtSegments, Collection<CacheEntry> entries) {
+                        processData(identifier, localAddress, completedSegments, inDoubtSegments, entries);
                      }
                   });
                }
@@ -277,7 +278,7 @@ public class DistributedEntryRetriever<K, V> extends LocalEntryRetriever<K, V> {
       startRetrievingValues(identifier, segments, filter, converter, new SegmentBatchHandler<K, C>() {
          @Override
          public void handleBatch(UUID identifier, boolean complete, Set<Integer> completedSegments,
-                                 Set<Integer> inDoubtSegments, Collection<Map.Entry<K, C>> entries) {
+                                 Set<Integer> inDoubtSegments, Collection<CacheEntry> entries) {
             if (cache.getStatus() != ComponentStatus.RUNNING) {
                if (log.isTraceEnabled()) {
                   log.tracef("Cache status is no longer running, all segments are now suspect");
@@ -335,10 +336,10 @@ public class DistributedEntryRetriever<K, V> extends LocalEntryRetriever<K, V> {
                   changeListener.put(identifier, segmentChangeListener);
                   try {
                      final Set<K> processedKeys = new ConcurrentHashSet<K>();
-                     Queue<Map.Entry<K, C>> queue = new ConcurrentLinkedQueue<Map.Entry<K, C>>() {
+                     Queue<CacheEntry> queue = new ConcurrentLinkedQueue<CacheEntry>() {
                         @Override
-                        public boolean add(Map.Entry<K, C> kcEntry) {
-                           processedKeys.add(kcEntry.getKey());
+                        public boolean add(CacheEntry kcEntry) {
+                           processedKeys.add((K) kcEntry.getKey());
                            return super.add(kcEntry);
                         }
                      };
@@ -386,7 +387,7 @@ public class DistributedEntryRetriever<K, V> extends LocalEntryRetriever<K, V> {
                            for (K key : listener.activatedKeys) {
                               // If we didn't process it already we have to look it up
                               if (!processedKeys.contains(key)) {
-                                 Map.Entry entry = advancedCache.getCacheEntry(key);
+                                 CacheEntry entry = advancedCache.getCacheEntry(key);
                                  if (entry != null) {
                                     queue.add(entry);
                                  }
@@ -405,7 +406,7 @@ public class DistributedEntryRetriever<K, V> extends LocalEntryRetriever<K, V> {
                         }
                      }
                      // No type to work around generics in sub sub types :)
-                     Collection entriesToSend = new ArrayList<Map.Entry<K, C>>(queue);
+                     Collection entriesToSend = new ArrayList<CacheEntry>(queue);
 
                      handler.handleBatch(identifier, true, completedSegments, inDoubtSegmentsToUse, entriesToSend);
                      if (log.isTraceEnabled()) {
@@ -451,7 +452,7 @@ public class DistributedEntryRetriever<K, V> extends LocalEntryRetriever<K, V> {
             @Override
             public void run() {
                // If we don't have any of those segments just send back a response saying they are suspect with no values
-               Collection<Map.Entry<K, H>> emptyEntries = Collections.emptySet();
+               Collection<CacheEntry> emptyEntries = Collections.emptySet();
                handler.handleBatch(identifier, true, segments, inDoubtSegments, emptyEntries);
             }
          });
@@ -473,7 +474,7 @@ public class DistributedEntryRetriever<K, V> extends LocalEntryRetriever<K, V> {
    }
 
    @Override
-   public <C> CloseableIterator<Map.Entry<K, C>> retrieveEntries(KeyValueFilter<? super K, ? super V> filter,
+   public <C> CloseableIterator<CacheEntry> retrieveEntries(KeyValueFilter<? super K, ? super V> filter,
                                                     Converter<? super K, ? super V, ? extends C> converter,
                                                     SegmentListener listener) {
       UUID identifier = UUID.randomUUID();
@@ -504,7 +505,7 @@ public class DistributedEntryRetriever<K, V> extends LocalEntryRetriever<K, V> {
          wireFilterAndConverterDependencies(filter, converter);
          startRetrievingValuesLocal(identifier, ourSegments, status, new SegmentBatchHandler<K, C>() {
             @Override
-            public void handleBatch(UUID identifier, boolean complete, Set<Integer> completedSegments, Set<Integer> inDoubtSegments, Collection<Map.Entry<K, C>> entries) {
+            public void handleBatch(UUID identifier, boolean complete, Set<Integer> completedSegments, Set<Integer> inDoubtSegments, Collection<CacheEntry> entries) {
                processData(identifier, localAddress, completedSegments, inDoubtSegments, entries);
             }
          });
@@ -759,7 +760,7 @@ public class DistributedEntryRetriever<K, V> extends LocalEntryRetriever<K, V> {
 
    @Override
    public <C> void receiveResponse(UUID identifier, Address origin, Set<Integer> completedSegments,
-                                   Set<Integer> inDoubtSegments, Collection<Map.Entry<K, C>> entries) {
+                                   Set<Integer> inDoubtSegments, Collection<CacheEntry> entries) {
       if (log.isTraceEnabled()) {
          log.tracef("Processing response for identifier %s", identifier);
       }
@@ -782,7 +783,7 @@ public class DistributedEntryRetriever<K, V> extends LocalEntryRetriever<K, V> {
     * @param <C> The type for the entries value
     */
    private <C> void processData(final UUID identifier, Address origin, Set<Integer> completedSegments, Set<Integer> inDoubtSegments,
-                            Collection<Map.Entry<K, C>> entries) {
+                            Collection<CacheEntry> entries) {
       final IterationStatus<K, V, C> status = (IterationStatus<K, V, C>) iteratorDetails.get(identifier);
       final AtomicReferenceArray<Set<K>> processedKeys = status.processedKeys;
 
@@ -793,7 +794,7 @@ public class DistributedEntryRetriever<K, V> extends LocalEntryRetriever<K, V> {
       }
       if (processedKeys != null && itr != null) {
          // Normally we shouldn't have duplicates, but rehash can cause that
-         Collection<Map.Entry<K, C>> nonDuplicateEntries = new ArrayList<Map.Entry<K, C>>(entries.size());
+         Collection<CacheEntry> nonDuplicateEntries = new ArrayList<CacheEntry>(entries.size());
          Map<Integer, ConcurrentHashSet<K>> finishedKeysForSegment = new HashMap<Integer, ConcurrentHashSet<K>>();
          // We have to put the empty hash set, or else segments with no values would complete
          for (int completedSegment : completedSegments) {
@@ -801,8 +802,8 @@ public class DistributedEntryRetriever<K, V> extends LocalEntryRetriever<K, V> {
          }
          // We need to keep track of what we have seen in case if they become in doubt
          ConsistentHash hash = getCurrentHash();
-         for (Map.Entry<K, C> entry : entries) {
-            K key = entry.getKey();
+         for (CacheEntry entry : entries) {
+            K key = (K) entry.getKey();
             int segment = hash.getSegment(key);
             Set<K> seenSet = processedKeys.get(segment);
             // If the set is null means that this segment was already finished... so don't worry about those values
@@ -818,15 +819,6 @@ public class DistributedEntryRetriever<K, V> extends LocalEntryRetriever<K, V> {
             }
          }
 
-         if (!completedSegments.isEmpty()) {
-            if (log.isTraceEnabled()) {
-               log.tracef("Completing segments %s for identifier %s", completedSegments, identifier);
-            }
-            for (Integer completeSegment : completedSegments) {
-               // Null out the set saying we completed this segment
-               processedKeys.set(completeSegment, null);
-            }
-         }
          itr.addKeysForSegment(finishedKeysForSegment);
 
          try {
@@ -837,6 +829,17 @@ public class DistributedEntryRetriever<K, V> extends LocalEntryRetriever<K, V> {
                log.tracef("Iteration thread was interrupted, stopping iteration for identifier %s", identifier);
             }
             completeIteration(identifier);
+         }
+
+         // We complete the segments after setting the entries
+         if (!completedSegments.isEmpty()) {
+            if (log.isTraceEnabled()) {
+               log.tracef("Completing segments %s for identifier %s", completedSegments, identifier);
+            }
+            for (Integer completeSegment : completedSegments) {
+               // Null out the set saying we completed this segment
+               processedKeys.set(completeSegment, null);
+            }
          }
 
          // If we are finished we need to request the next segments - currently the indoubt and completed are
@@ -906,7 +909,7 @@ public class DistributedEntryRetriever<K, V> extends LocalEntryRetriever<K, V> {
                // Have the local request check it's values again
                startRetrievingValuesLocal(identifier, localSegments, status, new SegmentBatchHandler<K, Object>() {
                   @Override
-                  public void handleBatch(UUID identifier, boolean complete, Set<Integer> completedSegments, Set<Integer> inDoubtSegments, Collection<Map.Entry<K, Object>> entries) {
+                  public void handleBatch(UUID identifier, boolean complete, Set<Integer> completedSegments, Set<Integer> inDoubtSegments, Collection<CacheEntry> entries) {
                      processData(identifier, localAddress, completedSegments, inDoubtSegments, entries);
                   }
                });
@@ -962,9 +965,9 @@ public class DistributedEntryRetriever<K, V> extends LocalEntryRetriever<K, V> {
       }
 
       @Override
-      public Map.Entry<K, C> next() {
-         Map.Entry<K, C> entry = super.next();
-         K key = entry.getKey();
+      public CacheEntry next() {
+         CacheEntry entry = super.next();
+         K key = (K) entry.getKey();
          int segment = hash.getSegment(key);
          Set<K> keys = keysNeededToComplete.get(segment);
          if (keys != null) {
@@ -1016,13 +1019,13 @@ public class DistributedEntryRetriever<K, V> extends LocalEntryRetriever<K, V> {
       final int batchSize;
       final Converter<? super K, ? super V, C> converter;
       final SegmentBatchHandler<K, C> handler;
-      final Queue<Map.Entry<K, C>> queue;
+      final Queue<CacheEntry> queue;
 
       final AtomicInteger insertionCount = new AtomicInteger();
 
       public MapAction(UUID identifier, Set<Integer> segments, Set<Integer> inDoubtSegments,
                        int batchSize, Converter<? super K, ? super V, C> converter, SegmentBatchHandler<K, C> handler,
-                       Queue<Map.Entry<K, C>> queue)  {
+                       Queue<CacheEntry> queue)  {
          this.identifier = identifier;
          this.segments = segments;
          this.batchSize = batchSize;
@@ -1035,17 +1038,15 @@ public class DistributedEntryRetriever<K, V> extends LocalEntryRetriever<K, V> {
       public void apply(K k, InternalCacheEntry kvInternalCacheEntry) {
          ConsistentHash hash = getCurrentHash();
          if (segments.contains(hash.getSegment(k))) {
-            C value;
+            CacheEntry clone = (CacheEntry)kvInternalCacheEntry.clone();
             if (converter != null) {
-               value = converter.convert(k, (V) kvInternalCacheEntry.getValue(), kvInternalCacheEntry.getMetadata());
-            } else {
-               // If no converter, than C is undefined, so it doesn't matter
-               value = (C) kvInternalCacheEntry.getValue();
+               C value = converter.convert((K) k, (V) kvInternalCacheEntry.getValue(), kvInternalCacheEntry.getMetadata());
+               clone.setValue(value);
             }
             // We use just an immortal cache entry since it has low serialization overhead
-            queue.add((Map.Entry<K, C>)new ImmortalCacheEntry(k, value));
+            queue.add(clone);
             if (insertionCount.incrementAndGet() % batchSize == 0) {
-               Collection<Map.Entry<K, C>> entriesToSend = new ArrayList<Map.Entry<K, C>>(batchSize);
+               Collection<CacheEntry> entriesToSend = new ArrayList<CacheEntry>(batchSize);
                while (entriesToSend.size() != batchSize) {
                   entriesToSend.add(queue.poll());
                }
@@ -1060,7 +1061,7 @@ public class DistributedEntryRetriever<K, V> extends LocalEntryRetriever<K, V> {
 
    private interface SegmentBatchHandler<K, C> {
       public void handleBatch(UUID identifier, boolean complete, Set<Integer> completedSegments,
-                              Set<Integer> inDoubtSegments, Collection<Map.Entry<K, C>> entries);
+                              Set<Integer> inDoubtSegments, Collection<CacheEntry> entries);
    }
 
    private static class SegmentFilter<K> implements KeyFilter<K> {

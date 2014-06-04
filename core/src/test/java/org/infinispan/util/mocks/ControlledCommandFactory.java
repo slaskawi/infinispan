@@ -1,6 +1,8 @@
 package org.infinispan.util.mocks;
 
 import org.infinispan.Cache;
+import org.infinispan.commands.VisitableCommand;
+import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.filter.Converter;
 import org.infinispan.filter.KeyValueFilter;
 import org.infinispan.iteration.EntryRequestCommand;
@@ -310,6 +312,11 @@ public class ControlledCommandFactory implements CommandsFactory {
    }
 
    @Override
+   public CreateCacheCommand buildCreateCacheCommand(String cacheName, String cacheConfigurationName, boolean start, int size) {
+      return actual.buildCreateCacheCommand(cacheName, cacheConfigurationName, start, size);
+   }
+
+   @Override
    public CancelCommand buildCancelCommandCommand(UUID commandUUID) {
       return actual.buildCancelCommandCommand(commandUUID);
    }
@@ -320,12 +327,7 @@ public class ControlledCommandFactory implements CommandsFactory {
    }
 
    @Override
-   public <K, C> EntryResponseCommand buildEntryResponseCommand(UUID identifier, Set<Integer> completedSegments, Set<Integer> inDoubtSegments, Collection<Map.Entry<K, C>> values) {
+   public <K, C> EntryResponseCommand buildEntryResponseCommand(UUID identifier, Set<Integer> completedSegments, Set<Integer> inDoubtSegments, Collection<CacheEntry> values) {
       return actual.buildEntryResponseCommand(identifier, completedSegments, inDoubtSegments, values);
-   }
-
-   @Override
-   public CreateCacheCommand buildCreateCacheCommand(String tmpCacheName, String defaultTmpCacheConfigurationName, boolean start, int size) {
-      return actual.buildCreateCacheCommand(tmpCacheName, defaultTmpCacheConfigurationName, start, size);
    }
 }

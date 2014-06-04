@@ -5,6 +5,7 @@ import org.infinispan.commons.util.CloseableIterable;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
+import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.container.entries.ImmortalCacheEntry;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.filter.KeyValueFilter;
@@ -104,10 +105,10 @@ public class DistributedEntryRetrieverStressTest extends MultipleCacheManagersTe
                   while (!complete.get()) {
                      log.tracef("Starting iteration %s", iteration);
                      Map<Integer, Integer> seenValues = new HashMap<Integer, Integer>();
-                     CloseableIterable<Map.Entry<Integer, Integer>> iterable = cache.getAdvancedCache().filterEntries(
+                     CloseableIterable<CacheEntry> iterable = cache.getAdvancedCache().filterEntries(
                            new AllEntriesFilter());
                      try {
-                        for (Map.Entry<Integer, Integer> entry : iterable) {
+                        for (CacheEntry entry : iterable) {
                            if (seenValues.containsKey(entry.getKey())) {
                               log.tracef("Seen values were: %s", seenValues);
                               throw new IllegalArgumentException(Thread.currentThread() + "-Found duplicate value: " + entry.getKey() + " on iteration " + iteration);
@@ -115,7 +116,7 @@ public class DistributedEntryRetrieverStressTest extends MultipleCacheManagersTe
                               log.tracef("Seen values were: %s", seenValues);
                               throw new IllegalArgumentException(Thread.currentThread() + "-Found incorrect value: " + entry.getKey() + " with value " + entry.getValue() + " on iteration " + iteration);
                            }
-                           seenValues.put(entry.getKey(), entry.getValue());
+                           seenValues.put((Integer) entry.getKey(), (Integer) entry.getValue());
                         }
                         if (seenValues.size() != masterValues.size()) {
                            Map<Integer, Set<Map.Entry<Integer, Integer>>> target = generateEntriesPerSegment(cache.getAdvancedCache().getDistributionManager().getConsistentHash(), masterValues.entrySet());

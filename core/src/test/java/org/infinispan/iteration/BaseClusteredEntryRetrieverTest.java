@@ -3,15 +3,20 @@ package org.infinispan.iteration;
 import org.infinispan.Cache;
 import org.infinispan.commons.util.CloseableIterator;
 import org.infinispan.configuration.cache.CacheMode;
+import org.infinispan.container.entries.CacheEntry;
+import org.infinispan.container.entries.TransientMortalCacheEntry;
 import org.infinispan.distribution.MagicKey;
 import org.infinispan.filter.CollectionKeyFilter;
 import org.infinispan.filter.KeyFilterAsKeyValueFilter;
 import org.testng.annotations.Test;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import static org.testng.Assert.assertEquals;
 
@@ -49,7 +54,7 @@ public abstract class BaseClusteredEntryRetrieverTest extends BaseEntryRetriever
       EntryRetriever<MagicKey, String> retriever = cache(1, CACHE_NAME).getAdvancedCache().getComponentRegistry().getComponent(
             EntryRetriever.class);
 
-      CloseableIterator<Map.Entry<MagicKey, String>> iterator = retriever.retrieveEntries(null, null, null);
+      CloseableIterator<CacheEntry> iterator = retriever.retrieveEntries(null, null, null);
       Map<MagicKey, String> results = mapFromIterator(iterator);
       assertEquals(values, results);
    }
@@ -66,7 +71,7 @@ public abstract class BaseClusteredEntryRetrieverTest extends BaseEntryRetriever
       EntryRetriever<MagicKey, String> retriever = cache(1, CACHE_NAME).getAdvancedCache().getComponentRegistry().getComponent(
             EntryRetriever.class);
 
-      CloseableIterator<Map.Entry<MagicKey, String>> iterator = retriever.retrieveEntries(
+      CloseableIterator<CacheEntry> iterator = retriever.retrieveEntries(
             new KeyFilterAsKeyValueFilter<MagicKey, String>(new CollectionKeyFilter<Object>(Collections.singleton(excludedEntry.getKey()))),
             null, null);
       Map<MagicKey, String> results = mapFromIterator(iterator);

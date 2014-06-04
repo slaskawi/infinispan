@@ -1,5 +1,6 @@
 package org.infinispan.commands;
 
+import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.filter.Converter;
 import org.infinispan.filter.KeyValueFilter;
 import org.infinispan.iteration.EntryRequestCommand;
@@ -376,5 +377,5 @@ public interface CommandsFactory {
                                                                    Converter<? super K, ? super V, C> converter);
 
    <K, C> EntryResponseCommand buildEntryResponseCommand(UUID identifier, Set<Integer> completedSegments,
-                                                         Set<Integer> inDoubtSegments, Collection<Map.Entry<K, C>> values);
+                                                         Set<Integer> inDoubtSegments, Collection<CacheEntry> values);
 }

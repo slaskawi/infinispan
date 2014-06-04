@@ -122,6 +122,7 @@ public final class CacheNotifierImpl<K, V> extends AbstractListenerImpl<Event<K,
    private Configuration config;
    private DistributionManager distributionManager;
    private EntryRetriever<K, V> entryRetriever;
+   private InternalEntryFactory entryFactory;
 
    private final Map<Object, UUID> clusterListenerIDs = new ConcurrentHashMap<Object, UUID>();
 
@@ -160,13 +161,15 @@ public final class CacheNotifierImpl<K, V> extends AbstractListenerImpl<Event<K,
    @Inject
    void injectDependencies(Cache<K, V> cache, ClusteringDependentLogic clusteringDependentLogic,
                            TransactionManager transactionManager, Configuration config,
-                           DistributionManager distributionManager, EntryRetriever<K ,V> entryRetriever) {
+                           DistributionManager distributionManager, EntryRetriever<K ,V> entryRetriever,
+                           InternalEntryFactory entryFactory) {
       this.cache = cache;
       this.clusteringDependentLogic = clusteringDependentLogic;
       this.transactionManager = transactionManager;
       this.config = config;
       this.distributionManager = distributionManager;
       this.entryRetriever = entryRetriever;
+      this.entryFactory = entryFactory;
    }
 
    @Override
@@ -671,13 +674,15 @@ public final class CacheNotifierImpl<K, V> extends AbstractListenerImpl<Event<K,
          if (log.isTraceEnabled()) {
             log.tracef("Listener %s requests initial state for cache", generatedId);
          }
-         CloseableIterator<Map.Entry<K, C>> iterator = entryRetriever.retrieveEntries(filter, converter, handler);
+         CloseableIterator<CacheEntry> iterator = entryRetriever.retrieveEntries(filter, converter, handler);
          try {
             while (iterator.hasNext()) {
-               Map.Entry<K, C> entry = iterator.next();
+               CacheEntry entry = iterator.next();
                // Mark the key as processed and see if we had a concurrent update
                Object value = handler.markKeyAsProcessing(entry.getKey());
-               if (value == BaseQueueingSegmentListener.REMOVED) {
+               if (value == null) {
+                  value = entry.getValue();
+               } else if (value == BaseQueueingSegmentListener.REMOVED) {
                   // Don't process this value if we had a concurrent remove
                   continue;
                }
@@ -707,7 +712,7 @@ public final class CacheNotifierImpl<K, V> extends AbstractListenerImpl<Event<K,
       }
    }
 
-   private void raiseEventForInitialTransfer(UUID identifier, Map.Entry<?, ?> entry, boolean clustered) {
+   private void raiseEventForInitialTransfer(UUID identifier, CacheEntry entry, boolean clustered) {
       EventImpl preEvent;
       if (clustered) {
          // In clustered mode we only send post event
@@ -721,6 +726,7 @@ public final class CacheNotifierImpl<K, V> extends AbstractListenerImpl<Event<K,
       EventImpl postEvent = EventImpl.createEvent(cache, CACHE_ENTRY_CREATED);
       postEvent.setKey(entry.getKey());
       postEvent.setValue(entry.getValue());
+      postEvent.setMetadata(entry.getMetadata());
       postEvent.setPre(false);
 
       for (CacheEntryListenerInvocation<K, V> invocation : cacheEntryCreatedListeners) {
@@ -822,9 +828,9 @@ public final class CacheNotifierImpl<K, V> extends AbstractListenerImpl<Event<K,
                QueueingSegmentListener handler = segmentHandler.get(identifier);
                if (handler == null) {
                   if (config.clustering().cacheMode().isDistributed()) {
-                     handler = new DistributedQueueingSegmentListener(distributionManager);
+                     handler = new DistributedQueueingSegmentListener(entryFactory, distributionManager);
                   } else {
-                     handler = new QueueingAllSegmentListener();
+                     handler = new QueueingAllSegmentListener(entryFactory);
                   }
                   QueueingSegmentListener currentQueue = segmentHandler.putIfAbsent(identifier, handler);
                   if (currentQueue != null) {

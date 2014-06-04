@@ -7,6 +7,7 @@ import org.infinispan.commons.util.CloseableIterator;
 import org.infinispan.commons.util.concurrent.ParallelIterableMap;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.container.DataContainer;
+import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.container.entries.ImmortalCacheEntry;
 import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.factories.ComponentRegistry;
@@ -118,7 +119,7 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
 
    @Override
    public <C> void receiveResponse(UUID identifier, Address origin, Set<Integer> completedSegments, Set<Integer> inDoubtSegments,
-                                   Collection<Map.Entry<K, C>> entries) {
+                                   Collection<CacheEntry> entries) {
       throw new UnsupportedOperationException();
    }
 
@@ -146,8 +147,7 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
             throws InterruptedException {
          if (!taskContext.isStopped()) {
             // Since ImmortalCacheEntry isn't properly typed we have to cast
-            action.apply(marshalledEntry.getKey(), (InternalCacheEntry)new ImmortalCacheEntry(
-                  marshalledEntry.getKey(), marshalledEntry.getValue()));
+            action.apply(marshalledEntry.getKey(), marshalledEntry.getValue());
             if (Thread.interrupted()) {
                throw new InterruptedException();
             }
@@ -156,7 +156,7 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
    }
 
    @Override
-   public <C> CloseableIterator<Map.Entry<K, C>> retrieveEntries(final KeyValueFilter<? super K, ? super V> filter,
+   public <C> CloseableIterator<CacheEntry> retrieveEntries(final KeyValueFilter<? super K, ? super V> filter,
                                                                  final Converter<? super K, ? super V, ? extends C> converter,
                                                                  final SegmentListener listener) {
       wireFilterAndConverterDependencies(filter, converter);
@@ -168,10 +168,10 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
          public void run() {
             try {
                final Set<K> processedKeys = new ConcurrentHashSet<K>();
-               Queue<Map.Entry<K, C>> queue = new ArrayDeque<Map.Entry<K,C>>(batchSize) {
+               Queue<CacheEntry> queue = new ArrayDeque<CacheEntry>(batchSize) {
                   @Override
-                  public boolean add(Map.Entry<K, C> kcEntry) {
-                     processedKeys.add(kcEntry.getKey());
+                  public boolean add(CacheEntry kcEntry) {
+                     processedKeys.add((K) kcEntry.getKey());
                      return super.add(kcEntry);
                   }
                };
@@ -222,7 +222,7 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
                      for (K key : listener.activatedKeys) {
                         // If we didn't process it already we have to look it up
                         if (!processedKeys.contains(key)) {
-                           Map.Entry entry = advancedCache.getCacheEntry(key);
+                           CacheEntry entry = advancedCache.getCacheEntry(key);
                            if (entry != null) {
                               queue.add(entry);
                            }
@@ -246,13 +246,13 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
 
    private class MapAction<C> implements ParallelIterableMap.KeyValueAction<K, InternalCacheEntry> {
       final Converter<? super K, ? super V, ? extends C> converter;
-      final Queue<Map.Entry<K, C>> queue;
+      final Queue<CacheEntry> queue;
       final int batchSize;
       final BatchHandler<K, C> handler;
 
       final AtomicInteger insertionCount = new AtomicInteger();
 
-      public MapAction(int batchSize, Converter<? super K, ? super V, ? extends C> converter, Queue<Map.Entry<K, C>> queue,
+      public MapAction(int batchSize, Converter<? super K, ? super V, ? extends C> converter, Queue<CacheEntry> queue,
                        BatchHandler<K, C> handler)  {
          this.batchSize = batchSize;
          this.converter = converter;
@@ -262,15 +262,13 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
 
       @Override
       public void apply(K k, InternalCacheEntry kvInternalCacheEntry) {
-         C value;
+         CacheEntry clone = (CacheEntry)kvInternalCacheEntry.clone();
          if (converter != null) {
-            value = converter.convert(k, (V) kvInternalCacheEntry.getValue(), kvInternalCacheEntry.getMetadata());
-         } else {
-            // If no converter, than C is undefined, so it doesn't matter
-            value = (C) kvInternalCacheEntry.getValue();
+            C value = converter.convert((K) k, (V) kvInternalCacheEntry.getValue(), kvInternalCacheEntry.getMetadata());
+            clone.setValue(value);
          }
          // We use just an immortal cache entry since it has low serialization overhead
-         queue.add((Map.Entry<K, C>)new ImmortalCacheEntry(k, value));
+         queue.add(clone);
          if (insertionCount.incrementAndGet() % batchSize == 0) {
             try {
                handler.handleBatch(false, queue);
@@ -283,7 +281,7 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
    }
 
    protected interface BatchHandler<K, C> {
-      public void handleBatch(boolean complete, Collection<Map.Entry<K, C>> entries) throws InterruptedException;
+      public void handleBatch(boolean complete, Collection<CacheEntry> entries) throws InterruptedException;
    }
 
    protected class ItrQueuerHandler<C> implements BatchHandler<K, C> {
@@ -294,7 +292,7 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
       }
 
       @Override
-      public void handleBatch(boolean complete, Collection<Map.Entry<K, C>> entries) throws InterruptedException {
+      public void handleBatch(boolean complete, Collection<CacheEntry> entries) throws InterruptedException {
          iterator.addEntries(entries);
          if (complete) {
             iterator.close();
@@ -302,16 +300,16 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
       }
    }
 
-   protected class Itr<K, C> implements CloseableIterator<Map.Entry<K, C>> {
+   protected class Itr<K, C> implements CloseableIterator<CacheEntry> {
 
-      private final BlockingQueue<Map.Entry<K, C>> queue;
+      private final BlockingQueue<CacheEntry> queue;
       private final Lock nextLock = new ReentrantLock();
       private final Condition nextCondition = nextLock.newCondition();
       private boolean completed;
 
       public Itr(int batchSize) {
          // This is a blocking queue so that addEntries blocks to prevent multiple batches from the same sender
-         this.queue = new ArrayBlockingQueue<Map.Entry<K, C>>(batchSize);
+         this.queue = new ArrayBlockingQueue<CacheEntry>(batchSize);
       }
 
       @Override
@@ -349,8 +347,8 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
       }
 
       @Override
-      public Map.Entry<K, C> next() {
-         Map.Entry<K, C> entry = queue.poll();
+      public CacheEntry next() {
+         CacheEntry entry = queue.poll();
          if (entry == null) {
             if (completed) {
                throw new NoSuchElementException();
@@ -379,13 +377,13 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
          throw new UnsupportedOperationException("Remove is not supported!");
       }
 
-      public void addEntries(Collection<Map.Entry<K, C>> entries) throws InterruptedException {
+      public void addEntries(Collection<CacheEntry> entries) throws InterruptedException {
          boolean wasCompleted = completed;
-         Iterator<Map.Entry<K, C>> itr = entries.iterator();
+         Iterator<CacheEntry> itr = entries.iterator();
          while (!wasCompleted && itr.hasNext()) {
             // First we put as many as we can in the queue without wait blocking.  After it fills up or done we have to
             // signal others to wake up
-            Map.Entry<K, C> entry = null;
+            CacheEntry entry = null;
             while (itr.hasNext()) {
                entry = itr.next();
                if (!queue.offer(entry)) {

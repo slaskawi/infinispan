@@ -1,5 +1,6 @@
 package org.infinispan.notifications.cachelistener;
 
+import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.container.entries.ImmortalCacheEntry;
 import org.infinispan.notifications.cachelistener.event.Event;
 import org.infinispan.util.logging.Log;
@@ -45,8 +46,8 @@ abstract class BaseQueueingSegmentListener<K, V, E extends Event<K, V>> implemen
    }
 
    @Override
-   public Set<Map.Entry<K, Object>> findCreatedEntries() {
-      Set<Map.Entry<K, Object>> set = new HashSet<Map.Entry<K, Object>>();
+   public Set<CacheEntry> findCreatedEntries() {
+      Set<CacheEntry> set = new HashSet<CacheEntry>();
       // We also have to look for any additional creations that we didn't iterate on
       for (Map.Entry<K, Object> entry : notifiedKeys.entrySet()) {
          Object value = entry.getValue();
@@ -61,7 +62,7 @@ abstract class BaseQueueingSegmentListener<K, V, E extends Event<K, V>> implemen
             // Technically we should never get NOTIFIED as this is required to be called after manually marking
             // keys as processed
             if (replaceValue != NOTIFIED && replaceValue != REMOVED) {
-               set.add((Map.Entry<K, Object>)new ImmortalCacheEntry(key, replaceValue));
+               set.add((CacheEntry)replaceValue);
             }
          }
       }
