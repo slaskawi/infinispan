@@ -27,7 +27,7 @@ The link:../user_guide/user_guide.html#_CLI_chapter[Infinispan CLI] can be used 
 
 ----
 
-bin/ispn-cli.sh
+bin/cli.sh
 [disconnected//]> connect localhost
 [remoting://localhost:9999/local/]> cache default
 [remoting://localhost:9999/local/default]> encoding hotrod
