@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  * @author Galder Zamarreño
  * @since 5.2
+ * @private
  */
 @MBean(objectName = "Activation",
       description = "Component that handles activating entries that have been passivated to a CacheStore by loading them into memory.")

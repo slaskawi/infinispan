@@ -8,6 +8,7 @@ import org.infinispan.factories.scopes.Scopes;
  *
  * @author Galder Zamarreño
  * @since 5.2
+ * @private
  */
 @Scope(Scopes.NAMED_CACHE)
 public interface ActivationManager {

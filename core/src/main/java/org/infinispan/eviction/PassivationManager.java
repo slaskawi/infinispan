@@ -11,6 +11,7 @@ import org.infinispan.persistence.spi.PersistenceException;
  *
  * @author Manik Surtani
  * @version 4.1
+ * @private
  */
 @ThreadSafe
 @Scope(Scopes.NAMED_CACHE)

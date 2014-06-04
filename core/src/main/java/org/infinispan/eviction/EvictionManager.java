@@ -21,6 +21,7 @@ import org.infinispan.factories.scopes.Scopes;
  * <p />
  * @author Manik Surtani
  * @since 4.0
+ * @private
  */
 @ThreadSafe
 @Scope(Scopes.NAMED_CACHE)

@@ -24,6 +24,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * @private
+ */
 @ThreadSafe
 public class EvictionManagerImpl implements EvictionManager {
    private static final Log log = LogFactory.getLog(EvictionManagerImpl.class);

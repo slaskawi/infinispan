@@ -23,6 +23,9 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import static org.infinispan.persistence.PersistenceUtil.internalMetadata;
 
+/**
+ * @private
+ */
 public class PassivationManagerImpl implements PassivationManager {
 
    PersistenceManager persistenceManager;
