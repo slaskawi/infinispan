@@ -3,6 +3,7 @@ package org.infinispan.query.impl;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
+import java.util.ServiceLoader;
 import java.util.TreeMap;
 
 import javax.management.MBeanServer;
@@ -16,6 +17,7 @@ import org.hibernate.search.spi.SearchFactoryIntegrator;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.commons.CacheException;
+import org.infinispan.commons.marshall.AdvancedExternalizer;
 import org.infinispan.commons.util.ServiceFinder;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -34,11 +36,13 @@ import org.infinispan.jmx.JmxUtil;
 import org.infinispan.jmx.ResourceDMBean;
 import org.infinispan.lifecycle.AbstractModuleLifecycle;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.objectfilter.impl.ReflectionMatcher;
 import org.infinispan.query.MassIndexer;
 import org.infinispan.query.backend.LocalQueryInterceptor;
 import org.infinispan.query.backend.QueryInterceptor;
 import org.infinispan.query.backend.SearchableCacheConfiguration;
 import org.infinispan.query.clustered.QueryBox;
+import org.infinispan.query.dsl.embedded.impl.FilterAndConverter;
 import org.infinispan.query.impl.massindex.MapReduceMassIndexer;
 import org.infinispan.query.logging.Log;
 import org.infinispan.query.spi.ProgrammaticSearchMappingProvider;
@@ -62,6 +66,12 @@ public class LifecycleManager extends AbstractModuleLifecycle {
    private MBeanServer mbeanServer;
 
    private String jmxDomain;
+
+   @Override
+   public void cacheManagerStarting(GlobalComponentRegistry gcr, GlobalConfiguration globalCfg) {
+      Map<Integer, AdvancedExternalizer<?>> externalizerMap = globalCfg.serialization().advancedExternalizers();
+      externalizerMap.put(ExternalizerIds.FILTER_AND_CONVERTER, new FilterAndConverter.Externalizer());
+   }
 
    /**
     * Registers the Search interceptor in the cache before it gets started
@@ -118,6 +128,9 @@ public class LifecycleManager extends AbstractModuleLifecycle {
    @Override
    public void cacheStarted(ComponentRegistry cr, String cacheName) {
       Configuration configuration = cr.getComponent(Configuration.class);
+
+      cr.registerComponent(new ReflectionMatcher(null), ReflectionMatcher.class);
+
       boolean indexingEnabled = configuration.indexing().enabled();
       if ( ! indexingEnabled ) {
          if ( verifyChainContainsQueryInterceptor(cr) ) {
@@ -217,7 +230,7 @@ public class LifecycleManager extends AbstractModuleLifecycle {
    }
 
    private Properties addProgrammaticMappings(Properties indexingProperties, ComponentRegistry cr) {
-      Iterator<ProgrammaticSearchMappingProvider> providers = ServiceFinder.load(ProgrammaticSearchMappingProvider.class).iterator();
+      Iterator<ProgrammaticSearchMappingProvider> providers = ServiceLoader.load(ProgrammaticSearchMappingProvider.class).iterator();
       if (providers.hasNext()) {
          SearchMapping mapping = (SearchMapping) indexingProperties.get(Environment.MODEL_MAPPING);
          if (mapping == null) {
