@@ -35,6 +35,7 @@ import org.infinispan.server.core.security.InetAddressPrincipal
 import java.net.InetSocketAddress
 import org.infinispan.server.core.security.simple.SimpleUserPrincipal
 import java.util.HashMap
+import org.infinispan.server.core.transport.SaslQopHandler
 
 /**
  * HotRod protocol decoder specific for specification version 2.0.
@@ -222,9 +223,15 @@ object Decoder2x extends AbstractVersionedDecoder with ServerConstants with Log 
                   val sslHandler = ctx.pipeline.get("ssl").asInstanceOf[SslHandler]
                   if (sslHandler != null) extraPrincipals.add(sslHandler.engine.getSession.getPeerPrincipal)
                   decoder.subject = decoder.callbackHandler.getSubjectUserInfo(extraPrincipals).getSubject
-                  decoder.saslServer.dispose
-                  decoder.callbackHandler = null
-                  decoder.saslServer = null
+                  val qop = decoder.saslServer.getNegotiatedProperty(Sasl.QOP).asInstanceOf[String];
+                  if (qop != null && (qop.equalsIgnoreCase("auth-int") || qop.equalsIgnoreCase("auth-conf"))) {
+                     val qopHandler = new SaslQopHandler(decoder.saslServer)
+                     ctx.pipeline.addBefore("decoder", "saslQop", qopHandler)
+                  } else {
+                     decoder.saslServer.dispose
+                     decoder.callbackHandler = null
+                     decoder.saslServer = null
+                  }
                }
                new AuthResponse(h.version, h.messageId, h.cacheName, h.clientIntel, serverChallenge, h.topologyId)
             }
