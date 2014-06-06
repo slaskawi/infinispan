@@ -209,6 +209,8 @@
                      <!-- wildcard required for blueprint services until the explicit import package def is removed completely -->
                      *
                   </Import-Package>
+                  <!-- Required for loading client classes. -->
+                  <DynamicImport-Package>*</DynamicImport-Package>
                </instructions>
             </configuration>
          </plugin>
