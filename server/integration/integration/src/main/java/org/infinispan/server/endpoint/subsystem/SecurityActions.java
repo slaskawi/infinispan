@@ -19,16 +19,11 @@
 package org.infinispan.server.endpoint.subsystem;
 
 import static org.jboss.as.web.WebMessages.MESSAGES;
-
-import java.security.AccessControlContext;
 import java.security.AccessController;
-import java.security.AllPermission;
-import java.security.DomainCombiner;
-import java.security.PermissionCollection;
 import java.security.PrivilegedAction;
-import java.security.ProtectionDomain;
 
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.security.Security;
 import org.infinispan.server.core.ProtocolServer;
 import org.infinispan.server.core.configuration.ProtocolServerConfiguration;
 import org.jboss.security.RunAs;
@@ -44,27 +39,13 @@ import org.jboss.security.SecurityContextFactory;
  * @since Jan 12, 2011
  */
 class SecurityActions {
-   static final DomainCombiner ADMIN_COMBINER;
-
-   static {
-      if (System.getSecurityManager() == null) {
-         AllPermission allPermission = new AllPermission();
-         PermissionCollection all = allPermission.newPermissionCollection();
-         all.add(allPermission);
-         final ProtectionDomain[] adminDomains = new ProtectionDomain[] { new ProtectionDomain(SecurityActions.class.getProtectionDomain().getCodeSource(), all) };
-
-         ADMIN_COMBINER = new DomainCombiner() {
-
-            @Override
-            public ProtectionDomain[] combine(ProtectionDomain[] currentDomains, ProtectionDomain[] assignedDomains) {
-               return adminDomains;
-            }
-         };
+   private static <T> T doPrivileged(PrivilegedAction<T> action) {
+      if (System.getSecurityManager() != null) {
+          return AccessController.doPrivileged(action);
       } else {
-         ADMIN_COMBINER = null;
+          return Security.doPrivileged(action);
       }
-   }
-
+  }
    /**
     * Create a JBoss Security Context with the given security domain name
     *
@@ -221,11 +202,7 @@ class SecurityActions {
             return null;
          }
       };
-      if (System.getSecurityManager() != null) {
-         AccessController.doPrivileged(action);
-      } else {
-         AccessController.doPrivileged(action, new AccessControlContext(AccessController.getContext(), ADMIN_COMBINER));
-      }
+      doPrivileged(action);
    }
 
 }

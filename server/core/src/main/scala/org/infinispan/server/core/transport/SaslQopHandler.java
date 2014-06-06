@@ -62,7 +62,7 @@ public class SaslQopHandler extends ByteToMessageDecoder implements ChannelOutbo
              len = bytes.length;
          }
          byte[] wrapped = server.wrap(bytes, offset, len);
-         ctx.write(ctx.alloc().buffer(4).writeInt(len));
+         ctx.write(ctx.alloc().buffer(4).writeInt(wrapped.length));
          if (maxSendBufferSize != -1 && wrapped.length > maxSendBufferSize) {
              // The produces data is bigger then the maxSendBufferSize so split it and flush every of them directly.
              int size = wrapped.length;
@@ -112,7 +112,7 @@ public class SaslQopHandler extends ByteToMessageDecoder implements ChannelOutbo
              in.skipBytes(len);
          } else {
              offset = 0;
-             array = new byte[len + 4];
+             array = new byte[len];
              in.readBytes(array);
          }
          out.add(Unpooled.wrappedBuffer(server.unwrap(array, offset, len)));

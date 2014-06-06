@@ -216,6 +216,7 @@ object Decoder2x extends AbstractVersionedDecoder with ServerConstants with Log 
                val clientResponse = readRangedBytes(buffer)
                val serverChallenge = decoder.saslServer.evaluateResponse(clientResponse)
                if (decoder.saslServer.isComplete) {
+                  ctx.channel.writeAndFlush(new AuthResponse(h.version, h.messageId, h.cacheName, h.clientIntel, serverChallenge, h.topologyId))
                   val extraPrincipals = new ArrayList[Principal]
                   val id = normalizeAuthorizationId(decoder.saslServer.getAuthorizationID)
                   extraPrincipals.add(new SimpleUserPrincipal(id))
@@ -232,8 +233,10 @@ object Decoder2x extends AbstractVersionedDecoder with ServerConstants with Log 
                      decoder.callbackHandler = null
                      decoder.saslServer = null
                   }
+                  None
+               } else {
+                  new AuthResponse(h.version, h.messageId, h.cacheName, h.clientIntel, serverChallenge, h.topologyId)
                }
-               new AuthResponse(h.version, h.messageId, h.cacheName, h.clientIntel, serverChallenge, h.topologyId)
             }
          }
       }

@@ -2,12 +2,12 @@
             <cache-container name="local" default-cache="testcache">
                 <security>
                     <authorization>
-		        <identity-role-mapper/>
+                        <identity-role-mapper />
                         <role name="admin" permissions="ALL" />
                         <role name="reader" permissions="READ" />
                         <role name="writer" permissions="WRITE" />
                         <role name="supervisor" permissions="READ WRITE EXEC"/>
-		    </authorization>
+                    </authorization>
                 </security>
                 <local-cache name="testcache" start="EAGER" batching="false">
                     <transaction mode="NONE" />
