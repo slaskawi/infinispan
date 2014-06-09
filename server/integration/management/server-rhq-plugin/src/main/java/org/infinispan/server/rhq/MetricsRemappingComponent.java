@@ -47,7 +47,12 @@ public abstract class MetricsRemappingComponent<T extends MetricsRemappingCompon
    static {
       server2plugin = new HashMap<String, String>();
       server2plugin.put("cache-manager-status", "cacheManagerStatus");
+      server2plugin.put("defined-cache-count", "definedCacheCount");
+      server2plugin.put("defined-cache-names", "definedCacheNames");
+      server2plugin.put("running-cache-count", "runningCacheCount");
+      server2plugin.put("created-cache-count", "createdCacheCount");
       server2plugin.put("cluster-name", "clusterName");
+      server2plugin.put("cluster-size", "clusterSize");
       server2plugin.put("coordinator-address", "coordinatorAddress");
       server2plugin.put("local-address", "localAddress");
       server2plugin.put("cache-status", "cacheStatus");
@@ -59,6 +64,7 @@ public abstract class MetricsRemappingComponent<T extends MetricsRemappingCompon
       server2plugin.put("elapsed-time", "elapsedTime");
       server2plugin.put("read-write-ratio", "readWriteRatio");
       server2plugin.put("average-write-time", "averageWriteTime");
+      server2plugin.put("average-remove-time", "averageRemoveTime");
       server2plugin.put("hits", "hits");
       server2plugin.put("evictions", "evictions");
       server2plugin.put("remove-misses", "removeMisses");
