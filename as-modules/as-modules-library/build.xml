@@ -30,6 +30,10 @@
             <filter token="javax.cache.slot" value="${javax.cache.slot}" />
         </filterset>
 
+        <module-def name="org.antlr.antlr-runtime" slot="${infinispan.slot}">
+            <maven-resource group="org.antlr" artifact="antlr-runtime" />
+        </module-def>
+        
         <module-def name="org.infinispan" slot="${infinispan.slot}">
             <maven-resource group="org.infinispan" artifact="infinispan-core" />
         </module-def>
@@ -72,6 +76,10 @@
 
         <module-def name="org.infinispan.lucene-directory" slot="${infinispan.slot}">
             <maven-resource group="org.infinispan" artifact="infinispan-lucene-directory" />
+        </module-def>
+
+        <module-def name="org.infinispan.objectfilter" slot="${infinispan.slot}">
+            <maven-resource group="org.infinispan" artifact="infinispan-objectfilter" />
         </module-def>
 
         <module-def name="org.infinispan.query" slot="${infinispan.slot}">
