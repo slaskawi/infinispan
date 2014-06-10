@@ -293,4 +293,10 @@ public class StateTransferManagerImpl implements StateTransferManager {
    public int getFirstTopologyAsMember() {
       return firstTopologyAsMember;
    }
+
+   @Override
+
+   public String toString() {
+      return "StateTransferManagerImpl [" + cacheName + "@" + rpcManager.getAddress() + "]";
+   }
 }
