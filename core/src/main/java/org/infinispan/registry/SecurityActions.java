@@ -1,6 +1,7 @@
-package org.infinispan.registry.impl;
+package org.infinispan.registry;
 
 import java.security.AccessController;
+import java.security.PrivilegedAction;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
@@ -10,7 +11,7 @@ import org.infinispan.security.actions.DefineConfigurationAction;
 import org.infinispan.security.actions.GetCacheAction;
 
 /**
- * SecurityActions for the org.infinispan.registry.impl package.
+ * SecurityActions for the org.infinispan.registry package.
  *
  * Do not move. Do not change class and method visibility to avoid being called from other
  * {@link java.security.CodeSource}s, thus granting privilege escalation to external code.
@@ -19,22 +20,22 @@ import org.infinispan.security.actions.GetCacheAction;
  * @since 7.0
  */
 final class SecurityActions {
+    private static <T> T doPrivileged(PrivilegedAction<T> action) {
+       if (System.getSecurityManager() != null) {
+          return AccessController.doPrivileged(action);
+       } else {
+          return Security.doPrivileged(action);
+       }
+    }
+
    static void defineConfiguration(final EmbeddedCacheManager cacheManager, final String cacheName, final Configuration configurationOverride) {
       DefineConfigurationAction action = new DefineConfigurationAction(cacheManager, cacheName, configurationOverride);
-      if (System.getSecurityManager() != null) {
-         AccessController.doPrivileged(action);
-      } else {
-         Security.doPrivileged(action);
-      }
+      doPrivileged(action);
    }
 
    @SuppressWarnings("unchecked")
    static <K, V> Cache<K, V> getRegistryCache(EmbeddedCacheManager cacheManager) {
       GetCacheAction action = new GetCacheAction(cacheManager, ClusterRegistryImpl.GLOBAL_REGISTRY_CACHE_NAME);
-      if (System.getSecurityManager() != null) {
-         return (Cache<K, V>) AccessController.doPrivileged(action);
-      } else {
-         return (Cache<K, V>) Security.doPrivileged(action);
-      }
+      return (Cache<K, V>) doPrivileged(action);
    }
 }

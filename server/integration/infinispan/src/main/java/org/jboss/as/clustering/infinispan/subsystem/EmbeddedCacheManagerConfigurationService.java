@@ -40,6 +40,7 @@ import org.infinispan.configuration.global.TransportConfigurationBuilder;
 import org.infinispan.marshall.core.Ids;
 import org.infinispan.security.PrincipalRoleMapper;
 import org.jboss.as.clustering.infinispan.ChannelProvider;
+import org.infinispan.security.impl.ClusterRoleMapper;
 import org.jboss.as.clustering.infinispan.MBeanServerProvider;
 import org.jboss.as.clustering.infinispan.ManagedExecutorFactory;
 import org.jboss.as.clustering.infinispan.ManagedScheduledExecutorFactory;
@@ -190,7 +191,7 @@ public class EmbeddedCacheManagerConfigurationService implements Service<Embedde
                     throw new StartException(e);
                 }
             } else {
-                authorizationBuilder.principalRoleMapper(new ServerPrincipalMapper());
+                authorizationBuilder.principalRoleMapper(new ClusterRoleMapper());
             }
             for(Entry<String, List<String>> role : authorization.getRoles().entrySet()) {
                 GlobalRoleConfigurationBuilder roleBuilder = authorizationBuilder.role(role.getKey());
