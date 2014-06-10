@@ -97,7 +97,8 @@ class HotRodServer extends AbstractProtocolServer("HotRod") with Log {
       for (cacheName <- asScalaIterator(cacheManager.getCacheNames.iterator)) {
          if (!cacheName.startsWith(HotRodServerConfiguration.TOPOLOGY_CACHE_NAME_PREFIX)) {
             val cache = getCacheInstance(cacheName, cacheManager, false)
-            validateCacheConfiguration(cache.getCacheConfiguration)
+            val cacheCfg = SecurityActions.getCacheConfiguration(cache)
+            validateCacheConfiguration(cacheCfg)
          }
       }
    }
@@ -166,7 +167,7 @@ class HotRodServer extends AbstractProtocolServer("HotRod") with Log {
 
       if (cache == null) {
          val validCacheName = if (cacheName.isEmpty) configuration.defaultCacheName else cacheName
-         val tmpCache = cacheManager.getCache[Bytes, Bytes](validCacheName)
+         val tmpCache = SecurityActions.getCache[Bytes, Bytes](cacheManager, validCacheName)
          val cacheConfiguration = SecurityActions.getCacheConfiguration(tmpCache.getAdvancedCache)
          val compatibility = cacheConfiguration.compatibility().enabled()
          val indexing = cacheConfiguration.indexing().enabled()
