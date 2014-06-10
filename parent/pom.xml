@@ -1169,6 +1169,7 @@
                </signature>
                <ignores>
                   <ignore>sun.misc.Unsafe</ignore>
+                  <ignore>sun.reflect.Reflection</ignore>
                   <ignore>org.apache.lucene.store.IOContext</ignore>
                </ignores>
             </configuration>

@@ -1051,8 +1051,8 @@ public interface Log extends BasicLogger {
    @Message(value = "Attempt to add a permission to a read-only SecurityPermissionCollection", id = 297)
    SecurityException readOnlyPermissionCollection();
 
-   @LogMessage(level = WARN)
-   @Message(value = "Starting a DefaultCacheManager with authorization enabled but without a SecurityManager installed may lead to unexpected behaviour", id = 298)
+   @LogMessage(level = DEBUG)
+   @Message(value = "Using internal security checker", id = 298)
    void authorizationEnabledWithoutSecurityManager();
 
    @LogMessage(level = WARN)
