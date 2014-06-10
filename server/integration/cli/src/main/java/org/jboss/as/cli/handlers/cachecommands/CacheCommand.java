@@ -43,6 +43,12 @@ public enum CacheCommand {
          return new CreateCommandHandler(buffer);
       }
    },
+   DENY("deny") {
+      @Override
+      protected CommandHandler createHandler(CliCommandBuffer buffer) {
+         return new DenyCommandHandler(buffer);
+      }
+   },
    ENCODING("encoding") {
       @Override
       public CommandHandler createHandler(CliCommandBuffer buffer) {
@@ -60,6 +66,12 @@ public enum CacheCommand {
       @Override
       protected CommandHandler createHandler(CliCommandBuffer buffer) {
          return new KeyWithCodecCommandHandler(GET, buffer);
+      }
+   },
+   GRANT("grant") {
+      @Override
+      protected CommandHandler createHandler(CliCommandBuffer buffer) {
+         return new GrantCommandHandler(buffer);
       }
    },
    INFO("info") {
@@ -90,6 +102,12 @@ public enum CacheCommand {
       @Override
       protected CommandHandler createHandler(CliCommandBuffer buffer) {
          return new ReplaceCommandHandler(buffer);
+      }
+   },
+   ROLES("roles") {
+      @Override
+      protected CommandHandler createHandler(CliCommandBuffer buffer) {
+         return new RolesCommandHandler(buffer);
       }
    },
    ROLLBACK("rollback", -1) {

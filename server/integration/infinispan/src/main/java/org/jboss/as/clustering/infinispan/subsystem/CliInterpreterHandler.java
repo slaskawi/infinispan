@@ -3,6 +3,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import org.infinispan.cli.interpreter.Interpreter;
 import org.infinispan.cli.interpreter.result.ResultKeys;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.server.infinispan.SecurityActions;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -45,7 +46,7 @@ public class CliInterpreterHandler implements OperationStepHandler {
             setInModelNode(result, "sessionId", sessionId);
          }
 
-         final Map<String, String> response = interpreter.execute(sessionId, command);
+         final Map<String, String> response = SecurityActions.executeInterpreter(interpreter, sessionId, command);
 
          setResponse(result, response);
          context.getResult().set(result);
