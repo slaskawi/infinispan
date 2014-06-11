@@ -89,4 +89,9 @@ public class LevelDBStoreConfigurationParser60 implements ConfigurationParser {
          ParseUtils.unexpectedElement(reader);
       }
    }
+      
+   @Override
+   public Namespace[] getNamespaces() {
+      return ParseUtils.getNamespaceAnnotations(getClass());
+   }
 }

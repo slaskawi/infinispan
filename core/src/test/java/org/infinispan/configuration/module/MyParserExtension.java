@@ -58,4 +58,9 @@ public class MyParserExtension implements ConfigurationParser {
       }
 
    }
+
+   @Override
+   public Namespace[] getNamespaces() {
+      return ParseUtils.getNamespaceAnnotations(getClass());
+   }
 }

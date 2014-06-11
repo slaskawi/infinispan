@@ -1937,4 +1937,9 @@ public class Parser61 implements ConfigurationParser {
       ParseUtils.requireNoContent(reader);
    }
 
+   @Override
+   public Namespace[] getNamespaces() {
+      return ParseUtils.getNamespaceAnnotations(getClass());
+   }
+
 }
