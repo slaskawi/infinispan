@@ -108,7 +108,7 @@
       <version.freemarker>2.3.19-redhat-1</version.freemarker>
       <version.guava>13.0.1-redhat-1</version.guava>
       <version.geronimo.tm>3.1.1</version.geronimo.tm>
-      <version.h2.driver>1.3.168-redhat-2</version.h2.driver>
+      <version.h2.driver>1.3.168.redhat-4</version.h2.driver>
       <version.hibernate.core>4.2.12.Final-redhat-1</version.hibernate.core>
       <version.hibernate.entitymanager>${version.hibernate.core}</version.hibernate.entitymanager>
       <version.hibernate.hql.parser>1.0.0.CR1-redhat-1</version.hibernate.hql.parser>
@@ -151,6 +151,7 @@
       <version.maven.animal.sniffer>1.9</version.maven.animal.sniffer>
       <version.maven.antrun.plugin>1.7</version.maven.antrun.plugin>
       <version.maven.buildhelper>1.8</version.maven.buildhelper>
+      <version.maven.bundle>2.4.0</version.maven.bundle>
       <version.maven.dependency.plugin>2.8</version.maven.dependency.plugin>
       <version.maven.genjavadoc>0.5</version.maven.genjavadoc>
       <version.maven.invoker.plugin>1.5</version.maven.invoker.plugin>
@@ -925,6 +926,7 @@
             <plugin>
                <groupId>org.apache.felix</groupId>
                <artifactId>maven-bundle-plugin</artifactId>
+               <version>${version.maven.bundle}</version>
             </plugin>
             <plugin>
                <groupId>org.apache.maven.plugins</groupId>

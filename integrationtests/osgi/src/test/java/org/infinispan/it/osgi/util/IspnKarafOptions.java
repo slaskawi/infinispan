@@ -109,8 +109,9 @@ public class IspnKarafOptions {
 
    public static Option wrappedBundleC3P0() {
       return composite(
-            wrappedBundle(maven().groupId("com.mchange").artifactId("c3p0").versionAsInProject()).instructions("DynamicImport-Package=*"),
-            wrappedBundle(maven().groupId("com.mchange").artifactId("mchange-commons-java").version("0.2.7")));
+               wrappedBundle(maven().groupId("c3p0").artifactId("c3p0").versionAsInProject()).instructions("DynamicImport-Package=*"));
+            // wrappedBundle(maven().groupId("com.mchange").artifactId("c3p0").versionAsInProject()).instructions("DynamicImport-Package=*"),
+            // wrappedBundle(maven().groupId("com.mchange").artifactId("mchange-commons-java").version("0.2.7")));
    }
 
    public static Option bundleH2Database() {

@@ -338,4 +338,10 @@ public class JdbcCacheStoreConfigurationParser52 implements ConfigurationParser 
       String name;
       String type;
    }
+
+   @Override
+   public Namespace[] getNamespaces() {
+      return ParseUtils.getNamespaceAnnotations(getClass());
+   }
+
 }

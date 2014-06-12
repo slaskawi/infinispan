@@ -1927,4 +1927,9 @@ public class Parser52 implements ConfigurationParser {
       return p;
    }
 
+   @Override
+   public Namespace[] getNamespaces() {
+      return ParseUtils.getNamespaceAnnotations(getClass());
+   }
+
 }
