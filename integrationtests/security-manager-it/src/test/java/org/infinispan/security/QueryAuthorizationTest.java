@@ -38,7 +38,7 @@ public class QueryAuthorizationTest extends SingleCacheManagerTest {
    protected EmbeddedCacheManager createCacheManager() throws Exception {
       final ConfigurationBuilder builder = getDefaultStandaloneCacheConfig(true);
       builder
-         .indexing().indexLocalOnly(true).addProperty("default.directory_provider", "ram").addProperty("lucene_version", "LUCENE_CURRENT")
+         .indexing().enable().indexLocalOnly(true).addProperty("default.directory_provider", "ram").addProperty("lucene_version", "LUCENE_CURRENT")
          .security()
             .authorization().enable().role("admin").role("query").role("noquery");
       return Subject.doAs(ADMIN, new PrivilegedAction<EmbeddedCacheManager>() {
@@ -123,8 +123,8 @@ public class QueryAuthorizationTest extends SingleCacheManagerTest {
    @Test(expectedExceptions=SecurityException.class)
    public void testNoQuery() throws Exception {
       Policy.setPolicy(new SurefireTestingPolicy());
+      System.setSecurityManager(new SecurityManager());
       try {
-         System.setSecurityManager(new SecurityManager());
          Subject.doAs(NOQUERY, new PrivilegedExceptionAction<Void>() {
 
             @Override
