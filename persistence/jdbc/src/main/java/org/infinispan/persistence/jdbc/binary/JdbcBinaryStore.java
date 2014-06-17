@@ -7,7 +7,6 @@ import org.infinispan.commons.marshall.StreamingMarshaller;
 import org.infinispan.executors.ExecutorAllCompletionService;
 import org.infinispan.marshall.core.MarshalledEntry;
 import org.infinispan.metadata.InternalMetadata;
-import org.infinispan.persistence.spi.PersistenceException;
 import org.infinispan.persistence.PersistenceUtil;
 import org.infinispan.persistence.TaskContextImpl;
 import org.infinispan.persistence.jdbc.JdbcUtil;
@@ -18,6 +17,7 @@ import org.infinispan.persistence.jdbc.connectionfactory.ManagedConnectionFactor
 import org.infinispan.persistence.jdbc.logging.Log;
 import org.infinispan.persistence.spi.AdvancedLoadWriteStore;
 import org.infinispan.persistence.spi.InitializationContext;
+import org.infinispan.persistence.spi.PersistenceException;
 import org.infinispan.persistence.support.Bucket;
 import org.infinispan.util.concurrent.locks.StripedLock;
 import org.infinispan.util.logging.LogFactory;
@@ -169,7 +169,7 @@ public class JdbcBinaryStore implements AdvancedLoadWriteStore {
    }
 
    @Override
-   public void process(final KeyFilter filter, final CacheLoaderTask task, Executor executor, boolean fetchValue, boolean fetchMetadata) {
+   public void process(final KeyFilter filter, final CacheLoaderTask task, Executor executor, final boolean fetchValue, final boolean fetchMetadata) {
       Connection conn = null;
       PreparedStatement ps = null;
       ResultSet rs = null;
@@ -195,6 +195,10 @@ public class JdbcBinaryStore implements AdvancedLoadWriteStore {
                public Void call() throws Exception {
                   try {
                      for (MarshalledEntry me : bucket.getStoredEntries(filter, ctx.getTimeService()).values()) {
+                        if (!fetchValue || !fetchMetadata) {
+                           me = ctx.getMarshalledEntryFactory().newMarshalledEntry(me.getKey(),
+                                 fetchValue ? me.getValue() : null, fetchMetadata ? me.getMetadata() : null);
+                        }
                         if (!taskContext.isStopped()) {
                            task.processEntry(me, taskContext);
                         }

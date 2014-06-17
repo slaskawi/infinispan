@@ -3,7 +3,6 @@ package org.infinispan.persistence.jdbc.stringbased;
 import org.infinispan.commons.configuration.ConfiguredBy;
 import org.infinispan.commons.io.ByteBuffer;
 import org.infinispan.marshall.core.MarshalledEntry;
-import org.infinispan.persistence.spi.PersistenceException;
 import org.infinispan.persistence.TaskContextImpl;
 import org.infinispan.persistence.jdbc.JdbcUtil;
 import org.infinispan.persistence.jdbc.TableManipulation;
@@ -16,6 +15,7 @@ import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
 import org.infinispan.persistence.keymappers.UnsupportedKeyTypeException;
 import org.infinispan.persistence.spi.AdvancedLoadWriteStore;
 import org.infinispan.persistence.spi.InitializationContext;
+import org.infinispan.persistence.spi.PersistenceException;
 import org.infinispan.util.KeyValuePair;
 import org.infinispan.util.logging.LogFactory;
 
@@ -336,7 +336,8 @@ public class JdbcStringBasedStore implements AdvancedLoadWriteStore {
                   MarshalledEntry entry;
                   if (fetchValue || fetchMetadata) {
                      KeyValuePair<ByteBuffer, ByteBuffer> kvp = JdbcUtil.unmarshall(ctx.getMarshaller(), inputStream);
-                     entry = ctx.getMarshalledEntryFactory().newMarshalledEntry(key, kvp.getKey(), kvp.getValue());
+                     entry = ctx.getMarshalledEntryFactory().newMarshalledEntry(
+                           key, fetchValue ? kvp.getKey() : null, fetchMetadata ? kvp.getValue() : null);
                   } else {
                      entry = ctx.getMarshalledEntryFactory().newMarshalledEntry(key, (Object)null, null);
                   }

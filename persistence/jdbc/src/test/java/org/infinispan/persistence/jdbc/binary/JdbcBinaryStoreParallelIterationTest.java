@@ -4,6 +4,7 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.factories.KnownComponentNames;
 import org.infinispan.persistence.ParallelIterationTest;
 import org.infinispan.persistence.jdbc.configuration.JdbcBinaryStoreConfigurationBuilder;
+import org.infinispan.test.fwk.CleanupAfterMethod;
 import org.infinispan.test.fwk.UnitTestDatabaseManager;
 import org.testng.annotations.Test;
 
@@ -12,6 +13,7 @@ import org.testng.annotations.Test;
  * @since 6.0
  */
 @Test (groups = "functional", testName = "persistence.jdbc.binary.JdbcBinaryStoreParallelIterationTest")
+@CleanupAfterMethod
 public class JdbcBinaryStoreParallelIterationTest extends ParallelIterationTest {
 
    @Override

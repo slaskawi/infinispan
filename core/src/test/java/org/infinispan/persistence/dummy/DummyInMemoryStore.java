@@ -8,14 +8,13 @@ import org.infinispan.commons.marshall.StreamingMarshaller;
 import org.infinispan.commons.util.InfinispanCollections;
 import org.infinispan.commons.util.Util;
 import org.infinispan.commons.util.concurrent.jdk8backported.EquivalentConcurrentHashMapV8;
-import org.infinispan.marshall.core.MarshalledEntryImpl;
-import org.infinispan.persistence.TaskContextImpl;
+import org.infinispan.marshall.core.MarshalledEntry;
 import org.infinispan.metadata.InternalMetadata;
+import org.infinispan.persistence.TaskContextImpl;
 import org.infinispan.persistence.spi.AdvancedCacheLoader;
 import org.infinispan.persistence.spi.AdvancedCacheWriter;
 import org.infinispan.persistence.spi.AdvancedLoadWriteStore;
 import org.infinispan.persistence.spi.InitializationContext;
-import org.infinispan.marshall.core.MarshalledEntry;
 import org.infinispan.test.TestingUtil;
 import org.infinispan.util.KeyValuePair;
 import org.infinispan.util.logging.Log;
@@ -115,7 +114,7 @@ public class DummyInMemoryStore implements AdvancedLoadWriteStore {
       Set expired = new HashSet();
       for (Iterator<Map.Entry<Object, byte[]>> i = store.entrySet().iterator(); i.hasNext();) {
          Map.Entry<Object, byte[]> next = i.next();
-         MarshalledEntry se = deserialize(next.getKey(), next.getValue());
+         MarshalledEntry se = deserialize(next.getKey(), next.getValue(), false, true);
          if (isExpired(se, currentTimeMillis)) {
             if (task != null) task.entryPurged(next.getKey());
             i.remove();
@@ -128,7 +127,7 @@ public class DummyInMemoryStore implements AdvancedLoadWriteStore {
    public MarshalledEntry load(Object key) {
       record("load");
       if (key == null) return null;
-      MarshalledEntry me = deserialize(key, store.get(key));
+      MarshalledEntry me = deserialize(key, store.get(key), true, true);
       if (me == null) return null;
       long now = System.currentTimeMillis();
       if (isExpired(me, now)) {
@@ -152,7 +151,7 @@ public class DummyInMemoryStore implements AdvancedLoadWriteStore {
          Map.Entry<Object, byte[]> entry = i.next();
          if (tx.isStopped()) break;
          if (filter == null || filter.shouldLoadKey(entry.getKey())) {
-            MarshalledEntry se = deserialize(entry.getKey(), entry.getValue());
+            MarshalledEntry se = deserialize(entry.getKey(), entry.getValue(), fetchValue, fetchMetadata);
             if (isExpired(se, currentTimeMillis)) {
                log.debugf("Key %s exists, but has expired.  Entry is %s", entry.getKey(), se);
                i.remove();
@@ -238,7 +237,7 @@ public class DummyInMemoryStore implements AdvancedLoadWriteStore {
    public void blockUntilCacheStoreContains(Object key, Object expectedValue, long timeout) {
       long killTime = System.currentTimeMillis() + timeout;
       while (System.currentTimeMillis() < killTime) {
-         MarshalledEntry entry = deserialize(key, store.get(key));
+         MarshalledEntry entry = deserialize(key, store.get(key), true, false);
          if (entry != null && entry.getValue().equals(expectedValue)) return;
          TestingUtil.sleepThread(50);
       }
@@ -295,12 +294,18 @@ public class DummyInMemoryStore implements AdvancedLoadWriteStore {
       }
    }
 
-   private MarshalledEntry deserialize(Object key, byte[] b) {
+   private MarshalledEntry deserialize(Object key, byte[] b, boolean fetchValue, boolean fetchMetadata) {
       try {
          if (b == null)
             return null;
-         KeyValuePair<Object, InternalMetadata> keyValuePair = (KeyValuePair<Object, InternalMetadata>) marshaller.objectFromByteBuffer(b);
-         return ctx.getMarshalledEntryFactory().newMarshalledEntry(key, keyValuePair.getKey(), keyValuePair.getValue());
+         if (!fetchValue && !fetchMetadata) {
+            return ctx.getMarshalledEntryFactory().newMarshalledEntry(key, null, (InternalMetadata) null);
+         }
+         KeyValuePair<Object, InternalMetadata> keyValuePair =
+               (KeyValuePair<Object, InternalMetadata>) marshaller.objectFromByteBuffer(b);
+         return ctx.getMarshalledEntryFactory().newMarshalledEntry(key,
+               fetchValue ? keyValuePair.getKey() : null,
+               fetchMetadata ? keyValuePair.getValue() : null);
       } catch (IOException e) {
          throw new CacheException(e);
       } catch (ClassNotFoundException e) {

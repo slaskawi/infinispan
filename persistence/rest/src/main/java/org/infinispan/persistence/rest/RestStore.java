@@ -29,7 +29,6 @@ import org.infinispan.marshall.core.MarshalledEntry;
 import org.infinispan.metadata.InternalMetadata;
 import org.infinispan.metadata.InternalMetadataImpl;
 import org.infinispan.metadata.Metadata;
-import org.infinispan.persistence.spi.PersistenceException;
 import org.infinispan.persistence.TaskContextImpl;
 import org.infinispan.persistence.keymappers.MarshallingTwoWayKey2StringMapper;
 import org.infinispan.persistence.rest.configuration.ConnectionPoolConfiguration;
@@ -38,6 +37,7 @@ import org.infinispan.persistence.rest.logging.Log;
 import org.infinispan.persistence.rest.metadata.MetadataHelper;
 import org.infinispan.persistence.spi.AdvancedLoadWriteStore;
 import org.infinispan.persistence.spi.InitializationContext;
+import org.infinispan.persistence.spi.PersistenceException;
 import org.infinispan.util.logging.LogFactory;
 
 import java.io.BufferedReader;
@@ -307,11 +307,16 @@ public class RestStore implements AdvancedLoadWriteStore {
                for (Object key : batch) {
                   if (taskContext.isStopped())
                      break;
-                  if (!loadEntry && !loadMetadata) {
-                     cacheLoaderTask.processEntry(ctx.getMarshalledEntryFactory().newMarshalledEntry(key, (Object) null, null), taskContext);
-                  } else {
-                     cacheLoaderTask.processEntry(load(key), taskContext);
+                  MarshalledEntry entry = null;
+                  if (loadEntry || loadMetadata) {
+                     entry = load(key);
                   }
+                  if (!loadEntry || !loadMetadata) {
+                     entry = ctx.getMarshalledEntryFactory().newMarshalledEntry(key,
+                           loadEntry ? entry.getValue() : null,
+                           loadMetadata ? entry.getMetadata() : null);
+                  }
+                  cacheLoaderTask.processEntry(entry, taskContext);
                }
             } catch (Exception e) {
                log.errorExecutingParallelStoreTask(e);

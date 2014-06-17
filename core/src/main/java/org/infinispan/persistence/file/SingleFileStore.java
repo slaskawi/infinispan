@@ -9,11 +9,11 @@ import org.infinispan.commons.util.CollectionFactory;
 import org.infinispan.configuration.cache.SingleFileStoreConfiguration;
 import org.infinispan.executors.ExecutorAllCompletionService;
 import org.infinispan.marshall.core.MarshalledEntry;
-import org.infinispan.persistence.spi.PersistenceException;
 import org.infinispan.persistence.PersistenceUtil;
 import org.infinispan.persistence.TaskContextImpl;
 import org.infinispan.persistence.spi.AdvancedLoadWriteStore;
 import org.infinispan.persistence.spi.InitializationContext;
+import org.infinispan.persistence.spi.PersistenceException;
 import org.infinispan.util.KeyValuePair;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
@@ -23,17 +23,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -473,7 +463,7 @@ public class SingleFileStore implements AdvancedLoadWriteStore {
       final byte[] data;
       try {
          // load serialized data from disk
-         data = new byte[fe.keyLen + (loadValue ? fe.dataLen : 0) + (loadMetadata ? fe.metadataLen : 0)];
+         data = new byte[fe.keyLen + (loadValue || loadMetadata ? fe.dataLen : 0) + (loadMetadata ? fe.metadataLen : 0)];
          // The entry lock will prevent clear() from truncating the file at this point
          channel.read(ByteBuffer.wrap(data), fe.offset + KEY_POS);
       } catch (Exception e) {
@@ -491,8 +481,9 @@ public class SingleFileStore implements AdvancedLoadWriteStore {
       org.infinispan.commons.io.ByteBuffer metadataBb = null;
       if (loadValue) {
          valueBb = factory.newByteBuffer(data, fe.keyLen, fe.dataLen);
-         if (loadMetadata && fe.metadataLen > 0)
-            metadataBb = factory.newByteBuffer(data, fe.keyLen + fe.dataLen, fe.metadataLen);
+      }
+      if (loadMetadata && fe.metadataLen > 0) {
+         metadataBb = factory.newByteBuffer(data, fe.keyLen + fe.dataLen, fe.metadataLen);
       }
       return ctx.getMarshalledEntryFactory().newMarshalledEntry(keyBb, valueBb, metadataBb);
    }
