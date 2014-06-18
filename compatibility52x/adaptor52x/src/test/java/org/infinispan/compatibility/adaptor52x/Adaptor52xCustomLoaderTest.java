@@ -99,4 +99,33 @@ public class Adaptor52xCustomLoaderTest extends BaseStoreTest {
    protected StreamingMarshaller getMarshaller() {
       return cache.getAdvancedCache().getComponentRegistry().getCacheMarshaller();
    }
+
+   @Override
+   public void testLoadAndStoreWithLifespan() throws Exception {
+      // Ignored because the Adaptor doesn't allow injecting a custom TimerService
+   }
+
+   @Override
+   public void testLoadAndStoreWithIdle() throws Exception {
+      // Ignored because the Adaptor doesn't allow injecting a custom TimerService
+   }
+
+   @Override
+   public void testLoadAndStoreWithLifespanAndIdle() throws Exception {
+      // Ignored because the Adaptor doesn't allow injecting a custom TimerService
+   }
+
+   public void testLoadAndStoreWithLifespanAndIdle2() throws Exception {
+      // Ignored because the Adaptor doesn't allow injecting a custom TimerService
+   }
+
+   @Override
+   public void testPurgeExpired() throws Exception {
+      // Ignored because the Adaptor doesn't allow injecting a custom TimerService
+   }
+
+   @Override
+   public void testReplaceExpiredEntry() throws Exception {
+      // Ignored because the Adaptor doesn't allow injecting a custom TimerService
+   }
 }

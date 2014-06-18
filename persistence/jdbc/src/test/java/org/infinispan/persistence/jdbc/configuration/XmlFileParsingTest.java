@@ -1,6 +1,8 @@
 package org.infinispan.persistence.jdbc.configuration;
 
 import static org.infinispan.test.TestingUtil.INFINISPAN_START_TAG;
+import static org.testng.AssertJUnit.*;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,7 +14,6 @@ import org.infinispan.test.TestingUtil;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
-import static org.testng.AssertJUnit.*;
 
 @Test(groups = "unit", testName = "persistence.jdbc.configuration.XmlFileParsingTest")
 public class XmlFileParsingTest extends AbstractInfinispanTest {
@@ -79,6 +80,7 @@ public class XmlFileParsingTest extends AbstractInfinispanTest {
       assertEquals(34, store.table().fetchSize());
       assertEquals("BINARY", store.table().dataColumnType());
       assertEquals("version", store.table().timestampColumnName());
+      assertFalse(store.purgeOnStartup());
       assertTrue(store.singletonStore().enabled());
       SimpleConnectionFactoryConfiguration connectionFactory = (SimpleConnectionFactoryConfiguration) store.connectionFactory();
       assertEquals("jdbc:h2:mem:infinispan;DB_CLOSE_DELAY=-1", connectionFactory.connectionUrl());
@@ -126,6 +128,7 @@ public class XmlFileParsingTest extends AbstractInfinispanTest {
 
       assertTrue(store.async().enabled());
       assertTrue(store.singletonStore().enabled());
+      assertFalse(store.purgeOnStartup());
       assertEquals("DummyKey2StringMapper", store.key2StringMapper());
    }
 
