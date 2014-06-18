@@ -18,4 +18,7 @@ trait Log extends org.infinispan.server.core.logging.Log {
 
    def logErrorDetectingCrashedMember(t: Throwable) = log.errorDetectingCrashedMember(t)
 
+   def warnConditionalOperationNonTransactional(op: String) = log.warnConditionalOperationNonTransactional(op)
+
+   def warnForceReturnPreviousNonTransactional(op: String) = log.warnForceReturnPreviousNonTransactional(op)
 }

@@ -50,4 +50,13 @@ public interface JavaLog extends org.infinispan.util.logging.Log {
 
    @Message(value = "A serverName must be specified when enabling authentication", id = 6008)
    CacheConfigurationException missingServerName();
+
+   @LogMessage(level = WARN)
+   @Message(value = "Conditional operation '%s' should be used with transactional caches, otherwise data inconsistency issues could arise under failure situations", id = 6009)
+   void warnConditionalOperationNonTransactional(String op);
+
+   @LogMessage(level = WARN)
+   @Message(value = "Operation '%s' forced to return previous value should be used on transactional caches, otherwise data inconsistency issues could arise under failure situations", id = 6010)
+   void warnForceReturnPreviousNonTransactional(String op);
+
 }
