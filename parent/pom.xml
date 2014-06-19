@@ -114,6 +114,13 @@
       <version.hibernate.entitymanager>${version.hibernate.core}</version.hibernate.entitymanager>
       <version.hibernate.hql.parser>1.0.0.CR1-redhat-1</version.hibernate.hql.parser>
       <version.hibernate.javax.persistence>1.0.1.Final-redhat-2</version.hibernate.javax.persistence>
+      <version.hibernate.osgi>${version.hibernate.core}</version.hibernate.osgi>
+      <version.hibernate_dep.antlr>2.7.7_5</version.hibernate_dep.antlr>
+      <version.hibernate_dep.dom4j>1.6.1_5</version.hibernate_dep.dom4j>
+      <version.hibernate_dep.classmate>0.5.4</version.hibernate_dep.classmate>
+      <version.hibernate_dep.javaassist>3.18.1-GA</version.hibernate_dep.javaassist>
+      <version.hibernate_dep.jandex>1.0.3.Final</version.hibernate_dep.jandex>
+      <version.hibernate_dep.hibernate-commons-annotations>4.0.2.Final</version.hibernate_dep.hibernate-commons-annotations>
       <version.httpclient>4.2.1-redhat-1</version.httpclient>
       <version.howl>1.0.1-1</version.howl>
       <version.jackson>1.9.9-redhat-2</version.jackson>
@@ -139,6 +146,7 @@
       <version.lucene.v3>3.6.2-redhat-4</version.lucene.v3>
       <version.mc4j>1.2.15.1</version.mc4j>
       <version.mockito>1.9.5</version.mockito>
+      <version.mockito_dep.objenesis>1.4</version.mockito_dep.objenesis>
       <version.resteasy>2.3.6.Final-redhat-1</version.resteasy>
       <version.org.picketbox>4.0.19.SP4-redhat-1</version.org.picketbox>
       <version.shrinkwrapResolver>2.0.0</version.shrinkwrapResolver>
@@ -185,6 +193,17 @@
             <artifactId>infinispan-cachestore-jdbc</artifactId>
             <version>${project.version}</version>
             <type>test-jar</type>
+         </dependency>
+         <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>infinispan-cachestore-jpa</artifactId>
+            <version>${project.version}</version>
+            <type>test-jar</type>
+         </dependency>
+         <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>infinispan-client-hotrod</artifactId>
+            <version>${project.version}</version>
          </dependency>
          <dependency>
             <groupId>${project.groupId}</groupId>
