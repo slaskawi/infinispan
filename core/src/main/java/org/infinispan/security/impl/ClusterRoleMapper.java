@@ -65,7 +65,11 @@ public class ClusterRoleMapper implements PrincipalRoleMapper {
    }
 
    public String listAll() {
-      // FIXME: needs ClusterRegistry support to retrieve all keys in a scope
-      throw new UnsupportedOperationException();
+      Set<String> principals = clusterRegistry.keys(ClusterRoleMapper.class);
+      StringBuilder sb = new StringBuilder();
+      for(String principal : principals) {
+         sb.append(list(principal));
+      }
+      return sb.toString();
    }
 }
