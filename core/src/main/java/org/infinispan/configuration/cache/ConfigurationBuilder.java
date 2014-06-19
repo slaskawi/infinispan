@@ -2,6 +2,7 @@ package org.infinispan.configuration.cache;
 
 import static java.util.Arrays.asList;
 
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -13,6 +14,7 @@ import org.infinispan.commons.configuration.ConfigurationUtils;
 
 public class ConfigurationBuilder implements ConfigurationChildBuilder {
 
+   private WeakReference<ClassLoader> classLoader;
    private final ClusteringConfigurationBuilder clustering;
    private final CustomInterceptorsConfigurationBuilder customInterceptors;
    private final DataContainerConfigurationBuilder dataContainer;
@@ -52,6 +54,17 @@ public class ConfigurationBuilder implements ConfigurationChildBuilder {
       this.unsafe = new UnsafeConfigurationBuilder(this);
       this.sites = new SitesConfigurationBuilder(this);
       this.compatibility = new CompatibilityModeConfigurationBuilder(this);
+   }
+
+   @Deprecated
+   public ConfigurationBuilder classLoader(ClassLoader cl) {
+	   this.classLoader = new WeakReference<ClassLoader>(cl);
+	   return this;
+   }
+
+   @Deprecated
+   ClassLoader classLoader() {
+	   return classLoader != null ? classLoader.get() : null;
    }
 
    @Override
@@ -197,10 +210,11 @@ public class ConfigurationBuilder implements ConfigurationChildBuilder {
                jmxStatistics.create(), persistence.create(), locking.create(), security.create(),
                storeAsBinary.create(), transaction.create(), unsafe.create(), versioning.create(), sites.create(),
                compatibility.create(),
-               modulesConfig);
+               modulesConfig, classLoader == null ? null : classLoader.get());
    }
 
    public ConfigurationBuilder read(Configuration template) {
+	  this.classLoader = new WeakReference<ClassLoader>(template.classLoader());
       this.clustering.read(template.clustering());
       this.customInterceptors.read(template.customInterceptors());
       this.dataContainer.read(template.dataContainer());
@@ -231,7 +245,8 @@ public class ConfigurationBuilder implements ConfigurationChildBuilder {
    @Override
    public String toString() {
       return "ConfigurationBuilder{" +
-            "clustering=" + clustering +
+    		"classLoader=" + classLoader +
+            ", clustering=" + clustering +
             ", customInterceptors=" + customInterceptors +
             ", dataContainer=" + dataContainer +
             ", deadlockDetection=" + deadlockDetection +

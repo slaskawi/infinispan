@@ -1,5 +1,6 @@
 package org.infinispan.configuration.cache;
 
+import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -7,6 +8,7 @@ import java.util.Map;
 
 public class Configuration {
 
+   private final WeakReference<ClassLoader> classLoader; //TODO remove this
    private final ClusteringConfiguration clusteringConfiguration;
    private final CustomInterceptorsConfiguration customInterceptorsConfiguration;
    private final DataContainerConfiguration dataContainerConfiguration;
@@ -41,7 +43,7 @@ public class Configuration {
                  VersioningConfiguration versioningConfiguration,
                  SitesConfiguration sitesConfiguration,
                  CompatibilityModeConfiguration compatibilityConfiguration,
-                 List<?> modules) {
+                 List<?> modules, ClassLoader cl) {
       this.clusteringConfiguration = clusteringConfiguration;
       this.customInterceptorsConfiguration = customInterceptorsConfiguration;
       this.dataContainerConfiguration = dataContainerConfiguration;
@@ -65,6 +67,15 @@ public class Configuration {
          modulesMap.put(module.getClass(), module);
       }
       this.moduleConfiguration = Collections.unmodifiableMap(modulesMap);
+      this.classLoader = new WeakReference<ClassLoader>(cl);
+   }
+
+   /**
+    * Will be removed with no replacement
+    */
+   @Deprecated
+   public ClassLoader classLoader() {
+      return classLoader == null ? null : classLoader.get();
    }
 
    public ClusteringConfiguration clustering() {
@@ -151,7 +162,8 @@ public class Configuration {
    @Override
    public String toString() {
       return "Configuration{" +
-            "clustering=" + clusteringConfiguration +
+            "classLoader=" + classLoader +
+            ", clustering=" + clusteringConfiguration +
             ", customInterceptors=" + customInterceptorsConfiguration +
             ", dataContainer=" + dataContainerConfiguration +
             ", deadlockDetection=" + deadlockDetectionConfiguration +
