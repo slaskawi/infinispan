@@ -99,6 +99,7 @@
       <version.arquillian.container.managed>7.3.2.Final-redhat-2</version.arquillian.container.managed>
       <version.arquillian.container.weld>1.0.0.CR3</version.arquillian.container.weld>
       <version.c3p0>0.9.1.2</version.c3p0>
+      <version.c3p0_dep.mchange-commons-java>0.2.7</version.c3p0_dep.mchange-commons-java>
       <version.commons.codec>1.4-redhat-2</version.commons.codec>
       <version.commons.collections>3.2.1-redhat-2</version.commons.collections>
       <version.commons.compress>1.5</version.commons.compress>
