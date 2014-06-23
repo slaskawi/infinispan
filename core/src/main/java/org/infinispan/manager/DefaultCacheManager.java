@@ -48,6 +48,7 @@ import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.lifecycle.Lifecycle;
 import org.infinispan.notifications.cachemanagerlistener.CacheManagerNotifier;
 import org.infinispan.persistence.manager.PersistenceManager;
+import org.infinispan.registry.ClusterRegistryImpl;
 import org.infinispan.remoting.rpc.ResponseMode;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.Transport;
@@ -706,6 +707,7 @@ public class DefaultCacheManager implements EmbeddedCacheManager, CacheManager {
       // Since caches could be modified dynamically, make a safe copy of keys
       names.addAll(Immutables.immutableSetConvert(caches.keySet()));
       names.remove(DEFAULT_CACHE_NAME);
+      names.remove(ClusterRegistryImpl.GLOBAL_REGISTRY_CACHE_NAME);
       if (names.isEmpty())
          return InfinispanCollections.emptySet();
       else
