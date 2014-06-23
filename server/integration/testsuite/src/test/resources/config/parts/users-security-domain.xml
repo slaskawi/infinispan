@@ -1,0 +1,7 @@
+                <security-domain name="sasl-basic" cache-type="default">
+                    <authentication>
+                        <login-module code="org.jboss.security.auth.spi.UsersLoginModule" flag="required">
+                            <module-option name="usersProperties" value="${jboss.server.config.dir}/basic-user.properties" />
+                        </login-module>
+                    </authentication>
+                </security-domain>

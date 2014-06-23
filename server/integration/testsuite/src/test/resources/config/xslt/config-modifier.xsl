@@ -6,7 +6,7 @@
 
     <!--Variables of namespaces to be changed-->
     <xsl:variable name="nsLogging">urn:jboss:domain:logging:</xsl:variable>
-    <xsl:variable name="nsJGroups">urn:jboss:domain:jgroups:</xsl:variable>
+    <xsl:variable name="nsJGroups">urn:infinispan:server:jgroups:</xsl:variable>
     <xsl:variable name="nsCore">urn:infinispan:server:core:</xsl:variable>
     <xsl:variable name="nsThreads">urn:jboss:domain:threads:</xsl:variable>
     <xsl:variable name="nsSecurity">urn:jboss:domain:security:</xsl:variable>
@@ -30,6 +30,7 @@
     <xsl:param name="infinispanFile">none</xsl:param>
     <xsl:param name="addAuth">false</xsl:param>
     <xsl:param name="addEncrypt">false</xsl:param>
+    <xsl:param name="addJGroupsSasl">false</xsl:param>
     <xsl:param name="hotrodAuth">false</xsl:param>
     <xsl:param name="addKrbOpts">false</xsl:param>
     <xsl:param name="addKrbSecDomain">false</xsl:param>
@@ -166,6 +167,18 @@
         </xsl:if>
     </xsl:template>
 
+    <xsl:template match="//*[local-name()='subsystem' and starts-with(namespace-uri(), $nsJGroups)]//*[local-name()='stack']">
+        <xsl:if test="$addJGroupsSasl = 'false'">
+            <xsl:call-template name="copynode"/>
+        </xsl:if>
+        <xsl:if test="$addJGroupsSasl != 'false'">
+            <xsl:copy>
+               <xsl:apply-templates select="@* | node()" />
+               <xsl:copy-of select="document($addJGroupsSasl)"/>
+            </xsl:copy>
+        </xsl:if>
+    </xsl:template>
+
     <xsl:template match="p:extensions">
         <xsl:if test="$addKrbOpts = 'false'">
             <xsl:call-template name="copynode"/>
@@ -178,6 +191,19 @@
 
     <xsl:template match="//*[local-name()='subsystem' and starts-with(namespace-uri(), $nsSecurity)]
                  /*[local-name()='security-domains']">
+    
+    <!-- xsl:template match="p:extensions">
+        <xsl:if test="$addKrbOpts = 'false'">
+            <xsl:call-template name="copynode"/>
+        </xsl:if>
+        <xsl:if test="$addKrbOpts != 'false'">
+            <xsl:call-template name="copynode"/>
+            <xsl:copy-of select="document($addKrbOpts)"/>
+        </xsl:if>
+    </xsl:template>
+    
+    <xsl:template match="security:subsystem/security:security-domains" -->
+
         <xsl:if test="$addKrbSecDomain = 'false'">
             <xsl:call-template name="copynode"/>
         </xsl:if>

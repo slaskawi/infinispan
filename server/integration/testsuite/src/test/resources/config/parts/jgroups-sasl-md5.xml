@@ -1,0 +1,8 @@
+                <protocol type="SASL">
+                    <property name="login_module_name">sasl-basic</property>
+                    <!-- <property name="callback_handler_class">org.jgroups.auth.sasl.SaslPropCallbackHandler</property> -->
+                    <!-- <property name="callback_handler_class">org.jgroups.auth.sasl.SaslClientCallbackHandler</property> -->
+                    <property name="mech">DIGEST-MD5</property>
+                    <property name="sasl_props">com.sun.security.sasl.digest.realm=testRealm</property>
+                    <property name="timeout">5000</property>
+                </protocol>

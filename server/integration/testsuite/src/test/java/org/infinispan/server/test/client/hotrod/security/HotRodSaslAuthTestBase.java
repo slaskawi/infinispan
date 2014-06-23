@@ -94,7 +94,7 @@ public abstract class HotRodSaslAuthTestBase {
 
    protected Configuration getRemoteCacheManagerConfig(Subject subj) {
       ConfigurationBuilder config = getDefaultConfigBuilder();
-      config.security().authentication().clientSubject(subj).callbackHandler(new LoginHandler("", "")); //callback handle is required by ISPN config validation
+      config.security().authentication().clientSubject(subj);
       return config.build();
    }
 
@@ -109,7 +109,6 @@ public abstract class HotRodSaslAuthTestBase {
    public void testAdmin() throws PrivilegedActionException,LoginException {
       initAsAdmin();
       testWriteRead();
-      testCreateCache();
    }
 
    @Test
@@ -140,10 +139,6 @@ public abstract class HotRodSaslAuthTestBase {
    public void testSupervisorWriteRead() throws PrivilegedActionException,LoginException {
       initAsSupervisor();
       testWriteRead();
-   }
-
-   protected void testCreateCache() {
-      assertNotNull(remoteCacheManager.getCache("myNewCache"));
    }
 
    protected void testReadNonExitent() {
