@@ -265,6 +265,11 @@ public class StateTransferReplicationQueueTest extends MultipleCacheManagersTest
       }
 
       @Override
+      public void handleNewView(ViewChangedEvent e) {
+         instance.handleNewView(e);
+      }
+
+      @Override
       public void triggerRebalance(final String cacheName) throws Exception {
          fork(new Callable<Object>() {
             @Override
@@ -297,11 +302,6 @@ public class StateTransferReplicationQueueTest extends MultipleCacheManagersTest
       @Override
       public void handleRebalanceCompleted(String cacheName, Address node, int topologyId, Throwable throwable, int viewId) throws Exception {
          instance.handleRebalanceCompleted(cacheName, node, topologyId, throwable, viewId);
-      }
-
-      @Override
-      public void handleNewView(ViewChangedEvent e) {
-         instance.handleNewView(e);
       }
    }
 }
