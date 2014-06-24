@@ -68,12 +68,6 @@ public class LifecycleManager extends AbstractModuleLifecycle {
 
    private String jmxDomain;
 
-   @Override
-   public void cacheManagerStarting(GlobalComponentRegistry gcr, GlobalConfiguration globalCfg) {
-      Map<Integer, AdvancedExternalizer<?>> externalizerMap = globalCfg.serialization().advancedExternalizers();
-      externalizerMap.put(ExternalizerIds.FILTER_AND_CONVERTER, new FilterAndConverter.Externalizer());
-   }
-
    /**
     * Registers the Search interceptor in the cache before it gets started
     */
@@ -291,6 +285,13 @@ public class LifecycleManager extends AbstractModuleLifecycle {
       }
 
       cfg.customInterceptors().interceptors(builder.build().customInterceptors().interceptors());
+   }
+
+   @Override
+   public void cacheManagerStarting(GlobalComponentRegistry gcr, GlobalConfiguration globalCfg) {
+      Map<Integer, AdvancedExternalizer<?>> externalizerMap = globalCfg.serialization().advancedExternalizers();
+      externalizerMap.put(ExternalizerIds.FILTER_AND_CONVERTER, new FilterAndConverter.FilterAndConverterExternalizer());
+      externalizerMap.put(ExternalizerIds.FILTER_RESULT, new FilterAndConverter.FilterResultExternalizer());
    }
 
 }

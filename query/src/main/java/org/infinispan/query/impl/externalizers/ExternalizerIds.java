@@ -13,4 +13,5 @@ public interface ExternalizerIds {
 
    Integer FILTER_AND_CONVERTER = 1600;
 
+   Integer FILTER_RESULT = 1611;
 }
