@@ -25,6 +25,7 @@
       <version.apache.ds>2.0.0-M16</version.apache.ds>
       <version.com.github.relaxng.relaxngDatatype>2011.1-redhat-6</version.com.github.relaxng.relaxngDatatype>
       <version.commons.logging>1.1.1-redhat-2</version.commons.logging>
+      <version.org.hibernate>4.2.13.Final-redhat-2</version.org.hibernate>
       <version.net.jcip.annotations>1.0.redhat-6</version.net.jcip.annotations>
       <version.org.jboss.as>7.3.3.Final-redhat-3</version.org.jboss.as>
       <version.org.jboss.as.arquillian>7.3.3.Final-redhat-3</version.org.jboss.as.arquillian>
@@ -61,6 +62,133 @@
             <scope>import</scope>
          </dependency>
 
+         <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>${version.org.hibernate}</version>
+            <exclusions>
+               <exclusion>
+                  <artifactId>classmate</artifactId>
+                  <groupId>com.fasterxml</groupId>
+               </exclusion>
+               <exclusion>
+                  <artifactId>javassist</artifactId>
+                  <groupId>javassist</groupId>
+               </exclusion>
+               <exclusion>
+                  <artifactId>jta</artifactId>
+                  <groupId>javax.transaction</groupId>
+               </exclusion>
+               <exclusion>
+                  <artifactId>slf4j-log4j12</artifactId>
+                  <groupId>org.slf4j</groupId>
+               </exclusion>
+            </exclusions>
+         </dependency>
+         
+         <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-entitymanager</artifactId>
+            <version>${version.org.hibernate}</version>
+            <exclusions>
+               <exclusion>
+                  <artifactId>ejb3-persistence</artifactId>
+                  <groupId>org.hibernate</groupId>
+               </exclusion>
+               <exclusion>
+                  <artifactId>hibernate</artifactId>
+                  <groupId>org.hibernate</groupId>
+               </exclusion>
+               <exclusion>
+                  <artifactId>javassist</artifactId>
+                  <groupId>javassist</groupId>
+               </exclusion>
+               <exclusion>
+                  <artifactId>jta</artifactId>
+                  <groupId>javax.transaction</groupId>
+               </exclusion>
+               <exclusion>
+                  <artifactId>hibernate-core</artifactId>
+                  <groupId>org.hibernate</groupId>
+               </exclusion>
+               <exclusion>
+                  <artifactId>cglib</artifactId>
+                  <groupId>cglib</groupId>
+               </exclusion>
+               <exclusion>
+                  <artifactId>hibernate-jpa-2.0-api</artifactId>
+                  <groupId>org.hibernate.javax.persistence</groupId>
+               </exclusion>
+               <exclusion>
+                  <artifactId>slf4j-api</artifactId>
+                  <groupId>org.slf4j</groupId>
+               </exclusion>
+            </exclusions>
+         </dependency>
+      
+         <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-envers</artifactId>
+            <version>${version.org.hibernate}</version>
+            <exclusions>
+               <exclusion>
+                  <artifactId>ejb3-persistence</artifactId>
+                  <groupId>org.hibernate</groupId>
+               </exclusion>
+               <exclusion>
+                  <artifactId>hibernate</artifactId>
+                  <groupId>org.hibernate</groupId>
+               </exclusion>
+               <exclusion>
+                  <artifactId>jta</artifactId>
+                  <groupId>javax.transaction</groupId>
+               </exclusion>
+               <exclusion>
+                  <artifactId>hibernate-core</artifactId>
+                  <groupId>org.hibernate</groupId>
+               </exclusion>
+               <exclusion>
+                  <artifactId>hibernate-tools</artifactId>
+                  <groupId>org.hibernate</groupId>
+               </exclusion>
+               <exclusion>
+                  <artifactId>hibernate-entitymanager</artifactId>
+                  <groupId>org.hibernate</groupId>
+               </exclusion>
+               <exclusion>
+                  <artifactId>cglib</artifactId>
+                  <groupId>cglib</groupId>
+               </exclusion>
+               <exclusion>
+                  <artifactId>hibernate-jpa-2.0-api</artifactId>
+                  <groupId>org.hibernate.javax.persistence</groupId>
+               </exclusion>
+               <exclusion>
+                  <artifactId>slf4j-api</artifactId>
+                  <groupId>org.slf4j</groupId>
+               </exclusion>
+            </exclusions>
+         </dependency>
+      
+         <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-infinispan</artifactId>
+            <version>${version.org.hibernate}</version>
+            <exclusions>
+               <exclusion>
+                  <artifactId>hibernate-core</artifactId>
+                  <groupId>org.hibernate</groupId>
+               </exclusion>
+               <exclusion>
+                  <artifactId>hibernate-entitymanager</artifactId>
+                  <groupId>org.hibernate</groupId>
+               </exclusion>
+               <exclusion>
+                  <artifactId>rhq-pluginAnnotations</artifactId>
+                  <groupId>org.rhq.helpers</groupId>
+               </exclusion>
+            </exclusions>
+         </dependency>
          <dependency>
             <groupId>com.github.relaxng</groupId>
             <artifactId>relaxngDatatype</artifactId>
