@@ -284,6 +284,7 @@ public class StateTransferManagerImpl implements StateTransferManager {
       localTopologyManager.confirmRebalance(cacheName, topologyId, null);
    }
 
+   // TODO Investigate merging ownsData() and getFirstTopologyAsMember(), as they serve a similar purpose
    @Override
    public boolean ownsData() {
       return stateConsumer.ownsData();
