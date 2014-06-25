@@ -13,7 +13,7 @@ import java.util.Map;
  * @author Galder Zamarreño
  * @since 4.0
  */
-public interface CacheEntry extends Map.Entry<Object, Object>, MetadataAware {
+public interface CacheEntry extends Cloneable, Map.Entry<Object, Object>, MetadataAware {
 
    /**
     * Tests whether the entry represents a null value, typically used for repeatable read.
@@ -128,4 +128,7 @@ public interface CacheEntry extends Map.Entry<Object, Object>, MetadataAware {
     * flag is set to false.
     */
    boolean undelete(boolean doUndelete);
+
+   public CacheEntry clone();
+
 }

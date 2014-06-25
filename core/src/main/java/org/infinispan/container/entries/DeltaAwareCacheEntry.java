@@ -336,4 +336,14 @@ public class DeltaAwareCacheEntry implements CacheEntry, StateChangingEntry {
       // DeltaAware are always metadata unaware
    }
 
+   @Override
+   public DeltaAwareCacheEntry clone() {
+      try {
+         return (DeltaAwareCacheEntry) super.clone();
+      } catch (CloneNotSupportedException e) {
+         throw new AssertionError();
+      }
+   }
+
+
 }

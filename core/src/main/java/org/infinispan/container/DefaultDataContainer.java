@@ -156,7 +156,7 @@ public class DefaultDataContainer implements DataContainer {
       if (e != null) {
          e.setValue(v);
          InternalCacheEntry original = e;
-         e = entryFactory.update(e, metadata);
+         e = entryFactory.update(e, v, metadata);
          // we have the same instance. So we need to reincarnate, if mortal.
          if (isMortalEntry(e) && original == e) {
             e.reincarnate(timeService.wallClockTime());
