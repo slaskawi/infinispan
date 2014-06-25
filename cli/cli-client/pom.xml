@@ -27,12 +27,24 @@
          <artifactId>jboss-remoting</artifactId>
       </dependency>
       <dependency>
+         <groupId>org.jboss.remotingjmx</groupId>
+         <artifactId>remoting-jmx</artifactId>
+      </dependency>
+      <dependency>
          <groupId>gnu.getopt</groupId>
          <artifactId>java-getopt</artifactId>
       </dependency>
       <dependency>
           <groupId>org.infinispan</groupId>
           <artifactId>infinispan-client-hotrod</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.jboss.sasl</groupId>
+         <artifactId>jboss-sasl</artifactId>
+      </dependency>
+      <dependency>
+          <groupId>org.jboss.xnio</groupId>
+          <artifactId>xnio-nio</artifactId>
       </dependency>
       <dependency>
          <groupId>${project.groupId}</groupId>
