@@ -23,6 +23,10 @@
          <artifactId>jboss-logging</artifactId>
       </dependency>
       <dependency>
+         <groupId>org.jboss.remoting3</groupId>
+         <artifactId>jboss-remoting</artifactId>
+      </dependency>
+      <dependency>
          <groupId>gnu.getopt</groupId>
          <artifactId>java-getopt</artifactId>
       </dependency>
