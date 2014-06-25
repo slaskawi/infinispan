@@ -153,14 +153,26 @@ public class InternalEntryFactoryImpl implements InternalEntryFactory {
 
    @Override
    public InternalCacheEntry update(InternalCacheEntry cacheEntry, Object value, Metadata metadata) {
-      cacheEntry.setValue(value);
-      InternalCacheEntry original = cacheEntry;
-      cacheEntry = update(cacheEntry, metadata);
-      // we have the same instance. So we need to reincarnate, if mortal.
-      if (cacheEntry.getLifespan() > 0 && original == cacheEntry) {
-         cacheEntry.reincarnate(timeService.wallClockTime());
+      // Update value and metadata atomically. Any attempt to get a copy of
+      // the cache entry should also acquire the same lock, to avoid returning
+      // partially applied cache entry updates
+      synchronized (cacheEntry) {
+         cacheEntry.setValue(value);
+         InternalCacheEntry original = cacheEntry;
+         cacheEntry = update(cacheEntry, metadata);
+         // we have the same instance. So we need to reincarnate, if mortal.
+         if (cacheEntry.getLifespan() > 0 && original == cacheEntry) {
+            cacheEntry.reincarnate(timeService.wallClockTime());
+         }
+         return cacheEntry;
       }
-      return cacheEntry;
+   }
+
+   @Override
+   public CacheEntry copy(CacheEntry cacheEntry) {
+      synchronized (cacheEntry) {
+         return cacheEntry.clone();
+      }
    }
 
    private InternalCacheEntry updateMetadataUnawareEntry(InternalCacheEntry ice, long lifespan, long maxIdle) {
