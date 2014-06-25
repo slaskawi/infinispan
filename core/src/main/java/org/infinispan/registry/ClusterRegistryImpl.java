@@ -10,6 +10,7 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.context.Flag;
 import org.infinispan.factories.annotations.Inject;
+import org.infinispan.factories.annotations.Stop;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.notifications.KeyFilter;
 import org.infinispan.transaction.TransactionMode;
@@ -38,6 +39,14 @@ public class ClusterRegistryImpl<S, K, V> implements ClusterRegistry<S, K, V> {
    @Inject
    public void init(EmbeddedCacheManager cacheManager) {
       this.cacheManager = cacheManager;
+   }
+
+   @Stop(priority=1)
+   public void stop() {
+      if (clusterRegistryCache != null) {
+         clusterRegistryCache.stop();
+      }
+      clusterRegistryCache = null;
    }
 
    @Override

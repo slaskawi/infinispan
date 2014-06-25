@@ -47,7 +47,6 @@ import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.container.entries.InternalCacheValue;
 import org.infinispan.context.InvocationContext;
-import org.infinispan.context.InvocationContextContainer;
 import org.infinispan.context.InvocationContextFactory;
 import org.infinispan.factories.ComponentRegistry;
 import org.infinispan.factories.GlobalComponentRegistry;
@@ -74,6 +73,7 @@ import org.infinispan.marshall.core.ExternalizerTable;
 import org.infinispan.metadata.EmbeddedMetadata;
 import org.infinispan.metadata.InternalMetadataImpl;
 import org.infinispan.metadata.Metadata;
+import org.infinispan.registry.ClusterRegistryImpl;
 import org.infinispan.remoting.ReplicationQueue;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.Transport;
@@ -632,6 +632,11 @@ public class TestingUtil {
          }
 
          if (!cacheContainer.getStatus().allowInvocations()) return;
+
+         Cache<?, ?> registryCache = cacheContainer.getCache(ClusterRegistryImpl.GLOBAL_REGISTRY_CACHE_NAME, false);
+         if (registryCache != null && registryCache.getStatus().allowInvocations()) {
+             runningCaches.add(registryCache);
+         }
 
          for (Cache cache : runningCaches) {
             clearReplicationQueues(cache);

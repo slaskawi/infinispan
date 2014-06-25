@@ -620,7 +620,9 @@ public class DefaultCacheManager implements EmbeddedCacheManager, CacheManager {
                // make sure we stop the default cache LAST!
                Cache<?, ?> defaultCache = null;
                for (Map.Entry<String, CacheWrapper> entry : caches.entrySet()) {
-                  if (entry.getKey().equals(DEFAULT_CACHE_NAME)) {
+                   if (entry.getKey().equals(ClusterRegistryImpl.GLOBAL_REGISTRY_CACHE_NAME)) {
+                       // will be stopped by the GCR
+                  } else if (entry.getKey().equals(DEFAULT_CACHE_NAME)) {
                      defaultCache = entry.getValue().cache;
                   } else {
                      Cache<?, ?> c = entry.getValue().cache;
