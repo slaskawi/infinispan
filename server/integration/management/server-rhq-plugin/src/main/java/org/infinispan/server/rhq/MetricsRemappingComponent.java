@@ -56,6 +56,7 @@ public abstract class MetricsRemappingComponent<T extends MetricsRemappingCompon
       server2plugin.put("coordinator-address", "coordinatorAddress");
       server2plugin.put("local-address", "localAddress");
       server2plugin.put("cache-status", "cacheStatus");
+      server2plugin.put("cache-name", "cacheName");
       server2plugin.put("number-of-locks-available", "numberOfLocksAvailable");
       server2plugin.put("number-of-locks-held", "numberOfLocksHeld");
       server2plugin.put("concurrency-level", "concurrencyLevel");
