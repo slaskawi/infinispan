@@ -96,7 +96,7 @@
       <!-- Versions for dependencies -->
       <version.apache.ds>2.0.0-M15</version.apache.ds>
       <version.arquillian>1.0.3.Final</version.arquillian>
-      <version.arquillian.container.managed>7.3.2.Final-redhat-2</version.arquillian.container.managed>
+      <version.arquillian.container.managed>7.3.4.Final-redhat-1</version.arquillian.container.managed>
       <version.arquillian.container.weld>1.0.0.CR3</version.arquillian.container.weld>
       <version.c3p0>0.9.1.2</version.c3p0>
       <version.c3p0_dep.mchange-commons-java>0.2.7</version.c3p0_dep.mchange-commons-java>
@@ -127,7 +127,7 @@
       <version.javassist>3.18.1-GA-redhat-1</version.javassist>
       <version.javax.cache>1.0.0-PFD</version.javax.cache>
       <version.javax.enterprise>1.0-SP4.redhat-3</version.javax.enterprise>
-      <version.jboss.as>7.3.2.Final-redhat-2</version.jboss.as>
+      <version.jboss.as>7.3.4.Final-redhat-1</version.jboss.as>
       <version.jboss.ejb-client>1.0.25.Final-redhat-1</version.jboss.ejb-client>
       <version.jboss.logging.jboss-logging-processor>1.1.0.Final-redhat-1</version.jboss.logging.jboss-logging-processor>
       <version.jboss.logmanager>1.4.0.Final-redhat-1</version.jboss.logmanager>
@@ -138,7 +138,7 @@
       <version.org.jboss.spec.javax.resource.jboss-connector-api_1.6_spec>1.0.1.Final-redhat-2</version.org.jboss.spec.javax.resource.jboss-connector-api_1.6_spec>
       <version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.0_spec>1.0.2.Final-redhat-1</version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.0_spec>
       <version.org.jboss.naming>5.0.5.Final-redhat-1</version.org.jboss.naming>
-      <version.org.jboss.jbossts.jbossjts>4.17.15.Final-redhat-4</version.org.jboss.jbossts.jbossjts>
+      <version.org.jboss.jbossts.jbossjts>4.17.15.Final-redhat-5</version.org.jboss.jbossts.jbossjts>
       <version.jcipannotations>1.0.redhat-6</version.jcipannotations>
       <version.jetty>6.1.25</version.jetty>
       <version.junit>4.11</version.junit>
