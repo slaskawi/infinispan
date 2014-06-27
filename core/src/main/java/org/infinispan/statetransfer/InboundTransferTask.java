@@ -105,9 +105,7 @@ public class InboundTransferTask {
 
    public Set<Integer> getSegments() {
       synchronized (segments) {
-         Set<Integer> segmentsCopy = new HashSet<Integer>(segments);
-         segmentsCopy.addAll(segments);
-         return segmentsCopy;
+         return new HashSet<Integer>(segments);
       }
    }
 
@@ -266,17 +264,19 @@ public class InboundTransferTask {
 
    @Override
    public String toString() {
-      return "InboundTransferTask{" +
-            "segments=" + segments +
-            ", finishedSegments=" + finishedSegments +
-            ", unfinishedSegments=" + getUnfinishedSegments() +
-            ", source=" + source +
-            ", isCancelled=" + isCancelled +
-            ", isStartedSuccessfully=" + isStartedSuccessfully +
-            ", isCompletedSuccessfully=" + isCompletedSuccessfully +
-            ", topologyId=" + topologyId +
-            ", timeout=" + timeout +
-            ", cacheName=" + cacheName +
-            '}';
+      synchronized (segments) {
+         return "InboundTransferTask{" +
+               "segments=" + segments +
+               ", finishedSegments=" + finishedSegments +
+               ", unfinishedSegments=" + getUnfinishedSegments() +
+               ", source=" + source +
+               ", isCancelled=" + isCancelled +
+               ", isStartedSuccessfully=" + isStartedSuccessfully +
+               ", isCompletedSuccessfully=" + isCompletedSuccessfully +
+               ", topologyId=" + topologyId +
+               ", timeout=" + timeout +
+               ", cacheName=" + cacheName +
+               '}';
+      }
    }
 }
