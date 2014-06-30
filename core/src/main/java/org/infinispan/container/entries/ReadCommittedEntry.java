@@ -270,15 +270,6 @@ public class ReadCommittedEntry implements MVCCEntry {
    }
 
    @Override
-   public ReadCommittedEntry clone() {
-      try {
-         return (ReadCommittedEntry) super.clone();
-      } catch (CloneNotSupportedException e) {
-         throw new IllegalStateException(e);
-      }
-   }
-
-   @Override
    public String toString() {
       return getClass().getSimpleName() + "(" + Util.hexIdHashCode(this) + "){" +
             "key=" + toStr(key) +
@@ -304,5 +295,4 @@ public class ReadCommittedEntry implements MVCCEntry {
       }
       return false;
    }
-
 }

@@ -215,8 +215,7 @@ public class CommandsFactoryImpl implements CommandsFactory {
 
    @Override
    public GetKeyValueCommand buildGetKeyValueCommand(Object key, Set<Flag> flags, boolean returnEntry) {
-      // TODO: This could be optimised, with a separate class for GetCacheEntryCommand that takes entryFactory, avoiding normal gets getting extra instance variable
-      return new GetKeyValueCommand(key, flags, returnEntry, entryFactory);
+      return new GetKeyValueCommand(key, flags, returnEntry);
    }
 
    @Override

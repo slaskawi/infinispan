@@ -1,7 +1,6 @@
 package org.infinispan.commands.read;
 
 import org.infinispan.commands.Visitor;
-import org.infinispan.container.InternalEntryFactory;
 import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.context.Flag;
@@ -25,15 +24,12 @@ public class GetKeyValueCommand extends AbstractDataCommand {
    private static final Log log = LogFactory.getLog(GetKeyValueCommand.class);
    private static final boolean trace = log.isTraceEnabled();
    private InternalCacheEntry remotelyFetchedValue;
-   // TODO: These two instance variables specific to getCacheEntry, optimise
    private boolean returnEntry;
-   private InternalEntryFactory entryFactory;
 
-   public GetKeyValueCommand(Object key, Set<Flag> flags, boolean returnEntry, InternalEntryFactory entryFactory) {
+   public GetKeyValueCommand(Object key, Set<Flag> flags, boolean returnEntry) {
       this.key = key;
       this.flags = flags;
       this.returnEntry = returnEntry;
-      this.entryFactory = entryFactory;
    }
 
    public GetKeyValueCommand() {
@@ -62,13 +58,10 @@ public class GetKeyValueCommand extends AbstractDataCommand {
 
       // Get cache entry instead of value
       if (returnEntry) {
-         CacheEntry copy = entryFactory.copy(entry);
-         if (trace) {
+         if (trace)
             log.tracef("Found entry %s", entry);
-            log.tracef("Returning copied entry %s", copy);
-         }
 
-         return copy;
+         return entry;
       }
 
       final Object value = entry.getValue();
@@ -115,16 +108,6 @@ public class GetKeyValueCommand extends AbstractDataCommand {
 
    public boolean isReturnEntry() {
       return returnEntry;
-   }
-
-   public String toString() {
-      return new StringBuilder()
-            .append("GetKeyValueCommand {key=")
-            .append(toStr(key))
-            .append(", flags=").append(flags)
-            .append(", returnEntry=").append(returnEntry)
-            .append("}")
-            .toString();
    }
 
 }

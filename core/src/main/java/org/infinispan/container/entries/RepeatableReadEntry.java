@@ -70,9 +70,4 @@ public class RepeatableReadEntry extends ReadCommittedEntry {
    public boolean skipLookup() {
       return isFlagSet(SKIP_LOOKUP);
    }
-
-   @Override
-   public RepeatableReadEntry clone() {
-      return (RepeatableReadEntry) super.clone();
-   }
 }

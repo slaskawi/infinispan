@@ -84,9 +84,4 @@ public class ClusteredRepeatableReadEntry extends RepeatableReadEntry implements
    public boolean isNull() {
       return value == null;
    }
-
-   @Override
-   public ClusteredRepeatableReadEntry clone() {
-      return (ClusteredRepeatableReadEntry) super.clone();
-   }
 }

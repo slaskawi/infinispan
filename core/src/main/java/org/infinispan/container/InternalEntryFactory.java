@@ -95,7 +95,7 @@ public interface InternalEntryFactory {
     * @param metadata new metadata
     * @return a new InternalCacheEntry instance
     */
-   InternalCacheEntry update(InternalCacheEntry cacheEntry, Object value, Metadata metadata);
+   InternalCacheEntry update(InternalCacheEntry cacheEntry, Metadata metadata);
 
    /**
     * Creates an {@link InternalCacheValue} based on the {@link InternalCacheEntry} passed in.
@@ -104,10 +104,4 @@ public interface InternalEntryFactory {
     * @return an {@link InternalCacheValue}
     */
    InternalCacheValue createValue(CacheEntry cacheEntry);
-
-   /**
-    * Creates a copy of this cache entry and synchronizes serializes the copy process with the {@link #update(org.infinispan.container.entries.InternalCacheEntry, org.infinispan.metadata.Metadata)}.
-    * This is requires so that readers of the entry will get an consistent snapshot of the value red.
-    */
-   CacheEntry copy(CacheEntry cacheEntry);
 }
