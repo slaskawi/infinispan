@@ -77,6 +77,7 @@ public enum Element {
     BACKUP_FOR("backupFor"),
     TAKE_OFFLINE("takeOffline"),
     TOTAL_ORDER_EXECUTOR("totalOrderExecutor"),
+    PARTITION_HANDLING("partition-handling"),
     ;
 
     private final String name;

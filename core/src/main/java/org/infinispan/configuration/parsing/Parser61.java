@@ -685,6 +685,24 @@ public class Parser61 implements ConfigurationParser {
       }
    }
 
+   private void parsePartitionHandling(XMLExtendedStreamReader reader, ConfigurationBuilder builder) throws XMLStreamException {
+      PartitionHandlingConfigurationBuilder ph = builder.clustering().partitionHandling();
+      for (int i = 0; i < reader.getAttributeCount(); i++) {
+         String value = replaceProperties(reader.getAttributeValue(i));
+         Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+         switch (attribute) {
+            case ENABLED: {
+               ph.enabled(Boolean.valueOf(value));
+               break;
+            }
+            default: {
+               throw ParseUtils.unexpectedAttribute(reader, i);
+            }
+         }
+      }
+      ParseUtils.requireNoContent(reader);
+   }
+
    private void parseStore(final XMLExtendedStreamReader reader, final ConfigurationBuilderHolder holder) throws XMLStreamException {
       ConfigurationBuilder builder = holder.getCurrentConfigurationBuilder();
       CacheLoader store = null;
@@ -1180,6 +1198,9 @@ public class Parser61 implements ConfigurationParser {
                synchronous = true;
                setMode(builder, clusteringMode, asynchronous, synchronous, reader);
                parseSync(reader, builder);
+               break;
+            case PARTITION_HANDLING:
+               parsePartitionHandling(reader, builder);
                break;
             default:
                throw ParseUtils.unexpectedElement(reader);
