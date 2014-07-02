@@ -153,18 +153,6 @@ public abstract class AbstractAuthentication {
       });
    }
 
-   @Test(expected = java.security.PrivilegedActionException.class)
-   public void testWriterCreateWrite() throws Exception {
-      Subject writer = getWriterSubject();
-      Security.doAs(writer, new PrivilegedExceptionAction<Void>() {
-         public Void run() throws Exception {
-            Cache<Object, Object> c = manager.getCache("writerCache");
-            c.put("test", "value");
-            return null;
-         }
-      });
-   }
-
    @Test
    public void testWriterRemove() throws Exception {
       Subject writer = getWriterSubject();
