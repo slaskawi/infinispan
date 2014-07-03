@@ -12,6 +12,8 @@
         use_send_queues="true"
         enable_diagnostics="false"
         bundler_type="old"
+        logical_addr_cache_expiration="86400000"
+        physical_addr_max_fetch_attempts="1"
 
         thread_naming_pattern="pl"
 
@@ -72,7 +74,8 @@
              xmit_table_msgs_per_row="10000"
              xmit_table_max_compaction_time="10000"
              max_msg_batch_size="100"
-             conn_expiry_timeout="0"/>
+             conn_expiry_timeout="0"
+             conn_close_timeout="10000"/>
 
    <pbcast.STABLE stability_delay="500" desired_avg_gossip="5000" max_bytes="1m"/>
    <pbcast.GMS print_local_addr="false" join_timeout="3000" view_bundling="true"/>
