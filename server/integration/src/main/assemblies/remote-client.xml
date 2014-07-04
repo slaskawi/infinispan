@@ -25,10 +25,13 @@
          <directory>build/target/${product.name}-${product.version}</directory>
          <outputDirectory />
          <includes>
-            <include>client/**</include>
             <include>LICENSE.txt</include>
             <include>README-CLIENT.md</include>
          </includes>
+      </fileSet>
+      <fileSet>
+         <directory>build/target/${product.name}-${product.version}/client/hotrod/java</directory>
+         <outputDirectory />
       </fileSet>
    </fileSets>
 </assembly>
