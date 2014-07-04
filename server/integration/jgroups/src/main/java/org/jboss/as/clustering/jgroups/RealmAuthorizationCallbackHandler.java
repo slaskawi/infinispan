@@ -2,7 +2,10 @@ package org.jboss.as.clustering.jgroups;
 
 import java.io.IOException;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import javax.security.auth.callback.Callback;
@@ -29,6 +32,7 @@ public class RealmAuthorizationCallbackHandler implements CallbackHandler {
     private final SecurityRealm realm;
     private final String clusterRole;
 
+    static final Collection<Principal> EMPTY_PRINCIPALS = Collections.emptySet();
     static final String SASL_OPT_REALM_PROPERTY = "com.sun.security.sasl.digest.realm";
     static final String SASL_OPT_ALT_PROTO_PROPERTY = "org.jboss.sasl.digest.alternative_protocols";
     static final String SASL_OPT_PRE_DIGESTED_PROPERTY = "org.jboss.sasl.digest.pre_digested";
@@ -69,13 +73,13 @@ public class RealmAuthorizationCallbackHandler implements CallbackHandler {
 
     private AuthorizingCallbackHandler getMechCallbackHandler() {
         if (PLAIN.equals(mechanismName)) {
-            return realm.getAuthorizingCallbackHandler(AuthenticationMechanism.PLAIN);
+            return new DelegatingRoleAwareAuthorizingCallbackHandler(realm.getAuthorizingCallbackHandler(AuthenticationMechanism.PLAIN));
         } else if (DIGEST_MD5.equals(mechanismName)) {
-            return realm.getAuthorizingCallbackHandler(AuthenticationMechanism.DIGEST);
+            return new DelegatingRoleAwareAuthorizingCallbackHandler(realm.getAuthorizingCallbackHandler(AuthenticationMechanism.DIGEST));
         } else if (GSSAPI.equals(mechanismName)) {
-            return new DelegatingGSSAPIAuthorizingCallbackHandler();
+            return new DelegatingRoleAwareAuthorizingCallbackHandler(realm.getAuthorizingCallbackHandler(AuthenticationMechanism.PLAIN));
         } else if (EXTERNAL.equals(mechanismName)) {
-            return realm.getAuthorizingCallbackHandler(AuthenticationMechanism.CLIENT_CERT);
+            return new DelegatingRoleAwareAuthorizingCallbackHandler(realm.getAuthorizingCallbackHandler(AuthenticationMechanism.CLIENT_CERT));
         } else {
             throw new IllegalArgumentException("Unsupported mech " + mechanismName);
         }
@@ -90,34 +94,6 @@ public class RealmAuthorizationCallbackHandler implements CallbackHandler {
         throw JGroupsMessages.MESSAGES.unauthorizedNodeJoin(subjectUserInfo.getUserName());
     }
 
-    class DelegatingGSSAPIAuthorizingCallbackHandler implements AuthorizingCallbackHandler {
-        private final AuthorizingCallbackHandler delegate;
-        private RealmUser realmUser;
-
-
-        DelegatingGSSAPIAuthorizingCallbackHandler() {
-            delegate = realm.getAuthorizingCallbackHandler(AuthenticationMechanism.PLAIN);
-        }
-
-        @Override
-        public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-            AuthorizeCallback acb = (AuthorizeCallback) callbacks[0];
-            String authenticationId = acb.getAuthenticationID();
-            String authorizationId = acb.getAuthorizationID();
-            acb.setAuthorized(authenticationId.equals(authorizationId));
-            int realmSep = authorizationId.indexOf('@');
-            realmUser = realmSep < 0 ? new RealmUser(authorizationId) : new RealmUser(authorizationId.substring(realmSep+1), authorizationId.substring(0, realmSep));
-        }
-
-        @Override
-        public SubjectUserInfo createSubjectUserInfo(Collection<Principal> principals) throws IOException {
-            // The call to the delegate will supplement the user with additional role information
-            principals.add(realmUser);
-            SubjectUserInfo subjectUserInfo = delegate.createSubjectUserInfo(principals);
-            return validateSubjectRole(subjectUserInfo);
-        }
-    }
-
     class DelegatingRoleAwareAuthorizingCallbackHandler implements AuthorizingCallbackHandler {
         private final AuthorizingCallbackHandler delegate;
 
@@ -127,13 +103,35 @@ public class RealmAuthorizationCallbackHandler implements CallbackHandler {
 
         @Override
         public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-            delegate.handle(callbacks);
+            AuthorizeCallback acb = findCallbackHandler(AuthorizeCallback.class, callbacks);
+            if (acb != null) {
+                String authenticationId = acb.getAuthenticationID();
+                String authorizationId = acb.getAuthorizationID();
+                acb.setAuthorized(authenticationId.equals(authorizationId));
+                int realmSep = authorizationId.indexOf('@');
+                RealmUser realmUser = realmSep < 0 ? new RealmUser(authorizationId) : new RealmUser(authorizationId.substring(realmSep+1), authorizationId.substring(0, realmSep));
+                List<Principal> principals = new ArrayList<Principal>();
+                principals.add(realmUser);
+                createSubjectUserInfo(principals);
+            } else {
+                delegate.handle(callbacks);
+            }
         }
 
         @Override
         public SubjectUserInfo createSubjectUserInfo(Collection<Principal> principals) throws IOException {
+            // The call to the delegate will supplement the user with additional role information
             SubjectUserInfo subjectUserInfo = delegate.createSubjectUserInfo(principals);
             return validateSubjectRole(subjectUserInfo);
         }
+    }
+
+    public static <T extends Callback> T findCallbackHandler(Class<T> klass, Callback[] callbacks) {
+        for(int i=0; i < callbacks.length; i++) {
+            if (klass.isInstance(callbacks[i])) {
+                return (T) callbacks[i];
+            }
+        }
+        return null;
     }
 }
