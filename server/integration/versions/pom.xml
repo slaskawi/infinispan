@@ -32,6 +32,7 @@
       <version.org.jboss.jandex>1.0.3.Final-redhat-2</version.org.jboss.jandex>
       <version.org.jboss.jbossts.jbossjts>4.17.15.Final-redhat-5</version.org.jboss.jbossts.jbossjts>
       <version.org.jboss.spec>3.0.2.Final-redhat-8</version.org.jboss.spec>
+      <version.org.jboss.web>7.3.2.Final-redhat-3</version.org.jboss.web> <!-- CVE-2014-0075 CVE-2014-0096 CVE-2014-0099 CVE-2014-0119 -->
       <version.junit>4.11</version.junit>
       <version.org.infinispan>${project.version}</version.org.infinispan>
       <version.org.infinispan.arquillian.container>1.1.0.Alpha2</version.org.infinispan.arquillian.container>
@@ -278,7 +279,13 @@
             <version>${version.org.jboss.as}</version>
             <scope>test</scope>
             <type>pom</type>
-        </dependency>
+         </dependency>
+
+         <dependency>
+            <groupId>org.jboss.web</groupId>
+            <artifactId>jbossweb</artifactId>
+            <version>${version.org.jboss.web}</version>
+         </dependency>
 
          <dependency>
             <groupId>org.jboss.logmanager</groupId>
