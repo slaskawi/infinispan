@@ -59,6 +59,11 @@ Dependencies: org.infinispan:jdg-6.3 services, org.infinispan.persistence.jpa:jd
 Manifest-Version: 1.0
 Dependencies: org.infinispan:jdg-6.3 services, org.infinispan.persistence.leveldb:jdg-6.3 services
 
+* CDI Extension
+
+Manifest-Version: 1.0
+Dependencies: org.infinispan:jdg-6.3 services, org.infinispan.cdi:jdg-6.3 meta-inf
+
 
 NOTE: The file jboss-deployment-structure.xml with these dependencies can be created analogously 
       to the above example.
