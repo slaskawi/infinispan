@@ -38,7 +38,9 @@ public class ProtobufMatcherTest extends AbstractMatcherTest {
    }
 
    @Ignore
+   @Override
    public void testCollectionIsNotNull1() throws Exception {
       //todo [anistor] this feature is currently not implemented for the protobuf case
+      super.testCollectionIsNotNull1();
    }
 }

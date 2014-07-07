@@ -11,15 +11,16 @@ import java.text.SimpleDateFormat;
 import java.util.TimeZone;
 
 /**
- * Base for the DSL query tests
+ * Base for the DSL query tests.
  *
  * @author rvansa@redhat.com
+ * @author anistor@redhat.com
  */
-public class AbstractQueryDslTest extends SingleCacheManagerTest {
+public abstract class AbstractQueryDslTest extends SingleCacheManagerTest {
 
    protected final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
-   public AbstractQueryDslTest() {
+   protected AbstractQueryDslTest() {
       DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("GMT"));
    }
 
