@@ -199,6 +199,7 @@
             <configuration>
                <threadCount>1</threadCount>
                <parallel>classes</parallel>
+               <runOrder>alphabetical</runOrder>
             </configuration>
             <executions>
                <execution>
