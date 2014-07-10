@@ -1,7 +1,12 @@
 package org.infinispan.server.test.security.jgroups.encrypt;
 
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
+
+import javax.management.ObjectName;
 
 import org.apache.commons.io.FileUtils;
 import org.infinispan.arquillian.core.InfinispanResource;
@@ -17,9 +22,6 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.infinispan.server.test.util.ITestUtils.getAttribute;
-import static org.junit.Assert.assertEquals;
 
 /**
  * Test JGroups' ENCRYPT protocol. Only proper registration of the protocol is tested, making
@@ -46,6 +48,9 @@ public class EncryptProtocolIT {
     final String JOINING_NODE = "clustered-encrypt-2";
 
     final String ENCRYPT_MBEAN = "jgroups:type=protocol,cluster=\"clustered\",protocol=ENCRYPT";
+    final String ENCRYPT_PROPERTY_KEY = "key_store_name";
+    final String ENCRYPT_PROPERTY_VALUE_SUFFIX = "server_jceks.keystore";
+    final String ENCRYPT_PASSWORD_KEY = "store_password";
 
     @BeforeClass
     public static void before() {
@@ -87,8 +92,11 @@ public class EncryptProtocolIT {
             assertEquals(2, friend.manager.getClusterSize());
 
             //check that ENCRYPT protocol is registered with JGroups
-            assertEquals("secret", getAttribute(providerCoordinator, ENCRYPT_MBEAN, "store_password"));
-            assertEquals("secret", getAttribute(providerFriend, ENCRYPT_MBEAN, "store_password"));
+            assertTrue(getAttribute(providerCoordinator, ENCRYPT_MBEAN, ENCRYPT_PROPERTY_KEY).endsWith(ENCRYPT_PROPERTY_VALUE_SUFFIX));
+            assertTrue(getAttribute(providerFriend, ENCRYPT_MBEAN, ENCRYPT_PROPERTY_KEY).endsWith(ENCRYPT_PROPERTY_VALUE_SUFFIX));
+            
+            //JGRP-1854: check that ENCRYPT password is not visible via JMX 
+            assertNull(getAttribute(providerCoordinator, ENCRYPT_MBEAN, ENCRYPT_PASSWORD_KEY));
 
             mcFriend.set("key1", "value1");
             assertEquals("Could not read replicated pair key1/value1", "value1", mcCoordinator.get("key1"));
@@ -96,5 +104,4 @@ public class EncryptProtocolIT {
             controller.stop(JOINING_NODE);
         }
     }
-
 }
