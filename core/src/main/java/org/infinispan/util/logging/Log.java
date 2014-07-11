@@ -1183,4 +1183,8 @@ public interface Log extends BasicLogger {
    @LogMessage(level = INFO)
    @Message(value = "Finished local rebalance for cache %s on node %s, topology id = %d", id = 328)
    void rebalanceCompleted(String cacheName, Address node, int topologyId);
+
+   @LogMessage(level = WARN)
+   @Message(value = "More than one configuration file with specified name on classpath. The first one will be used:\n %s", id = 329)
+   void ambiguousConfigurationFiles(String files);
 }

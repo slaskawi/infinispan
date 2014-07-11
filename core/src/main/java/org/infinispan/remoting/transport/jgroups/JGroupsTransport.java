@@ -52,6 +52,7 @@ import org.jgroups.util.TopologyUUID;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -93,7 +94,7 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
    public static final String CONFIGURATION_XML = "configurationXml";
    public static final String CONFIGURATION_FILE = "configurationFile";
    public static final String CHANNEL_LOOKUP = "channelLookup";
-   protected static final String DEFAULT_JGROUPS_CONFIGURATION_FILE = "jgroups-udp.xml";
+   protected static final String DEFAULT_JGROUPS_CONFIGURATION_FILE = "default-configs/default-jgroups-udp.xml";
 
    static final Log log = LogFactory.getLog(JGroupsTransport.class);
    static final boolean trace = log.isTraceEnabled();
@@ -387,14 +388,21 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
 
          if (channel == null && props.containsKey(CONFIGURATION_FILE)) {
             cfg = props.getProperty(CONFIGURATION_FILE);
-            URL conf = fileLookup.lookupFileLocation(cfg, configuration.classLoader());
-            if (conf == null) {
+            Collection<URL> confs = null;
+            try {
+               confs = fileLookup.lookupFileLocations(cfg, configuration.classLoader());
+            } catch (IOException io) {
+               //ignore, we check confs later for various states
+            }
+            if (confs.isEmpty()) {
                throw new CacheConfigurationException(CONFIGURATION_FILE
                         + " property specifies value " + cfg + " that could not be read!",
                         new FileNotFoundException(cfg));
+            } else if (confs.size() > 1) {
+               log.ambiguousConfigurationFiles(Util.toStr(confs));
             }
             try {
-               channel = new JChannel(conf);
+               channel = new JChannel(confs.iterator().next());
             } catch (Exception e) {
                log.errorCreatingChannelFromConfigFile(cfg);
                throw new CacheException(e);
