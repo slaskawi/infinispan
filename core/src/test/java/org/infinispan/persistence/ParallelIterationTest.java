@@ -2,9 +2,13 @@ package org.infinispan.persistence;
 
 import static org.testng.Assert.*;
 
+import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -36,7 +40,6 @@ public abstract class ParallelIterationTest extends SingleCacheManagerTest {
    protected AdvancedLoadWriteStore store;
    protected Executor persistenceExecutor;
    protected StreamingMarshaller sm;
-   protected boolean multipleThreads = true;
 
    @Override
    protected EmbeddedCacheManager createCacheManager() throws Exception {
@@ -95,7 +98,7 @@ public abstract class ParallelIterationTest extends SingleCacheManagerTest {
 
    public void testCancelingTaskMultipleProcessors() {
       insertData();
-      final ConcurrentMap entries = new ConcurrentHashMap();
+      final ConcurrentMap<Object, Object> entries = new ConcurrentHashMap<Object, Object>();
       final AtomicBoolean stopped = new AtomicBoolean(false);
 
       store.process(null, new AdvancedCacheLoader.CacheLoaderTask() {
@@ -124,15 +127,32 @@ public abstract class ParallelIterationTest extends SingleCacheManagerTest {
    private void runIterationTest(int numThreads, Executor persistenceExecutor1, final boolean fetchValues, boolean fetchMetadata) {
       assertEquals(store.size(), 0);
       int numEntries = insertData();
-      final ConcurrentMap<Integer, Integer> entries = new ConcurrentHashMap();
-      final ConcurrentMap<Integer, InternalMetadata> metadata = new ConcurrentHashMap();
+      final ConcurrentMap<Integer, Integer> entries = new ConcurrentHashMap<Integer, Integer>();
+      final ConcurrentMap<Integer, InternalMetadata> metadata = new ConcurrentHashMap<Integer, InternalMetadata>();
       final ConcurrentHashSet threads = new ConcurrentHashSet();
       final AtomicBoolean sameKeyMultipleTimes = new AtomicBoolean();
       final AtomicInteger processed = new AtomicInteger();
+      final CyclicBarrier barrier = new CyclicBarrier(numThreads);
+      final AtomicBoolean brokenBarrier = new AtomicBoolean(false);
 
       store.process(null, new AdvancedCacheLoader.CacheLoaderTask() {
          @Override
          public void processEntry(MarshalledEntry marshalledEntry, AdvancedCacheLoader.TaskContext taskContext) throws InterruptedException {
+            if (threads.add(Thread.currentThread())) {
+               try {
+                  //in some cases, if the task is fast enough, it may not use all the threads expected
+                  //this barrier will ensure that when the thread is used for the first time, it will wait
+                  //for the expected number of threads.
+                  //this should remove the random failures.
+                  barrier.await(1, TimeUnit.MINUTES);
+               } catch (BrokenBarrierException e) {
+                  log.warn("Exception occurred while waiting for barrier", e);
+                  brokenBarrier.set(true);
+               } catch (TimeoutException e) {
+                  log.warn("Exception occurred while waiting for barrier", e);
+                  brokenBarrier.set(true);
+               }
+            }
             int key = unwrapKey(marshalledEntry.getKey());
             if (fetchValues) {
                // Note: MarshalledEntryImpl.getValue() fails with NPE when it's got null valueBytes,
@@ -153,7 +173,6 @@ public abstract class ParallelIterationTest extends SingleCacheManagerTest {
             } else {
                log.tracef("No metadata found for key %d", key);
             }
-            threads.add(Thread.currentThread());
             processed.incrementAndGet();
             Thread.sleep(1); // to force start other thread
          }
@@ -161,6 +180,7 @@ public abstract class ParallelIterationTest extends SingleCacheManagerTest {
 
       assertFalse(sameKeyMultipleTimes.get());
       assertEquals(processed.get(), numEntries);
+      assertFalse(brokenBarrier.get());
       for (int i = 0; i < numEntries; i++) {
          if (fetchValues) {
             assertEquals(entries.get(i), (Integer) i, "For key " + i);
@@ -176,9 +196,7 @@ public abstract class ParallelIterationTest extends SingleCacheManagerTest {
          }
       }
 
-      if (multipleThreads) {
-         assertEquals(threads.size(), numThreads);
-      }
+      assertEquals(threads.size(), numThreads);
    }
 
    private int insertData() {
