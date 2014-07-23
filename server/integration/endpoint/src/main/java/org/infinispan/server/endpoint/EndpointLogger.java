@@ -150,6 +150,27 @@ public interface EndpointLogger extends BasicLogger {
    SecurityException cannotRetrieveAuthorizationInformation(@Cause Throwable cause, String user);
 
    @LogMessage(level = WARN)
-   @Message(id = 10099, value = "The WebSocket connector is not available in JBoss Data Grid")
+   @Message(id = 10023, value = "The WebSocket connector is not available in JBoss Data Grid")
    void webSocketConnectorUnavailable();
+
+   @Message(id = 10024, value = "Endpoint '%s' requires Client Certificates, but no Trust Store is available in realm '%s'")
+   StartException noSSLTrustStore(String endpoint, String realm);
+
+   @Message(id = 10025, value = "Invalid authorizationId %s")
+   IllegalArgumentException invalidAuthorizationId(String authorizationId);
+
+   @LogMessage(level = WARN)
+   @Message(id = 10026, value = "Unable to instantiate class \"%s\": %s")
+   void cannotInstantiateClass(String clazz, Throwable reason);
+
+   @LogMessage(level = WARN)
+   @Message(id = 10027, value = "No @NamedFactory annotation found in class: %s")
+   void noFactoryName(String clazz);
+
+   @Message(id = 10028, value = "Service not started")
+   IllegalStateException serviceNotStarted();
+
+   @Message(id = 10029, value = "%s is null")
+   String nullVar(String name);
+
 }
