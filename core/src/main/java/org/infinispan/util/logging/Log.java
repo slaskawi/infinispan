@@ -1058,6 +1058,18 @@ public interface Log extends BasicLogger {
    @Message(value = "A principal-to-role mapper has not been specified", id = 288)
    CacheConfigurationException invalidPrincipalRoleMapper();
 
+   @LogMessage(level = WARN)
+   @Message(value = "Unable to send X-Site state chunk to '%s'.", id = 289)
+   void unableToSendXSiteState(String site, @Cause Throwable cause);
+
+   @LogMessage(level = WARN)
+   @Message(value = "Unable to wait for X-Site state chunk ACKs from '%s'.", id = 290)
+   void unableToWaitForXSiteStateAcks(String site, @Cause Throwable cause);
+
+   @LogMessage(level = WARN)
+   @Message(value = "Unable to apply X-Site state chunk.", id = 291)
+   void unableToApplyXSiteState(@Cause Throwable cause);
+
    @Message(value = "Attempt to add a %s permission to a SecurityPermissionCollection", id = 296)
    IllegalArgumentException invalidPermission(Permission permission);
 
@@ -1085,20 +1097,8 @@ public interface Log extends BasicLogger {
    void unsuccessfulResponseRetrievingTransactionsForSegments(Address address, Response response);
 
    @LogMessage(level = WARN)
-   @Message(value = "Unable to send X-Site state chunk to '%s'.", id = 303)
-   void unableToSendXSiteState(String site, @Cause Throwable cause);
-
-   @LogMessage(level = WARN)
-   @Message(value = "Unable to wait for X-Site state chunk ACKs from '%s'.", id = 304)
-   void unableToWaitForXSiteStateAcks(String site, @Cause Throwable cause);
-
-   @LogMessage(level = WARN)
-   @Message(value = "Unable to apply X-Site state chunk.", id = 305)
-   void unableToApplyXSiteState(@Cause Throwable cause);
-
-   @LogMessage(level = WARN)
-   @Message(value = "Unable to re-start x-site state transfer to site %s", id = 306)
-   void failedToRestartXSiteStateTransfer(String siteName, @Cause Throwable cause);
+   @Message(value = "Partition handling doesn't work for replicated caches, it will be ignored.", id = 303)
+   void warnPartitionHandlingForReplicatedCaches();
 
    @LogMessage(level = INFO)
    @Message(value = "Rebalancing enabled", id = 308)
@@ -1111,4 +1111,8 @@ public interface Log extends BasicLogger {
    @LogMessage(level = INFO)
    @Message(value = "Starting cluster-wide rebalance for cache %s, topology %s", id = 310)
    void startRebalance(String cacheName, CacheTopology cacheTopology);
+
+   @LogMessage(level = WARN)
+   @Message(value = "Unable to re-start x-site state transfer to site %s", id = 322)
+   void failedToRestartXSiteStateTransfer(String siteName, @Cause Throwable cause);
 }
