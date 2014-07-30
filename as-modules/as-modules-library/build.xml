@@ -4,8 +4,8 @@
 
     <import file="lib.xml" />
 
-    <major-minor version="6.3.0" property="infinispan.slot" prefix="jdg-"/>
-    <major-minor version="6.3.0" property="jgroups.slot" prefix="jdg-"/>
+    <major-minor version="6.4.0" property="infinispan.slot" prefix="jdg-"/>
+    <major-minor version="6.4.0" property="jgroups.slot" prefix="jdg-"/>
 
     <target name="clean">
         <delete dir="${root.dir}" />

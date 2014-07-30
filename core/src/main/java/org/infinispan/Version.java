@@ -14,7 +14,7 @@ import java.io.ByteArrayOutputStream;
 public class Version {
 
    private static final String MAJOR = "6";
-   private static final String MINOR = "1";
+   private static final String MINOR = "2";
    private static final String MICRO = "0";
    private static final String MODIFIER = "SNAPSHOT";
    private static final boolean SNAPSHOT = true;
@@ -24,7 +24,7 @@ public class Version {
    public static final String PROJECT_NAME = "Infinispan";
    public static final byte[] VERSION_ID = readVersionBytes();
    public static final String MAJOR_MINOR = MAJOR + "." + MINOR;
-   public static final String MODULE_SLOT = "jdg-6.3";
+   public static final String MODULE_SLOT = "jdg-6.4";
 
    private static final int MAJOR_SHIFT = 11;
    private static final int MINOR_SHIFT = 6;
