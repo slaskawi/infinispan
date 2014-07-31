@@ -65,7 +65,8 @@ public final class SecureCacheImpl<K, V> implements SecureCache<K, V> {
    }
 
    @Override
-   public <K, V, C> void addListener(Object listener, KeyValueFilter<K, V> filter, Converter<K, V, C> converter) {
+   public <C> void addListener(Object listener, KeyValueFilter<? super K, ? super V> filter, Converter<? super K,
+         ? super V, C> converter) {
       authzManager.checkPermission(AuthorizationPermission.LISTEN);
       delegate.addListener(listener, filter, converter);
    }

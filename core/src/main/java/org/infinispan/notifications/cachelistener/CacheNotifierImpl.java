@@ -68,7 +68,7 @@ import static org.infinispan.notifications.cachelistener.event.Event.Type.*;
  * @author Mircea.Markus@jboss.com
  * @since 4.0
  */
-public final class CacheNotifierImpl extends AbstractListenerImpl implements ClusterCacheNotifier {
+public final class CacheNotifierImpl<K, V> extends AbstractListenerImpl implements ClusterCacheNotifier<K, V> {
 
    private static final Log log = LogFactory.getLog(CacheNotifierImpl.class);
 
@@ -563,12 +563,18 @@ public final class CacheNotifierImpl extends AbstractListenerImpl implements Clu
    }
 
    @Override
+   public <C> void addListener(Object listener, KeyValueFilter<? super K, ? super V> filter, Converter<? super K, ? super V, C> converter, ClassLoader classLoader) {
+      validateAndAddListenerInvocation(listener, filter, converter, classLoader);
+   }
+
+   @Override
    public void addListener(Object listener, KeyFilter filter) {
       addListener(listener, filter, null);
    }
 
    @Override
-   public <K, V, C> void addListener(Object listener, KeyValueFilter<K, V> filter, Converter<K, V, C> converter) {
+   public <C> void addListener(Object listener, KeyValueFilter<? super K, ? super V> filter,
+                               Converter<? super K, ? super V, C> converter) {
       validateAndAddListenerInvocation(listener, filter, converter, null);
    }
 

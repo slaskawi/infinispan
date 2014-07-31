@@ -21,7 +21,7 @@ import java.util.Collection;
  * @since 4.0
  */
 @Scope(Scopes.NAMED_CACHE)
-public interface CacheNotifier extends ClassLoaderAwareFilteringListenable, ClassLoaderAwareListenable {
+public interface CacheNotifier<K, V> extends ClassLoaderAwareFilteringListenable<K, V>, ClassLoaderAwareListenable {
 
    /**
     * Notifies all registered listeners of a CacheEntryCreated event.
