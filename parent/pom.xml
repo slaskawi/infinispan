@@ -96,12 +96,13 @@
       <!-- Versions for dependencies -->
       <version.apache.ds>2.0.0-M15</version.apache.ds>
       <version.arquillian>1.0.3.Final</version.arquillian>
-      <version.arquillian.container.managed>7.3.4.Final-redhat-1</version.arquillian.container.managed>
+      <version.arquillian.container.managed>7.4.0.Final-redhat-19</version.arquillian.container.managed>
       <version.arquillian.container.weld>1.0.0.CR3</version.arquillian.container.weld>
       <version.c3p0>0.9.1.2</version.c3p0>
       <version.c3p0_dep.mchange-commons-java>0.2.7</version.c3p0_dep.mchange-commons-java>
-      <version.commons.codec>1.4-redhat-2</version.commons.codec>
-      <version.commons.collections>3.2.1-redhat-2</version.commons.collections>
+      <version.ch.qos.cal10n>0.7.3.redhat-4</version.ch.qos.cal10n>
+      <version.commons.codec>1.4.redhat-3</version.commons.codec>
+      <version.commons.collections>3.2.1.redhat-3</version.commons.collections>
       <version.commons.compress>1.5</version.commons.compress>
       <version.commons.httpclient>3.1-redhat-2</version.commons.httpclient>
       <version.commons.logging>1.1.1</version.commons.logging>
@@ -110,7 +111,7 @@
       <version.guava>13.0.1-redhat-1</version.guava>
       <version.geronimo.tm>3.1.1</version.geronimo.tm>
       <version.h2.driver>1.3.168.redhat-4</version.h2.driver>
-      <version.hibernate.core>4.2.13.Final-redhat-2</version.hibernate.core>
+      <version.hibernate.core>4.2.14.SP1-redhat-1</version.hibernate.core>
       <version.hibernate.entitymanager>${version.hibernate.core}</version.hibernate.entitymanager>
       <version.hibernate.hql.parser>1.0.0.CR2-redhat-1</version.hibernate.hql.parser>
       <version.hibernate.javax.persistence>1.0.1.Final-redhat-2</version.hibernate.javax.persistence>
@@ -118,8 +119,8 @@
       <version.hibernate_dep.antlr>2.7.7_5</version.hibernate_dep.antlr>
       <version.hibernate_dep.dom4j>1.6.1_5</version.hibernate_dep.dom4j>
       <version.hibernate_dep.classmate>0.5.4</version.hibernate_dep.classmate>
-      <version.hibernate_dep.javaassist>3.18.1-GA</version.hibernate_dep.javaassist>
-      <version.hibernate_dep.jandex>1.0.3.Final</version.hibernate_dep.jandex>
+      <version.hibernate_dep.javaassist>3.18.1-GA-redhat-1</version.hibernate_dep.javaassist>
+      <version.hibernate_dep.jandex>1.0.3.Final-redhat-2</version.hibernate_dep.jandex>
       <version.hibernate_dep.hibernate-commons-annotations>4.0.2.Final</version.hibernate_dep.hibernate-commons-annotations>
       <version.httpclient>4.2.1-redhat-1</version.httpclient>
       <version.howl>1.0.1-1</version.howl>
@@ -127,7 +128,7 @@
       <version.javassist>3.18.1-GA-redhat-1</version.javassist>
       <version.javax.cache>1.0.0-PFD</version.javax.cache>
       <version.javax.enterprise>1.0-SP4.redhat-3</version.javax.enterprise>
-      <version.jboss.as>7.3.4.Final-redhat-1</version.jboss.as>
+      <version.jboss.as>7.4.0.Final-redhat-19</version.jboss.as>
       <version.jboss.ejb-client>1.0.25.Final-redhat-1</version.jboss.ejb-client>
       <version.jboss.logging.jboss-logging-processor>1.1.0.Final-redhat-1</version.jboss.logging.jboss-logging-processor>
       <version.jboss.logmanager>1.4.0.Final-redhat-1</version.jboss.logmanager>
@@ -138,7 +139,7 @@
       <version.org.jboss.spec.javax.resource.jboss-connector-api_1.6_spec>1.0.1.Final-redhat-2</version.org.jboss.spec.javax.resource.jboss-connector-api_1.6_spec>
       <version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.0_spec>1.0.2.Final-redhat-1</version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.0_spec>
       <version.org.jboss.naming>5.0.5.Final-redhat-1</version.org.jboss.naming>
-      <version.org.jboss.jbossts.jbossjts>4.17.15.Final-redhat-5</version.org.jboss.jbossts.jbossjts>
+      <version.org.jboss.jbossts.jbossjts>4.17.21.Final-redhat-2</version.org.jboss.jbossts.jbossjts>
       <version.jcipannotations>1.0.redhat-6</version.jcipannotations>
       <version.jetty>6.1.25</version.jetty>
       <version.junit>4.11</version.junit>
@@ -148,15 +149,15 @@
       <version.mc4j>1.2.15.1</version.mc4j>
       <version.mockito>1.9.5</version.mockito>
       <version.mockito_dep.objenesis>1.4</version.mockito_dep.objenesis>
-      <version.resteasy>2.3.6.Final-redhat-1</version.resteasy>
-      <version.org.picketbox>4.0.19.SP4-redhat-1</version.org.picketbox>
+      <version.resteasy>2.3.8.Final-redhat-3</version.resteasy>
+      <version.org.picketbox>4.0.19.SP8-redhat-1</version.org.picketbox>
       <version.shrinkwrapResolver>2.0.0</version.shrinkwrapResolver>
       <version.slf4j>1.7.5</version.slf4j>
       <version.spymemcached>2.8.0</version.spymemcached>
       <version.stringtemplate>3.2.1-redhat-1</version.stringtemplate>
       <version.testng>6.8</version.testng>
-      <version.weld>1.1.13.Final-redhat-1</version.weld>
-      <version.xnio>3.0.9.GA-redhat-1</version.xnio>
+      <version.weld>1.1.23.Final-redhat-1</version.weld>
+      <version.xnio>3.0.10.GA-redhat-1</version.xnio>
       <version.antlr.maven.plugin>3.4</version.antlr.maven.plugin>
       <version.exec.maven.plugin>1.2.1</version.exec.maven.plugin>
       <version.maven.animal.sniffer>1.9</version.maven.animal.sniffer>
@@ -258,6 +259,11 @@
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <version>${version.h2.driver}</version>
+         </dependency>
+         <dependency>
+            <groupId>ch.qos.cal10n</groupId>
+            <artifactId>cal10n-api</artifactId>
+            <version>${version.ch.qos.cal10n}</version>
          </dependency>
          <dependency>
             <groupId>commons-httpclient</groupId>

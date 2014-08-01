@@ -25,7 +25,6 @@ import java.io.InputStream;
 import java.net.URL;
 import java.security.SecureClassLoader;
 
-import org.infinispan.commons.util.FileLookup;
 import org.jboss.as.security.SecurityMessages;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
@@ -82,9 +81,9 @@ public class ModuleClassLoaderLocator implements ClassLoaderLocator {
         @Override
         public URL getResource(String name) {
             URL resource = null;
-            resource = new FileLookup().lookupFileLocation(name, first);
+            resource = first.getResource(name);
             if(resource == null){
-                resource = new FileLookup().lookupFileLocation(name, second);
+                resource = second.getResource(name);
             }
             return resource;
         }

@@ -59,15 +59,15 @@
 
    <properties>
       <version.protostream>1.0.2.Final-redhat-1</version.protostream>
-      <version.aesh>0.33.8.redhat-1</version.aesh>
+      <version.aesh>0.33.12.redhat-1</version.aesh>
       <version.commons.pool>1.6.redhat-6</version.commons.pool>
       <version.protobuf>2.5.0</version.protobuf>
       <version.antlr>3.4</version.antlr>
       <version.gnu.getopt>1.0.13.redhat-4</version.gnu.getopt>
       <version.hibernate.search>4.5.0.Final-redhat-1</version.hibernate.search>
-      <version.jansi>1.9.redhat-3</version.jansi>
-      <version.jboss.marshalling>1.4.5.Final-redhat-1</version.jboss.marshalling>
-      <version.jboss.logging>3.1.2.GA-redhat-1</version.jboss.logging>
+      <version.jansi>1.9.redhat-4</version.jansi>
+      <version.jboss.marshalling>1.4.6.Final-redhat-1</version.jboss.marshalling>
+      <version.jboss.logging>3.1.4.GA-redhat-1</version.jboss.logging>
       <version.jgroups>3.4.5.Final-redhat-1</version.jgroups>
       <version.json>20090211</version.json>
       <version.jta>1.0.1.Final-redhat-2</version.jta>

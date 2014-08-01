@@ -23,8 +23,8 @@
   -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           xmlns="urn:jboss:cli:1.2"
-           targetNamespace="urn:jboss:cli:1.2"
+           xmlns="urn:jboss:cli:1.3"
+           targetNamespace="urn:jboss:cli:1.3"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
         >
@@ -55,7 +55,7 @@
                 <xs:element ref="connection-timeout" minOccurs="0" maxOccurs="1"/>
 
                 <xs:element ref="ssl" minOccurs="0" maxOccurs="1"/>
-
+                
                 <xs:element ref="silent" minOccurs="0" maxOccurs="1"/>
             </xs:sequence>
         </xs:complexType>
@@ -119,6 +119,7 @@
         </xs:annotation>
         <xs:complexType>
             <xs:sequence>
+                <xs:element name="vault" type="vaultType" minOccurs="0" />
                 <xs:element name="key-store" type="xs:string" minOccurs="0" />
                 <xs:element name="key-store-password" type="xs:string" minOccurs="0" />
                 <xs:element name="alias" type="xs:string" minOccurs="0" />
@@ -136,7 +137,7 @@
             </xs:sequence>
         </xs:complexType>
     </xs:element>
-
+    
     <xs:element name="silent" type="xs:boolean" default="false">
         <xs:annotation>
             <xs:documentation>
@@ -147,4 +148,27 @@
             </xs:documentation>
         </xs:annotation>
     </xs:element>
+    
+
+    <xs:complexType name="vaultType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                    Vault Configuration. If no 'code' and 'module' are supplied the default implementation will be used.
+                    If 'code' is specified but no 'module', it will look for the class named by 'specified' in the picketbox module.
+                    If 'module' is specified, it will look for the class specified by 'code' in the module specified by 'module'.
+                ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="vault-option" type="propertyType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="code" type="xs:string" use="optional"/>
+        <xs:attribute name="module" type="xs:string" use="optional"/>
+    </xs:complexType>
+
+    <xs:complexType name="propertyType">
+        <xs:attribute name="name" use="required"/>
+        <xs:attribute name="value" use="optional"/>
+    </xs:complexType>
 </xs:schema>

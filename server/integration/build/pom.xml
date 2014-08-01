@@ -22,7 +22,7 @@
       <generated.configs.standalone>${generated.configs}/standalone/configuration</generated.configs.standalone>
       <generated.configs.domain>${generated.configs}/domain/configuration</generated.configs.domain>
       <generated.configs.examples>${generated.configs}/docs/examples/configs</generated.configs.examples>
-      <generated.configs.src.dir>${basedir}/src/main/resources-ispn</generated.configs.src.dir>
+      <generated.configs.src.dir>${basedir}/src/main/resources</generated.configs.src.dir>
    </properties>
 
    <dependencies>
@@ -75,9 +75,7 @@
       <dependency>
          <groupId>org.jgroups</groupId>
          <artifactId>jgroups</artifactId>
-      </dependency>
-
-      
+      </dependency>      
 
       <dependency>
          <groupId>${project.groupId}</groupId>
@@ -189,6 +187,30 @@
 
    <build>
       <plugins>
+         <plugin>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>unpack</id>
+                  <phase>package</phase>
+                  <goals>
+                     <goal>unpack</goal>
+                  </goals>
+                  <configuration>
+                     <artifactItems>
+                        <artifactItem>
+                           <groupId>org.jboss.as</groupId>
+                           <artifactId>jboss-as-dist</artifactId>
+                           <version>${version.jboss.as}</version>
+                           <type>zip</type>
+                           <overWrite>true</overWrite>
+                           <outputDirectory>${project.build.directory}</outputDirectory>
+                        </artifactItem>
+                     </artifactItems>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
          <plugin>
             <artifactId>maven-antrun-plugin</artifactId>
             <executions>

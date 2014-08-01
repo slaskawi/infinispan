@@ -24,20 +24,17 @@ package org.jboss.as.security.service;
 import static java.security.AccessController.doPrivileged;
 
 import javax.security.auth.Subject;
-import javax.security.jacc.EJBRoleRefPermission;
+import javax.security.jacc.PolicyContext;
 import java.lang.reflect.Method;
+import java.security.AccessController;
 import java.security.CodeSource;
-import java.security.Policy;
 import java.security.Principal;
 import java.security.PrivilegedAction;
-import java.security.ProtectionDomain;
 import java.security.acl.Group;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -50,7 +47,6 @@ import org.jboss.as.security.SecurityMessages;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 import org.jboss.remoting3.security.UserInfo;
 import org.jboss.security.AuthenticationManager;
-import org.jboss.security.AuthorizationManager;
 import org.jboss.security.ISecurityManagement;
 import org.jboss.security.RunAs;
 import org.jboss.security.RunAsIdentity;
@@ -58,25 +54,19 @@ import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
 import org.jboss.security.SecurityContextFactory;
 import org.jboss.security.SecurityContextUtil;
+import org.jboss.security.SecurityRolesAssociation;
 import org.jboss.security.SimplePrincipal;
 import org.jboss.security.SubjectInfo;
 import org.jboss.security.audit.AuditEvent;
 import org.jboss.security.audit.AuditLevel;
 import org.jboss.security.audit.AuditManager;
-import org.jboss.security.authorization.config.AuthorizationModuleEntry;
-import org.jboss.security.authorization.modules.JACCAuthorizationModule;
 import org.jboss.security.authorization.resources.EJBResource;
-import org.jboss.security.callbacks.SecurityContextCallbackHandler;
-import org.jboss.security.config.ApplicationPolicy;
-import org.jboss.security.config.AuthorizationInfo;
-import org.jboss.security.config.SecurityConfiguration;
 import org.jboss.security.identity.Identity;
-import org.jboss.security.identity.Role;
-import org.jboss.security.identity.RoleGroup;
 import org.jboss.security.identity.plugins.SimpleIdentity;
 import org.jboss.security.identity.plugins.SimpleRoleGroup;
 import org.jboss.security.javaee.AbstractEJBAuthorizationHelper;
 import org.jboss.security.javaee.SecurityHelperFactory;
+import org.jboss.security.javaee.SecurityRoleRef;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -183,6 +173,12 @@ public class SimpleSecurityManager implements ServerSecurityManager {
         return callerPrincipal == null ? principal : callerPrincipal;
     }
 
+    @Override
+    public boolean isCallerInRole(String ejbName, Object mappedRoles, Map<String, Collection<String>> roleLinks, String... roleNames) {
+        return isCallerInRole(ejbName, PolicyContext.getContextID(), mappedRoles, roleLinks, roleNames);
+    }
+
+
     /**
      * @param ejbName The name of the EJB component where isCallerInRole was invoked.
      * @param incommingMappedRoles The principal vs roles mapping (if any). Can be null.
@@ -191,83 +187,58 @@ public class SimpleSecurityManager implements ServerSecurityManager {
      * @param roleNames The role names for which the caller is being checked for
      * @return true if the user is in <b>any</b> one of the <code>roleNames</code>. Else returns false
      */
-    public boolean isCallerInRole(final String ejbName, final Object incommingMappedRoles,
+    public boolean isCallerInRole(final String ejbName, final String policyContextID, final Object incommingMappedRoles,
                                   final Map<String, Collection<String>> roleLinks, final String... roleNames) {
-        final SecurityRolesMetaData mappedRoles = (SecurityRolesMetaData) incommingMappedRoles;
+
         final SecurityContext securityContext = doPrivileged(securityContext());
         if (securityContext == null) {
             return false;
         }
 
-        RoleGroup roleGroup = null;
-
-        RunAs runAs = securityContext.getIncomingRunAs();
-        if (runAs != null && runAs instanceof RunAsIdentity) {
-            RunAsIdentity runAsIdentity = (RunAsIdentity) runAs;
-            roleGroup = runAsIdentity.getRunAsRolesAsRoleGroup();
-        } else {
-            AuthorizationManager am = securityContext.getAuthorizationManager();
-            SecurityContextCallbackHandler scb = new SecurityContextCallbackHandler(securityContext);
-
-            roleGroup = am.getSubjectRoles(securityContext.getSubjectInfo().getAuthenticatedSubject(), scb);
-        }
-
-        List<Role> roles = roleGroup.getRoles();
-
-        // TODO - Review most performant way.
-        Set<String> requiredRoles = new HashSet<String>();
-        for (String current : roleNames) {
-            requiredRoles.add(current);
-        }
-        Set<String> actualRoles = new HashSet<String>();
-        for (Role current : roles) {
-            actualRoles.add(current.getRoleName());
-        }
-        // add mapped roles
-        if (mappedRoles != null) {
-            Principal callerPrincipal = getCallerPrincipal();
-            Set<String> mapped = mappedRoles.getSecurityRoleNamesByPrincipal(callerPrincipal.getName());
-            if (mapped != null) {
-                actualRoles.addAll(mapped);
+        final EJBResource resource = new EJBResource(new HashMap<String, Object>());
+        resource.setEjbName(ejbName);
+        resource.setPolicyContextID(policyContextID);
+        resource.setCallerRunAsIdentity(securityContext.getIncomingRunAs());
+        resource.setCallerSubject(securityContext.getUtil().getSubject());
+        Principal userPrincipal = securityContext.getUtil().getUserPrincipal();
+        resource.setPrincipal(userPrincipal);
+        if (roleLinks != null) {
+            final Set<SecurityRoleRef> roleRefs = new HashSet<SecurityRoleRef>();
+            for (String key : roleLinks.keySet()) {
+                Collection<String> values = roleLinks.get(key);
+                if (values != null) {
+                    for (String value : values)
+                        roleRefs.add(new SecurityRoleRef(key, value));
+                }
             }
+            resource.setSecurityRoleReferences(roleRefs);
         }
 
-        // use JACC permissions to check for role matches, including role links.
-        if (isJaccEnabled(securityContext.getSecurityDomain())) {
-            Set<Principal> rolesPrincipals = new HashSet<Principal>();
-            for (String role : actualRoles)
-                rolesPrincipals.add(new SimplePrincipal(role));
-            for (String roleName : requiredRoles) {
-                EJBRoleRefPermission permission = new EJBRoleRefPermission(ejbName, roleName);
-                ProtectionDomain pd = new ProtectionDomain (null, null, null, rolesPrincipals.toArray(new Principal[rolesPrincipals.size()]));
-                if (Policy.getPolicy().implies(pd, permission))
-                     return true;
+        Map<String, Set<String>> previousRolesAssociationMap = null;
+        try {
+            // ensure the security roles association contains the incoming principal x roles map.
+            if (incommingMappedRoles != null) {
+                SecurityRolesMetaData rolesMetaData = (SecurityRolesMetaData) incommingMappedRoles;
+                previousRolesAssociationMap = this.setSecurityRolesAssociation(rolesMetaData.getPrincipalVersusRolesMap());
+            }
+
+            AbstractEJBAuthorizationHelper helper = SecurityHelperFactory.getEJBAuthorizationHelper(securityContext);
+            for (String roleName : roleNames) {
+                if (helper.isCallerInRole(resource, roleName)) {
+                    return true;
+                }
             }
             return false;
         }
-
-        // if the actual roles matches any of the required roles, then return true
-        else {
-            if (!Collections.disjoint(requiredRoles, actualRoles)) {
-                return true;
-            }
-            // we did not have a match between the required roles and the actual roles.
-            // let's now get the alias role names (if any) for each of the actual role
-            // and see if any of those aliases of the actual roles matches the required roles
-            if (roleLinks != null) {
-                for (final String actualRole : actualRoles) {
-                    // get aliases (if any) for actual role
-                    final Set<String> aliases = this.getRoleAliases(actualRole, roleLinks);
-                    // if there's a match between the required role and an alias of an actual role, then
-                    // return true indicating that the caller is in one of the required roles
-                    if (!Collections.disjoint(requiredRoles, aliases)) {
-                        return true;
-                    }
-                }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        finally {
+            // reset the security roles association state.
+            if (incommingMappedRoles != null) {
+                this.setSecurityRolesAssociation(previousRolesAssociationMap);
             }
         }
-        // caller is not in any of the required roles
-        return false;
     }
 
     public boolean authorize(String ejbName, CodeSource ejbCodeSource, String ejbMethodIntf, Method ejbMethod, Set<Principal> methodRoles, String contextID) {
@@ -502,30 +473,6 @@ public class SimpleSecurityManager implements ServerSecurityManager {
     }
 
     /**
-     * Returns the alias role names for the passed <code>roleName</code>. Returns an empty set if the passed
-     * role name doesn't have any aliases
-     *
-     * @param roleName The role name
-     * @param roleLinks The role link map where the key is a alias role name and the value is the collection of
-     *                  role names, that alias represents
-     * @return
-     */
-    private Set<String> getRoleAliases(final String roleName, final Map<String, Collection<String>> roleLinks) {
-        if (roleLinks == null || roleLinks.isEmpty()) {
-            return Collections.emptySet();
-        }
-        final Set<String> aliases = new HashSet<String>();
-        for (final Map.Entry<String, Collection<String>> roleLinkEntry : roleLinks.entrySet()) {
-            final String aliasRoleName = roleLinkEntry.getKey();
-            final Collection<String> realRoleNames = roleLinkEntry.getValue();
-            if (realRoleNames != null && realRoleNames.contains(roleName)) {
-                aliases.add(aliasRoleName);
-            }
-        }
-        return aliases;
-    }
-
-    /**
      * Sends information to the {@code AuditManager}.
      * @param level
      * @param auditManager
@@ -541,25 +488,31 @@ public class SimpleSecurityManager implements ServerSecurityManager {
         auditManager.audit(auditEvent);
     }
 
-    /**
-     * Determines whether JACC was enabled for the specified security domain or not.
-     *
-     * @param securityDomain the security domain being checked.
-     * @return {@code true} if JACC was enabled for the domain; {@code false} otherwise.
-     */
-    private boolean isJaccEnabled(String securityDomain) {
-        ApplicationPolicy applicationPolicy = SecurityConfiguration.getApplicationPolicy(securityDomain);
-        if (applicationPolicy != null) {
-            AuthorizationInfo authorizationInfo = applicationPolicy.getAuthorizationInfo();
-            if (authorizationInfo != null) {
-                for (AuthorizationModuleEntry entry : authorizationInfo.getModuleEntries()) {
-                    if (JACCAuthorizationModule.class.getName().equals(entry.getPolicyModuleName())) {
-                        return true;
-                    }
-                }
-            }
+    private Map<String, Set<String>> setSecurityRolesAssociation(Map<String, Set<String>> mappedRoles) {
+        if (System.getSecurityManager() == null) {
+            Map<String, Set<String>> previousMappedRoles = SecurityRolesAssociation.getSecurityRoles();
+            SecurityRolesAssociation.setSecurityRoles(mappedRoles);
+            return previousMappedRoles;
         }
-        return false;
+        else {
+            SetSecurityRolesAssociationAction action = new SetSecurityRolesAssociationAction(mappedRoles);
+            return AccessController.doPrivileged(action);
+        }
     }
 
+    private static class SetSecurityRolesAssociationAction implements PrivilegedAction<Map<String, Set<String>>> {
+
+        private final Map<String, Set<String>> mappedRoles;
+
+        SetSecurityRolesAssociationAction(Map<String, Set<String>> mappedRoles) {
+            this.mappedRoles = mappedRoles;
+        }
+
+        @Override
+        public Map<String, Set<String>> run() {
+            Map<String, Set<String>> previousMappedRoles = SecurityRolesAssociation.getSecurityRoles();
+            SecurityRolesAssociation.setSecurityRoles(this.mappedRoles);
+            return previousMappedRoles;
+        }
+    }
 }

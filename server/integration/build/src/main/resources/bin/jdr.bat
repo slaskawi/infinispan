@@ -19,7 +19,7 @@ if "%OS%" == "Windows_NT" (
   set DIRNAME=.\
 )
 
-pushd "%DIRNAME%.."
+pushd %DIRNAME%..
 set "RESOLVED_JBOSS_HOME=%CD%"
 popd
 
@@ -62,6 +62,9 @@ if exist "%JBOSS_HOME%\jboss-modules.jar" (
 )
 
 rem Setup JBoss specific properties
+
+rem Setup the java endorsed dirs
+set JBOSS_ENDORSED_DIRS=%JBOSS_HOME%\lib\endorsed
 
 rem Set default module root paths
 if "x%JBOSS_MODULEPATH%" == "x" (

@@ -25,13 +25,10 @@
 package org.jboss.as.security;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -52,7 +49,7 @@ public class JASPIMappingModuleDefinition extends MappingModuleDefinition {
 
 
 
-    private static final AttributeDefinition[] ATTRIBUTES = {CODE, FLAG, LOGIN_MODULE_STACK_REF, MODULE_OPTIONS};
+    private static final AttributeDefinition[] ATTRIBUTES = {CODE, FLAG, LOGIN_MODULE_STACK_REF, MODULE_OPTIONS, LoginModuleResourceDefinition.MODULE};
 
     JASPIMappingModuleDefinition() {
         super(Constants.AUTH_MODULE);

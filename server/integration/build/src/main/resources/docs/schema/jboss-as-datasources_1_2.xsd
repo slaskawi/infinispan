@@ -22,7 +22,7 @@
   -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           targetNamespace="urn:jboss:domain:datasources:1.1" xmlns="urn:jboss:domain:datasources:1.1"
+           targetNamespace="urn:jboss:domain:datasources:1.2" xmlns="urn:jboss:domain:datasources:1.2"
            elementFormDefault="qualified" attributeFormDefault="unqualified">
 
   <xs:element name="subsystem" type="subsystemType"/>
@@ -205,7 +205,16 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attributeGroup ref="common-datasourceAttributes" />
+    <xs:attribute default="false" name="connectable" type="xs:boolean">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[[
+                          Enable cmr functionality on this datsource's connections
+                         ]]>
+            </xs:documentation>
+        </xs:annotation>
+    </xs:attribute>
+      <xs:attributeGroup ref="common-datasourceAttributes" />
   </xs:complexType>
   <xs:complexType name="xa-datasourceType">
     <xs:sequence>
@@ -397,6 +406,15 @@
            ]]>
         </xs:documentation>
       </xs:annotation>
+    </xs:attribute>
+    <xs:attribute default="false" name="statistics-enabled" type="xs:boolean">
+          <xs:annotation>
+            <xs:documentation>
+                <![CDATA[[
+                      Enable statistics for this datasource
+                     ]]>
+            </xs:documentation>
+          </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
   <xs:simpleType name="transaction-isolationType">
@@ -773,7 +791,7 @@
             <xs:annotation>
               <xs:documentation>
                 <![CDATA[[
-                   Should the XAResource instances be wrapped in an org.jboss.tm.XAResourceWrapper
+                   Should the XAResource instances be wrapped in a org.jboss.tm.XAResourceWrapper
                    instance
                    Ex: <wrap-xa-resource>true</wrap-xa-resource>
                  ]]>
@@ -941,7 +959,7 @@
       <xs:annotation>
         <xs:documentation>
           <![CDATA[[
-            Specifies the major version of this driver. If the major and minor versions are omitted the first available
+            Specifies the major version of this driver. If the major and minor version is obmitted the fist availabe
             Driver in module will be used.
            ]]>
         </xs:documentation>
@@ -951,7 +969,7 @@
     <xs:annotation>
         <xs:documentation>
           <![CDATA[[
-            Specifies the minor version of this driver. If the major and minor versions are omitted the first available
+            Specifies the minor version of this driver. If the major and minor version is obmitted the fist availabe
             Driver in module will be used.
            ]]>
         </xs:documentation>
