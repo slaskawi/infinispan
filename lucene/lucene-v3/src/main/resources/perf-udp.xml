@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!-- Configuration file for stress tests -->
+
+<infinispan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="urn:infinispan:config:6.2 http://www.infinispan.org/schemas/infinispan-config-6.2.xsd"
+            xmlns="urn:infinispan:config:6.2">
+
+    <global>
+        <transport>
+            <properties>
+                <property name="configurationFile" value="jgroups-udp.xml"/>
+            </properties>
+        </transport>
+        <globalJmxStatistics allowDuplicateDomains="true" jmxDomain="org.infinispan"/>
+    </global>
+    <default>
+        <clustering mode="local"/>
+    </default>
+
+    <namedCache name="index_metadata">
+        <transaction transactionMode="NON_TRANSACTIONAL"/>
+        <clustering mode="replication"/>
+        <indexing enabled="false"/>
+    </namedCache>
+
+    <namedCache name="index_data">
+        <transaction transactionMode="NON_TRANSACTIONAL"/>
+        <clustering mode="distribution"/>
+        <indexing enabled="false"/>
+    </namedCache>
+
+    <namedCache name="index_locks">
+        <transaction transactionMode="NON_TRANSACTIONAL"/>
+        <clustering mode="distribution"/>
+        <indexing enabled="false"/>
+    </namedCache>
+
+
+</infinispan>
