@@ -8,6 +8,7 @@ import org.infinispan.commons.CacheListenerException;
 import org.infinispan.commons.marshall.AdvancedExternalizer;
 import org.infinispan.commons.util.TypedProperties;
 import org.infinispan.lifecycle.ComponentStatus;
+import org.infinispan.partionhandling.AvailabilityException;
 import org.infinispan.persistence.spi.PersistenceException;
 import org.infinispan.persistence.support.SingletonCacheWriter;
 import org.infinispan.remoting.RemoteException;
@@ -1099,6 +1100,15 @@ public interface Log extends BasicLogger {
    @LogMessage(level = WARN)
    @Message(value = "Partition handling doesn't work for replicated caches, it will be ignored.", id = 303)
    void warnPartitionHandlingForReplicatedCaches();
+
+   @Message(value = "Cluster is unavailable because of node failures.", id = 305)
+   AvailabilityException partitionUnavailable();
+
+   @Message(value = "Key '%s' is not available. Not all owners are in this partition", id = 306)
+   AvailabilityException degradedModeKeyUnavailable(Object key);
+
+   @Message(value = "Cannot clear when the cluster is partitioned", id = 307)
+   AvailabilityException clearDisallowedWhilePartitioned();
 
    @LogMessage(level = INFO)
    @Message(value = "Rebalancing enabled", id = 308)
