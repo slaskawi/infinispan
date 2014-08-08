@@ -63,9 +63,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author anistor@redhat.com
  * @since 4.0
  */
-public class QueryInterceptor extends CommandInterceptor {
+public final class QueryInterceptor extends CommandInterceptor {
 
-   private final boolean isManualIndexing;
+   private final IndexModificationStrategy indexingMode;
    private final SearchFactoryIntegrator searchFactory;
    private final KeyTransformationHandler keyTransformationHandler = new KeyTransformationHandler();
    private final KnownClassesRegistryListener registryListener = new KnownClassesRegistryListener();
@@ -89,9 +89,9 @@ public class QueryInterceptor extends CommandInterceptor {
       return log;
    }
 
-   public QueryInterceptor(SearchFactoryIntegrator searchFactory) {
+   public QueryInterceptor(SearchFactoryIntegrator searchFactory, IndexModificationStrategy indexingMode) {
       this.searchFactory = searchFactory;
-      isManualIndexing = ((SearchFactoryImplementor) searchFactory).getIndexingStrategy().equals("manual");
+      this.indexingMode = indexingMode;
    }
 
    @Inject
@@ -148,7 +148,7 @@ public class QueryInterceptor extends CommandInterceptor {
    }
 
    protected boolean shouldModifyIndexes(FlagAffectedCommand command, InvocationContext ctx) {
-      return !isManualIndexing && !command.hasFlag(Flag.SKIP_INDEXING);
+      return indexingMode.shouldModifyIndexes(command, ctx);
    }
 
    /**
@@ -467,6 +467,10 @@ public class QueryInterceptor extends CommandInterceptor {
 
    private boolean usingSkipIndexCleanup(final LocalFlagAffectedCommand command) {
       return command != null && command.hasFlag(Flag.SKIP_INDEX_CLEANUP);
+   }
+
+   public IndexModificationStrategy getIndexModificationMode() {
+      return indexingMode;
    }
 
    public boolean isStopping() {

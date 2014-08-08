@@ -2,7 +2,6 @@ package org.infinispan.query.impl;
 
 import org.infinispan.Cache;
 import org.infinispan.factories.ComponentRegistry;
-import org.infinispan.query.backend.LocalQueryInterceptor;
 import org.infinispan.query.backend.QueryInterceptor;
 import org.infinispan.query.dsl.embedded.impl.QueryCache;
 
@@ -31,9 +30,7 @@ public class ComponentRegistryUtils {
    }
 
    public static QueryInterceptor getQueryInterceptor(Cache<?, ?> cache) {
-      Class<? extends QueryInterceptor> queryType = SecurityActions.getCacheConfiguration(cache.getAdvancedCache()).indexing().indexLocalOnly()
-            ? LocalQueryInterceptor.class : QueryInterceptor.class;
-      return getComponent(cache, queryType);
+      return getComponent(cache, QueryInterceptor.class);
    }
 
    public static QueryCache getQueryCache(Cache<?, ?> cache) {
