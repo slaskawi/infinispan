@@ -12,6 +12,7 @@ import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.container.entries.ImmortalCacheEntry;
 import org.infinispan.container.entries.MortalCacheEntry;
 import org.infinispan.container.entries.TransientMortalCacheEntry;
+import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.context.impl.NonTxInvocationContext;
 import org.infinispan.distribution.DistributionManager;
@@ -148,8 +149,9 @@ public abstract class BaseCacheNotifierImplInitialTransferTest extends AbstractI
       }
 
 
-      when(retriever.retrieveEntries(Mockito.any(KeyValueFilter.class), Mockito.any(Converter.class),
-                                  Mockito.any(EntryRetriever.SegmentListener.class))).thenAnswer(new Answer<CloseableIterator<CacheEntry>>() {
+      when(retriever.retrieveEntries(any(KeyValueFilter.class), any(Converter.class),
+                                  anySetOf(Flag.class), any(EntryRetriever.SegmentListener.class))).
+            thenAnswer(new Answer<CloseableIterator<CacheEntry>>() {
       @Override
       public CloseableIterator<CacheEntry> answer(InvocationOnMock invocationOnMock) throws Throwable {
          return new IteratorAsCloseableIterator<CacheEntry>(initialValues.iterator());
@@ -175,7 +177,7 @@ public abstract class BaseCacheNotifierImplInitialTransferTest extends AbstractI
       // Note we don't actually use the filter/converter to retrieve values since it is being mocked, thus we can assert
       // the filter/converter are not used by us
       when(retriever.retrieveEntries(any(KeyValueFilter.class), any(Converter.class),
-                                     any(EntryRetriever.SegmentListener.class))).thenAnswer(new Answer<CloseableIterator<CacheEntry>>() {
+                                     anySetOf(Flag.class), any(EntryRetriever.SegmentListener.class))).thenAnswer(new Answer<CloseableIterator<CacheEntry>>() {
          @Override
          public CloseableIterator<CacheEntry> answer(InvocationOnMock invocationOnMock) throws Throwable {
             return new IteratorAsCloseableIterator<CacheEntry>(initialValues.iterator());
@@ -201,7 +203,7 @@ public abstract class BaseCacheNotifierImplInitialTransferTest extends AbstractI
 
       // Note we don't actually use the filter/converter to retrieve values since it is being mocked, thus we can assert
       // the filter/converter are not used by us
-      when(retriever.retrieveEntries(any(KeyValueFilter.class), any(Converter.class),
+      when(retriever.retrieveEntries(any(KeyValueFilter.class), any(Converter.class), anySetOf(Flag.class),
                                      any(EntryRetriever.SegmentListener.class))).thenAnswer(new Answer<CloseableIterator<CacheEntry>>() {
          @Override
          public CloseableIterator<CacheEntry> answer(InvocationOnMock invocationOnMock) throws Throwable {
@@ -301,8 +303,8 @@ public abstract class BaseCacheNotifierImplInitialTransferTest extends AbstractI
 
       final CyclicBarrier barrier = new CyclicBarrier(2);
 
-      when(retriever.retrieveEntries(Mockito.any(KeyValueFilter.class), Mockito.any(Converter.class),
-                                     Mockito.any(EntryRetriever.SegmentListener.class))).thenAnswer(new Answer<CloseableIterator<CacheEntry>>() {
+      when(retriever.retrieveEntries(any(KeyValueFilter.class), any(Converter.class), anySetOf(Flag.class),
+                                     any(EntryRetriever.SegmentListener.class))).thenAnswer(new Answer<CloseableIterator<CacheEntry>>() {
          @Override
          public CloseableIterator<CacheEntry> answer(InvocationOnMock invocationOnMock) throws Throwable {
             barrier.await(10, TimeUnit.SECONDS);
@@ -422,8 +424,8 @@ public abstract class BaseCacheNotifierImplInitialTransferTest extends AbstractI
          }
       }).when(closeable).close();
 
-      when(retriever.retrieveEntries(Mockito.any(KeyValueFilter.class), Mockito.any(Converter.class),
-                                     Mockito.any(EntryRetriever.SegmentListener.class))).thenReturn(closeable);
+      when(retriever.retrieveEntries(any(KeyValueFilter.class), any(Converter.class), anySetOf(Flag.class),
+                                     any(EntryRetriever.SegmentListener.class))).thenReturn(closeable);
 
       Future<Void> future = fork(new Callable<Void>() {
 

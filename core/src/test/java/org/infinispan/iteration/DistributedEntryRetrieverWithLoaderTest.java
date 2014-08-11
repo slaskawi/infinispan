@@ -60,7 +60,7 @@ public class DistributedEntryRetrieverWithLoaderTest extends MultipleCacheManage
       EntryRetriever<MagicKey, String> retriever = cache1.getAdvancedCache().getComponentRegistry().getComponent(
             EntryRetriever.class);
 
-      Iterator<CacheEntry> iterator = retriever.retrieveEntries(null, null, null);
+      Iterator<CacheEntry> iterator = retriever.retrieveEntries(null, null, null, null);
       // we need this count since the map will replace same key'd value
       int count = 0;
       Map<MagicKey, String> results = new HashMap<MagicKey, String>();

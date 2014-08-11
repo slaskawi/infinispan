@@ -5,6 +5,7 @@ import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.container.DataContainer;
 import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.container.entries.ImmortalCacheEntry;
+import org.infinispan.context.Flag;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.distribution.MagicKey;
 import org.infinispan.distribution.ch.ConsistentHash;
@@ -20,6 +21,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.testng.annotations.Test;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -36,11 +38,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.withSettings;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
 /**
@@ -79,7 +83,7 @@ public class DistributedEntryRetrieverTest extends BaseClusteredEntryRetrieverTe
       Future<Void> future = fork(new Callable<Void>() {
          @Override
          public Void call() throws Exception {
-            Iterator<CacheEntry> iter = retriever.retrieveEntries(null, null, null);
+            Iterator<CacheEntry> iter = retriever.retrieveEntries(null, null, null, null);
             while (iter.hasNext()) {
                CacheEntry entry = iter.next();
                returnQueue.add(entry);
@@ -132,7 +136,7 @@ public class DistributedEntryRetrieverTest extends BaseClusteredEntryRetrieverTe
       Future<Void> future = fork(new Callable<Void>() {
          @Override
          public Void call() throws Exception {
-            Iterator<CacheEntry> iter = retriever.retrieveEntries(null, null, null);
+            Iterator<CacheEntry> iter = retriever.retrieveEntries(null, null, null, null);
             while (iter.hasNext()) {
                CacheEntry entry = iter.next();
                returnQueue.add(entry);
@@ -180,7 +184,7 @@ public class DistributedEntryRetrieverTest extends BaseClusteredEntryRetrieverTe
       Future<Void> future = fork(new Callable<Void>() {
          @Override
          public Void call() throws Exception {
-            Iterator<CacheEntry> iter = retriever.retrieveEntries(null, null, null);
+            Iterator<CacheEntry> iter = retriever.retrieveEntries(null, null, null, null);
             while (iter.hasNext()) {
                CacheEntry entry = iter.next();
                returnQueue.add(entry);
@@ -240,7 +244,7 @@ public class DistributedEntryRetrieverTest extends BaseClusteredEntryRetrieverTe
       Future<Void> future = fork(new Callable<Void>() {
          @Override
          public Void call() throws Exception {
-            Iterator<CacheEntry> iter = retriever.retrieveEntries(null, null, null);
+            Iterator<CacheEntry> iter = retriever.retrieveEntries(null, null, null, null);
             while (iter.hasNext()) {
                CacheEntry entry = iter.next();
                returnQueue.add(entry);
@@ -268,6 +272,51 @@ public class DistributedEntryRetrieverTest extends BaseClusteredEntryRetrieverTe
       for (Map.Entry<Integer, Set<CacheEntry>> entry : expected.entrySet()) {
          assertEquals(answer.get(entry.getKey()), entry.getValue(), "Segment " + entry.getKey() + " had a mismatch");
       }
+   }
+
+   @Test
+   public void testLocallyForcedEntryRetriever() {
+      Cache<Object, String> cache0 = cache(0, CACHE_NAME);
+      Cache<Object, String> cache1 = cache(1, CACHE_NAME);
+      Cache<Object, String> cache2 = cache(2, CACHE_NAME);
+
+      Map<Object, String> values = new HashMap<Object, String>();
+      for (int i = 0; i < 501; ++i) {
+         switch (i % 3) {
+            case 0:
+               MagicKey key = new MagicKey(cache0);
+               cache0.put(key, key.toString());
+               values.put(key, key.toString());
+               break;
+            case 1:
+               // Force it so only cache0 has it's primary owned keys
+               key = new MagicKey(cache1, cache2);
+               cache1.put(key, key.toString());
+               break;
+            case 2:
+               // Force it so only cache0 has it's primary owned keys
+               key = new MagicKey(cache2, cache1);
+               cache2.put(key, key.toString());
+               break;
+            default:
+               fail("Unexpected switch case!");
+         }
+      }
+
+      final EntryRetriever<Object, String> retriever = cache0.getAdvancedCache().getComponentRegistry().getComponent(
+            EntryRetriever.class);
+
+      int count = 0;
+      Iterator<CacheEntry> iter = retriever.retrieveEntries(null, null, EnumSet.of(Flag.CACHE_MODE_LOCAL), null);
+      while (iter.hasNext()) {
+         CacheEntry entry = iter.next();
+         String cacheValue = cache0.get(entry.getKey());
+         assertNotNull(cacheValue);
+         assertEquals(cacheValue, entry.getValue());
+         count++;
+      }
+
+      assertEquals(values.size(), count);
    }
 
    private Map<Integer, Set<CacheEntry>> generateEntriesPerSegment(ConsistentHash hash, Iterable<? extends Map.Entry> entries) {

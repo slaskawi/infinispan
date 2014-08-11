@@ -85,7 +85,7 @@ public abstract class BaseEntryRetrieverTest extends MultipleCacheManagersTest {
       EntryRetriever<MagicKey, String> retriever = cache(0, CACHE_NAME).getAdvancedCache().getComponentRegistry().getComponent(
             EntryRetriever.class);
 
-      CloseableIterator<CacheEntry> iterator = retriever.retrieveEntries(null, null, null);
+      CloseableIterator<CacheEntry> iterator = retriever.retrieveEntries(null, null, null, null);
       Map<MagicKey, String> results = mapFromIterator(iterator);
       assertEquals(values, results);
    }
@@ -107,7 +107,7 @@ public abstract class BaseEntryRetrieverTest extends MultipleCacheManagersTest {
       EntryRetriever<Object, String> retriever = cache(0, CACHE_NAME).getAdvancedCache().getComponentRegistry().getComponent(
             EntryRetriever.class);
 
-      CloseableIterator<CacheEntry> iterator = retriever.retrieveEntries(null, null, null);
+      CloseableIterator<CacheEntry> iterator = retriever.retrieveEntries(null, null, null, null);
       Set<CacheEntry> retrievedValues = new HashSet<CacheEntry>();
       while (iterator.hasNext()) {
          CacheEntry entry = iterator.next();
@@ -143,7 +143,7 @@ public abstract class BaseEntryRetrieverTest extends MultipleCacheManagersTest {
 
       CloseableIterator<CacheEntry> iterator = retriever.retrieveEntries(
             new KeyFilterAsKeyValueFilter<MagicKey, String>(new CollectionKeyFilter<Object>(Collections.singleton(excludedEntry.getKey()))),
-            null, null);
+            null, null, null);
       Map<MagicKey, String> results = mapFromIterator(iterator);
       assertEquals(values, results);
    }

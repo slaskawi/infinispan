@@ -54,7 +54,7 @@ public abstract class BaseClusteredEntryRetrieverTest extends BaseEntryRetriever
       EntryRetriever<MagicKey, String> retriever = cache(1, CACHE_NAME).getAdvancedCache().getComponentRegistry().getComponent(
             EntryRetriever.class);
 
-      CloseableIterator<CacheEntry> iterator = retriever.retrieveEntries(null, null, null);
+      CloseableIterator<CacheEntry> iterator = retriever.retrieveEntries(null, null, null, null);
       Map<MagicKey, String> results = mapFromIterator(iterator);
       assertEquals(values, results);
    }
@@ -73,7 +73,7 @@ public abstract class BaseClusteredEntryRetrieverTest extends BaseEntryRetriever
 
       CloseableIterator<CacheEntry> iterator = retriever.retrieveEntries(
             new KeyFilterAsKeyValueFilter<MagicKey, String>(new CollectionKeyFilter<Object>(Collections.singleton(excludedEntry.getKey()))),
-            null, null);
+            null, null, null);
       Map<MagicKey, String> results = mapFromIterator(iterator);
       assertEquals(values, results);
    }

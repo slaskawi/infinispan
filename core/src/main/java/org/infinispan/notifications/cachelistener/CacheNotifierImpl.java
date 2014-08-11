@@ -674,7 +674,7 @@ public final class CacheNotifierImpl<K, V> extends AbstractListenerImpl<Event<K,
          if (log.isTraceEnabled()) {
             log.tracef("Listener %s requests initial state for cache", generatedId);
          }
-         CloseableIterator<CacheEntry> iterator = entryRetriever.retrieveEntries(filter, converter, handler);
+         CloseableIterator<CacheEntry> iterator = entryRetriever.retrieveEntries(filter, converter, null, handler);
          try {
             while (iterator.hasNext()) {
                CacheEntry entry = iterator.next();
