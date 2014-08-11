@@ -362,7 +362,8 @@ public class DistributedEntryRetriever<K, V> extends LocalEntryRetriever<K, V> {
                            }
                            action.apply(key, entry);
                         }
-                        if (DistributedEntryRetriever.super.shouldUseLoader(flags) && persistenceManager.size() > 0) {
+                        if (DistributedEntryRetriever.super.shouldUseLoader(flags) &&
+                              persistenceManager.getStoresAsString().size() > 0) {
                            KeyFilter<K> loaderFilter;
                            if (passivationEnabled) {
                               listener = new PassivationListener<K, V>();
