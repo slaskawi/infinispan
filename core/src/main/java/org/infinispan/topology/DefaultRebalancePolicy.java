@@ -2,14 +2,13 @@ package org.infinispan.topology;
 
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.factories.annotations.Inject;
-import org.infinispan.jmx.annotations.DataType;
-import org.infinispan.jmx.annotations.ManagedAttribute;
-import org.infinispan.registry.ClusterRegistryImpl;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
 import java.util.HashSet;
 import java.util.Set;
+
+import static org.infinispan.util.logging.LogFactory.CLUSTER;
 
 /**
  * Default implementation of {@link RebalancePolicy}
@@ -55,7 +54,7 @@ public class DefaultRebalancePolicy implements RebalancePolicy {
       }
 
       synchronized (lock) {
-         if (!isRebalancingEnabled() && !cacheStatus.getCacheName().equals(ClusterRegistryImpl.GLOBAL_REGISTRY_CACHE_NAME)) {
+         if (!isRebalancingEnabled()) {
             log.tracef("Rebalancing is disabled, queueing rebalance for cache %s", cacheName);
             cachesPendingRebalance.add(cacheName);
             return;
@@ -91,12 +90,12 @@ public class DefaultRebalancePolicy implements RebalancePolicy {
          caches = cachesPendingRebalance;
          if (enabled) {
             if (cachesPendingRebalance != null) {
-               log.debugf("Rebalancing enabled");
+               CLUSTER.rebalancingEnabled();
                cachesPendingRebalance = null;
             }
          } else {
             if (cachesPendingRebalance == null) {
-               log.debugf("Rebalancing suspended");
+               CLUSTER.rebalancingSuspended();
                cachesPendingRebalance = new HashSet<String>();
             }
          }
