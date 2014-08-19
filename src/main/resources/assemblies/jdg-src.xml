@@ -28,12 +28,16 @@
                 <include>query/**</include>
                 <include>query-dsl/**</include>
                 <include>remote-query/**</include>
+                <include>object-filter/**</include>
                 <include>lucene/pom.xml</include>
                 <include>lucene/lucene-directory/**</include>
                 <include>lucene/lucene-v3/**</include>
                 <include>persistence/pom.xml</include>
                 <include>persistence/jdbc/**</include>
                 <include>persistence/remote/**</include>
+                <include>persistence/jpa/**</include>
+                <include>persistence/leveldb/**</include>
+                <include>persistence/rest/**</include>
                 <include>server/pom.xml</include>
                 <include>server/core/**</include>
                 <include>server/hotrod/**</include>
@@ -42,8 +46,17 @@
                 <include>client/**</include>
                 <include>cli/**</include>
                 <include>cdi/extension/**</include>
+                <include>as-modules/**</include>
                 <include>compatibility52x/**</include>
                 <include>rhq-plugin/**</include>
+                <include>integrationtests/security-it/**</include>
+                <include>integrationtests/security-manager-it/**</include>
+                <include>integrationtests/osgi/**</include>
+                <include>server/integration/**</include>
+                <include>integrationtests/as-integration/**</include>
+                <include>integrationtests/as-integration-remote-client/**</include>
+                <include>integrationtests/luceneintegration/**</include>
+                <include>integrationtests/compatibility-mode-it/**</include>
             </includes>
             <excludes>
                 <exclude>**/target/**</exclude>
