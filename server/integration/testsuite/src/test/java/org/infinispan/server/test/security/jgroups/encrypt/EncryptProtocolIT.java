@@ -1,5 +1,7 @@
 package org.infinispan.server.test.security.jgroups.encrypt;
 
+import static org.infinispan.server.test.util.ITestUtils.getAttribute;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
