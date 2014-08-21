@@ -1,5 +1,18 @@
 package org.infinispan.lucene;
 
+import org.apache.lucene.store.Directory;
+import org.infinispan.commons.util.Util;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.context.Flag;
+import org.infinispan.lucene.directory.DirectoryBuilder;
+import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.persistence.jdbc.configuration.JdbcStringBasedStoreConfigurationBuilder;
+import org.infinispan.test.SingleCacheManagerTest;
+import org.infinispan.test.fwk.TestCacheManagerFactory;
+import org.testng.AssertJUnit;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.Test;
+
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -7,22 +20,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.infinispan.lucene.CacheTestSupport.assertTextIsFoundInIds;
-import static org.infinispan.lucene.CacheTestSupport.removeByTerm;
-import static org.infinispan.lucene.CacheTestSupport.writeTextToIndex;
-
-import org.apache.lucene.store.Directory;
-import org.infinispan.commons.util.Util;
-import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.context.Flag;
-import org.infinispan.persistence.jdbc.configuration.JdbcStringBasedStoreConfigurationBuilder;
-import org.infinispan.lucene.directory.DirectoryBuilder;
-import org.infinispan.manager.EmbeddedCacheManager;
-import org.infinispan.test.SingleCacheManagerTest;
-import org.infinispan.test.fwk.TestCacheManagerFactory;
-import org.testng.AssertJUnit;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.Test;
+import static org.infinispan.lucene.CacheTestSupport.*;
 
 /**
  * Test to verify that it's possible to use the index using a JdbcStringBasedStore
@@ -45,8 +43,9 @@ public class DatabaseStoredIndexTest extends SingleCacheManagerTest {
 
    private Connection connection;
 
-   public DatabaseStoredIndexTest() throws SQLException {
+   public DatabaseStoredIndexTest() throws SQLException, ClassNotFoundException {
       cleanup = CleanupPhase.AFTER_METHOD;
+      Class.forName("org.h2.Driver");
       connection = DriverManager.getConnection(DB_URL, "sa", "");
    }
 
