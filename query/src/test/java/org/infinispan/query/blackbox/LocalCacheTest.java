@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import junit.framework.Assert;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryParser.ParseException;
@@ -62,7 +64,7 @@ public class LocalCacheTest extends SingleCacheManagerTest {
    protected String key2 = "BigGoat";
    protected String key3 = "MiniGoat";
    protected String anotherGrassEaterKey = "anotherGrassEaterKey";
-   
+
    public LocalCacheTest() {
       cleanup = CleanupPhase.AFTER_METHOD;
    }
@@ -250,7 +252,7 @@ public class LocalCacheTest extends SingleCacheManagerTest {
       luceneQuery = queryParser.parse("Goat");
       cacheQuery = Search.getSearchManager(cache).getQuery(luceneQuery);
       found = cacheQuery.list();
-      
+
       assert found.size() == 1 : "Size of list should be 1";
       assert !found.contains(person2) : "Person 2 should not be found now";
       assert !found.contains(person1) : "Person 1 should not be found because it does not meet the search criteria";
@@ -458,7 +460,7 @@ public class LocalCacheTest extends SingleCacheManagerTest {
 
       ResultIterator iterator = cacheQuery.iterator(new FetchOptions().fetchMode(FetchOptions.FetchMode.LAZY));
       try {
-         Assert.assertEquals(2, countElements(iterator));
+         assertEquals(2, countElements(iterator));
       } finally {
          iterator.close();
       }
@@ -527,7 +529,7 @@ public class LocalCacheTest extends SingleCacheManagerTest {
 
       ResultIterator iterator = cacheQuery.iterator(new FetchOptions().fetchMode(FetchOptions.FetchMode.LAZY));
       try {
-         Assert.assertEquals(3, countElements(iterator));
+         assertEquals(3, countElements(iterator));
       } finally {
          iterator.close();
       }
@@ -582,23 +584,23 @@ public class LocalCacheTest extends SingleCacheManagerTest {
       CacheQuery cacheQuery = Search.getSearchManager(cache).getQuery(luceneQuery)
             .maxResults(1);
 
-      Assert.assertEquals(3, cacheQuery.getResultSize());   // NOTE: getResultSize() ignores pagination (maxResults, firstResult)
-      Assert.assertEquals(1, cacheQuery.list().size());
+      assertEquals(3, cacheQuery.getResultSize());   // NOTE: getResultSize() ignores pagination (maxResults, firstResult)
+      assertEquals(1, cacheQuery.list().size());
       ResultIterator eagerIterator = cacheQuery.iterator(new FetchOptions().fetchMode(FetchOptions.FetchMode.EAGER));
       try {
-         Assert.assertEquals(1, countElements(eagerIterator));
+         assertEquals(1, countElements(eagerIterator));
       } finally {
          eagerIterator.close();
       }
       ResultIterator lazyIterator = cacheQuery.iterator(new FetchOptions().fetchMode(FetchOptions.FetchMode.LAZY));
       try {
-         Assert.assertEquals(1, countElements(lazyIterator));
+         assertEquals(1, countElements(lazyIterator));
       } finally {
          lazyIterator.close();
       }
       ResultIterator defaultIterator = cacheQuery.iterator();
       try {
-         Assert.assertEquals(1, countElements(defaultIterator));
+         assertEquals(1, countElements(defaultIterator));
       } finally {
          defaultIterator.close();
       }
@@ -685,7 +687,7 @@ public class LocalCacheTest extends SingleCacheManagerTest {
       p.setAge(30);
       p.setBlurb("works best on weekends");
       cache.put(p.getName(), p);
-      
+
       assertIndexingKnows(cache, Person.class);
    }
 
@@ -697,12 +699,12 @@ public class LocalCacheTest extends SingleCacheManagerTest {
    private void assertIndexingKnows(Cache<Object, Object> cache, Class... types) {
       ComponentRegistry cr = cache.getAdvancedCache().getComponentRegistry();
       SearchFactoryImplementor searchFactoryIntegrator = (SearchFactoryImplementor) cr.getComponent(SearchFactoryIntegrator.class);
-      Assert.assertNotNull(searchFactoryIntegrator);
+      assertNotNull(searchFactoryIntegrator);
       Map<Class<?>, EntityIndexBinding> indexBindingForEntity = searchFactoryIntegrator.getIndexBindings();
-      Assert.assertNotNull(indexBindingForEntity);
+      assertNotNull(indexBindingForEntity);
       Set<Class<?>> keySet = indexBindingForEntity.keySet();
-      Assert.assertEquals(types.length, keySet.size());
-      Assert.assertTrue(keySet.containsAll(Arrays.asList(types)));
+      assertEquals(types.length, keySet.size());
+      assertTrue(keySet.containsAll(Arrays.asList(types)));
    }
 
    protected void loadTestingData() {
@@ -762,7 +764,7 @@ public class LocalCacheTest extends SingleCacheManagerTest {
       anotherGrassEater = new AnotherGrassEater("Another grass-eater", "Eats grass");
       StaticTestingErrorHandler.assertAllGood(cache);
    }
-   
+
    protected void enhanceConfig(ConfigurationBuilder c) {
       // no op, meant to be overridden
    }

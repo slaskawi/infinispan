@@ -1,8 +1,10 @@
 package org.infinispan.query.logging;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.hibernate.search.backend.LuceneWork;
+import org.infinispan.commons.CacheException;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
@@ -58,5 +60,16 @@ public interface Log extends org.infinispan.util.logging.Log {
    @LogMessage(level = WARN)
    @Message(value = "Indexed type '%1$s' is using a default Transformer. This is slow! Register a custom implementation using @Transformable", id = 14009)
    void typeIsUsingDefaultTransformer(Class<?> keyClass);
+
+   @Message(value = "An IOException happened where none where expected", id = 14010)
+   CacheException unexpectedIOException(@Cause IOException e);
+
+   @LogMessage(level = WARN)
+   @Message(value = "Some indexing work was lost because of an InterruptedException", id = 14011)
+   void interruptedWhileBufferingWork(@Cause InterruptedException e);
+
+   @LogMessage(level = DEBUG)
+   @Message(value = "Waiting for index lock was successfull: '%1$s'", id = 14012)
+   void waitingForLockAcquired(boolean waitForAvailabilityInternal);
 
 }

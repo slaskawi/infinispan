@@ -1,16 +1,10 @@
 package org.infinispan.query.distributed;
 
-<<<<<<< HEAD
-import junit.framework.Assert;
-import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.queryParser.QueryParser;
-=======
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import org.apache.lucene.queryparser.classic.ParseException;
-import org.apache.lucene.queryparser.classic.QueryParser;
->>>>>>> 96cfc93... ISPN-4599 Register a backend ErrorHandler in some tests to verify the backend is not throwing exceptions
+import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Query;
 import org.hibernate.search.infinispan.InfinispanIntegration;
 import org.infinispan.Cache;
@@ -68,11 +62,11 @@ public class DistProgrammaticMassIndexTest extends DistributedMassIndexingTest {
          Query luceneQuery = queryParser.parse(carMake);
          CacheQuery cacheQuery = Search.getSearchManager(cache).getQuery(luceneQuery, Car.class);
 
-         Assert.assertEquals(count, cacheQuery.getResultSize());
+         assertEquals(count, cacheQuery.getResultSize());
 
       } catch(ParseException ex) {
          ex.printStackTrace();
-         Assert.fail("Failed due to: " + ex.getMessage());
+         fail("Failed due to: " + ex.getMessage());
       }
       StaticTestingErrorHandler.assertAllGood(cache);
    }

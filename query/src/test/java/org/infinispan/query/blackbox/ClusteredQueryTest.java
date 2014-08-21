@@ -7,6 +7,8 @@ import java.util.NoSuchElementException;
 
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
@@ -27,19 +29,19 @@ import static org.junit.Assert.assertEquals;
 
 /**
  * ClusteredQueryTest.
- * 
+ *
  * @author Israel Lacerra <israeldl@gmail.com>
  * @since 5.1
  */
 @Test(groups = "functional", testName = "query.blackbox.ClusteredQueryTest")
 public class ClusteredQueryTest extends MultipleCacheManagersTest {
 
+   private final QueryParser queryParser = createQueryParser("blurb");
    Cache<String, Person> cacheAMachine1, cacheAMachine2;
    Person person1;
    Person person2;
    Person person3;
    Person person4;
-   QueryParser queryParser;
    Query luceneQuery;
    CacheQuery cacheQuery;
    final String key1 = "Navin";
@@ -235,7 +237,7 @@ public class ClusteredQueryTest extends MultipleCacheManagersTest {
       }
       StaticTestingErrorHandler.assertAllGood(cacheAMachine1, cacheAMachine2);
    }
-   
+
    public void testGetResultSizeList() throws ParseException {
       populateCache();
       assert cacheQuery.getResultSize() == 4 : cacheQuery.getResultSize();
@@ -262,18 +264,15 @@ public class ClusteredQueryTest extends MultipleCacheManagersTest {
 
    private void populateCache() throws ParseException {
       prepareTestData();
-      Query[] queries = new Query[2];
-      queryParser = createQueryParser("blurb");
 
-      luceneQuery = queryParser.parse("eats");
-      queries[0] = luceneQuery;
-
-      luceneQuery = queryParser.parse("playing");
-      queries[1] = luceneQuery;
-
-      luceneQuery = luceneQuery.combine(queries);
-      cacheQuery = Search.getSearchManager(cacheAMachine1).getClusteredQuery(luceneQuery);
+      cacheQuery = Search.getSearchManager(cacheAMachine1).getClusteredQuery(createLuceneQuery());
       StaticTestingErrorHandler.assertAllGood(cacheAMachine1, cacheAMachine2);
    }
 
+   private BooleanQuery createLuceneQuery() throws ParseException {
+       BooleanQuery luceneQuery = new BooleanQuery();
+       luceneQuery.add(queryParser.parse("eats"), Occur.SHOULD);
+       luceneQuery.add(queryParser.parse("playing"), Occur.SHOULD);
+       return luceneQuery;
+    }
 }

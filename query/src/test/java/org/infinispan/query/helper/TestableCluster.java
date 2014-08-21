@@ -13,8 +13,8 @@ import org.junit.Assert;
 
 public class TestableCluster<K, V> {
 
-   private final List<EmbeddedCacheManager> cacheManagers = new ArrayList<>();
-   private final List<Cache<K, V>> caches = new ArrayList<>();
+   private final List<EmbeddedCacheManager> cacheManagers = new ArrayList<EmbeddedCacheManager>();
+   private final List<Cache<K, V>> caches = new ArrayList<Cache<K, V>>();
    private final String configurationResourceName;
 
    public TestableCluster(String configurationResourceName) {
