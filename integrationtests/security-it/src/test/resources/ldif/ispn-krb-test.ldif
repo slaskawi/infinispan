@@ -29,6 +29,19 @@ userPassword: ldapPassword
 krb5PrincipalName: ldap/localhost@INFINISPAN.ORG
 krb5KeyVersionNumber: 0
 
+dn: uid=ldap.localdomain,ou=People,dc=infinispan,dc=org
+objectClass: top
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: krb5principal
+objectClass: krb5kdcentry
+cn: LDAP
+sn: Service
+uid: ldap
+userPassword: ldapPassword
+krb5PrincipalName: ldap/localhost.localdomain@INFINISPAN.ORG
+krb5KeyVersionNumber: 0
+
 dn: uid=admin,ou=People,dc=infinispan,dc=org
 objectClass: top
 objectClass: person
@@ -40,6 +53,19 @@ sn: admin
 uid: admin
 userPassword: strongPassword
 krb5PrincipalName: admin@INFINISPAN.ORG
+krb5KeyVersionNumber: 0
+
+dn: uid=supervisor,ou=People,dc=infinispan,dc=org
+objectClass: top
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: krb5principal
+objectClass: krb5kdcentry
+cn: ISPN Supervisor
+sn: supervisor
+uid: supervisor
+userPassword: lessStrongPassword
+krb5PrincipalName: supervisor@INFINISPAN.ORG
 krb5KeyVersionNumber: 0
 
 dn: uid=writer,ou=People,dc=infinispan,dc=org
