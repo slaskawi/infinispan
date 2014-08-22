@@ -4,7 +4,7 @@ import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.jmx.annotations.DataType;
 import org.infinispan.jmx.annotations.ManagedAttribute;
-import org.infinispan.registry.impl.ClusterRegistryImpl;
+import org.infinispan.registry.ClusterRegistryImpl;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
