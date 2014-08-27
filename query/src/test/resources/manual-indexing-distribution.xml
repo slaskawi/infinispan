@@ -79,9 +79,6 @@
 
                 <property name="hibernate.search.indexing_strategy" value="manual" />
 
-                <!-- Supporting exclusive index usage will require lock cleanup on crashed nodes to be implemented -->
-                <property name="hibernate.search.default.exclusive_index_use" value="false" />
-
                 <!-- Use latest Lucene version -->
                 <property name="hibernate.search.lucene_version" value="LUCENE_CURRENT" />
             </properties>

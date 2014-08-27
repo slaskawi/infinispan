@@ -36,7 +36,6 @@ public class IndexManagerLocalTest extends SingleCacheManagerTest {
             .indexing()
             .enabled(true)
             .addProperty("hibernate.search.lucene_version", "LUCENE_CURRENT")
-            .addProperty("default.exclusive_index_use", "false")
             .addProperty("default.indexmanager", "org.infinispan.query.indexmanager.InfinispanIndexManager");
 
       if(transactionsEnabled()) {

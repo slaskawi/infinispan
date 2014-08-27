@@ -77,9 +77,6 @@
                 <!-- specify the managed index is to be shared across the nodes -->
                 <property name="hibernate.search.default.directory_provider" value="infinispan" />
 
-                <!-- Supporting exclusive index usage will require lock cleanup on crashed nodes to be implemented -->
-                <property name="hibernate.search.default.exclusive_index_use" value="false" />
-
                 <!-- Use latest Lucene version -->
                 <property name="hibernate.search.lucene_version" value="LUCENE_36" />
             </properties>
@@ -141,5 +138,4 @@
         </clustering>
         <indexing enabled="false" />
     </namedCache>
-
 </infinispan>

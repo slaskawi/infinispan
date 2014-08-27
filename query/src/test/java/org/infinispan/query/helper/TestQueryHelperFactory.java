@@ -71,7 +71,6 @@ public class TestQueryHelperFactory {
       } else {
          builder.indexing().addProperty("hibernate.search.default.indexmanager", "org.infinispan.query.indexmanager.InfinispanIndexManager")
                .addProperty("default.directory_provider", "infinispan")
-               .addProperty("hibernate.search.default.exclusive_index_use", "false")
                .addProperty("lucene_version", "LUCENE_36");
          if (cacheMode.isClustered()) {
             builder.clustering().stateTransfer().fetchInMemoryState(true);

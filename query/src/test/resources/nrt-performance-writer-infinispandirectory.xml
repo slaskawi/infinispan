@@ -54,9 +54,6 @@
                 <property name="default.metadata_cachename" value="LuceneIndexesMetadataOWR" />
                 <property name="default.data_cachename" value="LuceneIndexesDataOWR" />
 
-                <!-- This index is dedicated to the current node -->
-                <property name="default.exclusive_index_use" value="true" />
-
                 <!-- The default is 10, but we don't want to waste many cycles in merging
                  (tune for writes at cost of reader fragmentation) -->
                 <property name="default.indexwriter.merge_factor" value="30" />

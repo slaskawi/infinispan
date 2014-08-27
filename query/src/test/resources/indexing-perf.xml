@@ -71,9 +71,6 @@
                 <!-- specify the managed index is to be shared across the nodes -->
                 <property name="hibernate.search.default.directory_provider" value="infinispan" />
 
-                <!-- Supporting exclusive index usage will require lock cleanup on crashed nodes to be implemented -->
-                <property name="hibernate.search.default.exclusive_index_use" value="false" />
-
                 <!-- Write indexes in Infinispan -->
                 <property name="default.chunk_size" value="128000" />
 
