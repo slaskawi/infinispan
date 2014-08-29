@@ -24,6 +24,7 @@ public class ClusteredQueryMultipleCachesTest extends ClusteredQueryTest {
    protected void createCacheManagers() throws Throwable {
       ConfigurationBuilder cacheCfg = getDefaultClusteredCacheConfig(getCacheMode(), false);
       cacheCfg.indexing().enable().indexLocalOnly(true).addProperty("default.directory_provider", "ram")
+            .addProperty("error_handler", "org.infinispan.query.helper.StaticTestingErrorHandler")
             .addProperty("lucene_version", "LUCENE_CURRENT");
       enhanceConfig(cacheCfg);
       String[] cacheNames = { "cacheA", "cacheB" };

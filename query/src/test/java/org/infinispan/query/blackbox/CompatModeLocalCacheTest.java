@@ -22,6 +22,7 @@ public class CompatModeLocalCacheTest extends LocalCacheTest {
             .indexing()
             .enable()
             .addProperty("default.directory_provider", "ram")
+            .addProperty("error_handler", "org.infinispan.query.helper.StaticTestingErrorHandler")
             .addProperty("lucene_version", "LUCENE_CURRENT");
       enhanceConfig(cfg);
       return TestCacheManagerFactory.createCacheManager(cfg);

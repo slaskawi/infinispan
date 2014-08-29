@@ -26,6 +26,7 @@ public class LocalCacheFSDirectoryTest extends LocalCacheTest {
       cfg.indexing().enable()
          .addProperty("default.directory_provider", "filesystem")
          .addProperty("default.indexBase", indexDirectory)
+         .addProperty("error_handler", "org.infinispan.query.helper.StaticTestingErrorHandler")
          .addProperty("lucene_version", "LUCENE_CURRENT");
       return TestCacheManagerFactory.createCacheManager(cfg);
    }

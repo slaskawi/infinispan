@@ -67,11 +67,15 @@ public class TestQueryHelperFactory {
       builder.indexing().enable().indexLocalOnly(indexLocalOnly);
 
       if(isRamDirectoryProvider) {
-         builder.indexing().addProperty("default.directory_provider", "ram").addProperty("lucene_version", "LUCENE_CURRENT");
+         builder.indexing()
+            .addProperty("default.directory_provider", "ram")
+            .addProperty("lucene_version", "LUCENE_CURRENT")
+            .addProperty("error_handler", "org.infinispan.query.helper.StaticTestingErrorHandler");
       } else {
          builder.indexing().addProperty("hibernate.search.default.indexmanager", "org.infinispan.query.indexmanager.InfinispanIndexManager")
                .addProperty("default.directory_provider", "infinispan")
-               .addProperty("lucene_version", "LUCENE_36");
+               .addProperty("lucene_version", "LUCENE_36")
+               .addProperty("error_handler", "org.infinispan.query.helper.StaticTestingErrorHandler");
          if (cacheMode.isClustered()) {
             builder.clustering().stateTransfer().fetchInMemoryState(true);
          }

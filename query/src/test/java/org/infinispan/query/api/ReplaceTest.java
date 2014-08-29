@@ -3,11 +3,13 @@ package org.infinispan.query.api;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.query.helper.StaticTestingErrorHandler;
 import org.infinispan.test.SingleCacheManagerTest;
 import org.infinispan.test.TestingUtil;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
 import org.testng.annotations.Test;
-import static junit.framework.Assert.assertEquals;
+
+import static org.junit.Assert.assertEquals;
 
 @Test(groups = "functional", testName = "query.api.ReplaceTest")
 public class ReplaceTest extends SingleCacheManagerTest {
@@ -20,6 +22,7 @@ public class ReplaceTest extends SingleCacheManagerTest {
             .enable()
             .indexLocalOnly(false)
             .addProperty("default.directory_provider", "ram")
+            .addProperty("error_handler", "org.infinispan.query.helper.StaticTestingErrorHandler")
             .addProperty("lucene_version", "LUCENE_CURRENT");
       return TestCacheManagerFactory.createCacheManager(cfg);
    }
@@ -46,6 +49,7 @@ public class ReplaceTest extends SingleCacheManagerTest {
       cache.put(se1.getId(), se1);
       TestEntity se1ret = (TestEntity) cache.replace(se2.getId(), se2);
       assertEquals(se1, se1ret);
+      StaticTestingErrorHandler.assertAllGood(cache);
    }
 
    public void testReplaceSimpleSearchableConditional() {
@@ -54,6 +58,7 @@ public class ReplaceTest extends SingleCacheManagerTest {
       cache.put(se1.getId(), se1);
       // note we use conditional replace here
       assert cache.replace(se2.getId(), se1, se2);
+      StaticTestingErrorHandler.assertAllGood(cache);
    }
 
 }

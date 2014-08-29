@@ -1,8 +1,16 @@
 package org.infinispan.query.distributed;
 
+<<<<<<< HEAD
 import junit.framework.Assert;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
+=======
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
+>>>>>>> 96cfc93... ISPN-4599 Register a backend ErrorHandler in some tests to verify the backend is not throwing exceptions
 import org.apache.lucene.search.Query;
 import org.hibernate.search.infinispan.InfinispanIntegration;
 import org.infinispan.Cache;
@@ -10,6 +18,7 @@ import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.query.CacheQuery;
 import org.infinispan.query.Search;
+import org.infinispan.query.helper.StaticTestingErrorHandler;
 import org.infinispan.query.queries.faceting.Car;
 import org.testng.annotations.Test;
 
@@ -33,7 +42,7 @@ public class DistProgrammaticMassIndexTest extends DistributedMassIndexingTest {
             .indexLocalOnly(true)
             .addProperty("hibernate.search.default.indexmanager", "org.infinispan.query.indexmanager.InfinispanIndexManager")
             .addProperty("hibernate.search.default.directory_provider", "infinispan")
-            .addProperty("hibernate.search.default.exclusive_index_use", "false")
+            .addProperty("error_handler", "org.infinispan.query.helper.StaticTestingErrorHandler")
             .addProperty("lucene_version", "LUCENE_36");
       cacheCfg.clustering().stateTransfer().fetchInMemoryState(true);
       List<Cache<String, Car>> cacheList = createClusteredCaches(NUM_NODES, cacheCfg);
@@ -65,6 +74,7 @@ public class DistProgrammaticMassIndexTest extends DistributedMassIndexingTest {
          ex.printStackTrace();
          Assert.fail("Failed due to: " + ex.getMessage());
       }
+      StaticTestingErrorHandler.assertAllGood(cache);
    }
 
 }

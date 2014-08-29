@@ -75,6 +75,8 @@
                 <!-- No need to be backwards compatible regarding Lucene version -->
                 <property name="lucene_version" value="LUCENE_36" />
 
+                <!-- Enable error safety net -->
+                <property name="error_handler" value="org.infinispan.query.helper.StaticTestingErrorHandler"/>
             </properties>
         </indexing>
 
@@ -98,3 +100,4 @@
         name="LuceneIndexesDataOWR" />
 
 </infinispan>
+

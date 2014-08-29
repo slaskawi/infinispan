@@ -15,6 +15,8 @@
             <properties >
                 <property name="default.indexmanager" value="org.infinispan.query.indexmanager.InfinispanIndexManager" />
                 <property name="lucene_version" value="LUCENE_36" />
+                <!-- Enable error safety net -->
+                <property name="error_handler" value="org.infinispan.query.helper.StaticTestingErrorHandler" />
 
                 <property name="default.locking_cachename" value="LuceneIndexesLocking_custom" />
                 <property name="default.data_cachename" value="LuceneIndexesData_custom" />
@@ -33,6 +35,8 @@
             <properties >
                 <property name="default.indexmanager" value="org.infinispan.query.indexmanager.InfinispanIndexManager" />
                 <property name="lucene_version" value="LUCENE_36" />
+                <!-- Enable error safety net -->
+                <property name="error_handler" value="org.infinispan.query.helper.StaticTestingErrorHandler" />
 
                 <property name="default.locking_cachename" value="LuceneIndexesLocking_custom1" />
                 <property name="default.data_cachename" value="LuceneIndexesData_custom1" />

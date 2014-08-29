@@ -14,6 +14,7 @@ import org.infinispan.query.ResultIterator;
 import org.infinispan.query.Search;
 import org.infinispan.query.SearchManager;
 import org.infinispan.query.backend.QueryInterceptor;
+import org.infinispan.query.helper.StaticTestingErrorHandler;
 import org.infinispan.query.spi.SearchManagerImplementor;
 import org.infinispan.query.test.CustomKey3;
 import org.infinispan.query.test.CustomKey3Transformer;
@@ -67,6 +68,7 @@ public class ClusteredCacheTest extends MultipleCacheManagersTest {
          .enable()
          .indexLocalOnly(false)
          .addProperty("default.directory_provider", "ram")
+         .addProperty("error_handler", "org.infinispan.query.helper.StaticTestingErrorHandler")
          .addProperty("lucene_version", "LUCENE_CURRENT");
       enhanceConfig(cacheCfg);
       List<Cache<String, Person>> caches = createClusteredCaches(2, cacheCfg);
@@ -103,6 +105,7 @@ public class ClusteredCacheTest extends MultipleCacheManagersTest {
       cache1.put(key2, person2);
       cache1.put(key3, person3);
       if (transactionsEnabled()) transactionManager.commit();
+      StaticTestingErrorHandler.assertAllGood(cache1, cache2);
    }
 
    protected boolean transactionsEnabled() {
@@ -129,6 +132,7 @@ public class ClusteredCacheTest extends MultipleCacheManagersTest {
       }
 
       assert found.get(0).equals(person1);
+      StaticTestingErrorHandler.assertAllGood(cache1, cache2);
    }
 
    private void assertQueryInterceptorPresent(Cache<?, ?> c) {
@@ -161,6 +165,7 @@ public class ClusteredCacheTest extends MultipleCacheManagersTest {
 
       assert found.size() == 1;
       assert found.get(0).equals(person1);
+      StaticTestingErrorHandler.assertAllGood(cache1, cache2);
    }
 
    public void testAdded() throws Exception {
@@ -190,6 +195,7 @@ public class ClusteredCacheTest extends MultipleCacheManagersTest {
       assert found.contains(person2);
       assert found.contains(person3);
       assert found.contains(person4) : "This should now contain object person4";
+      StaticTestingErrorHandler.assertAllGood(cache1, cache2);
    }
 
    public void testRemoved() throws Exception {
@@ -209,6 +215,7 @@ public class ClusteredCacheTest extends MultipleCacheManagersTest {
       assert found.size() == 1;
       assert found.contains(person2);
       assert !found.contains(person3) : "This should not contain object person3 anymore";
+      StaticTestingErrorHandler.assertAllGood(cache1, cache2);
    }
 
    public void testGetResultSize() throws Exception {
@@ -219,6 +226,7 @@ public class ClusteredCacheTest extends MultipleCacheManagersTest {
       List<Object> found = cacheQuery.list();
 
       AssertJUnit.assertEquals(1, found.size());
+      StaticTestingErrorHandler.assertAllGood(cache1, cache2);
    }
 
    public void testPutMap() throws Exception {
@@ -242,6 +250,7 @@ public class ClusteredCacheTest extends MultipleCacheManagersTest {
       cache2.putAll(allWrites);
       found = searchManager.getQuery(allQuery, Person.class).list();
       AssertJUnit.assertEquals(3, found.size());
+      StaticTestingErrorHandler.assertAllGood(cache1, cache2);
    }
 
    public void testPutMapAsync() throws Exception {
@@ -276,6 +285,7 @@ public class ClusteredCacheTest extends MultipleCacheManagersTest {
       found = searchManager.getQuery(allQuery, Person.class).list();
       AssertJUnit.assertEquals(4, found.size());
       assert found.contains(person4);
+      StaticTestingErrorHandler.assertAllGood(cache1, cache2);
    }
 
    public void testPutForExternalRead() throws Exception {
@@ -313,6 +323,7 @@ public class ClusteredCacheTest extends MultipleCacheManagersTest {
 
       assert !found.contains(person5);
       assert found.contains(person4);
+      StaticTestingErrorHandler.assertAllGood(cache1, cache2);
    }
 
    public void testPutIfAbsent() throws Exception {
@@ -345,6 +356,7 @@ public class ClusteredCacheTest extends MultipleCacheManagersTest {
 
       assert !found.contains(person5);
       assert found.contains(person4);
+      StaticTestingErrorHandler.assertAllGood(cache1, cache2);
    }
 
    public void testPutIfAbsentAsync() throws Exception {
@@ -377,6 +389,7 @@ public class ClusteredCacheTest extends MultipleCacheManagersTest {
       AssertJUnit.assertEquals(4, found.size());
       assert !found.contains(person5);
       assert found.contains(person4);
+      StaticTestingErrorHandler.assertAllGood(cache1, cache2);
    }
 
    public void testPutAsync() throws Exception {
@@ -409,6 +422,7 @@ public class ClusteredCacheTest extends MultipleCacheManagersTest {
       AssertJUnit.assertEquals(4, found.size());
       assert !found.contains(person4);
       assert found.contains(person5);
+      StaticTestingErrorHandler.assertAllGood(cache1, cache2);
    }
 
    public void testClear() throws Exception {
@@ -433,6 +447,7 @@ public class ClusteredCacheTest extends MultipleCacheManagersTest {
       cacheQuery = Search.getSearchManager(cache1).getQuery(luceneQuery);
 
       AssertJUnit.assertEquals(0, cacheQuery.getResultSize());
+      StaticTestingErrorHandler.assertAllGood(cache1, cache2);
    }
 
    public void testFullTextFilterOnOff() throws Exception {
@@ -454,6 +469,7 @@ public class ClusteredCacheTest extends MultipleCacheManagersTest {
       //Disabling the fullTextFilter.
       query.disableFullTextFilter("personFilter");
       AssertJUnit.assertEquals(2, query.getResultSize());
+      StaticTestingErrorHandler.assertAllGood(cache1, cache2);
    }
 
    public void testCombinationOfFilters() throws Exception {
@@ -488,6 +504,7 @@ public class ClusteredCacheTest extends MultipleCacheManagersTest {
       query.disableFullTextFilter("personFilter");
       query.disableFullTextFilter("personAgeFilter");
       AssertJUnit.assertEquals(3, query.getResultSize());
+      StaticTestingErrorHandler.assertAllGood(cache1, cache2);
    }
 
    public void testSearchKeyTransformer() throws Exception {
@@ -529,6 +546,7 @@ public class ClusteredCacheTest extends MultipleCacheManagersTest {
       }
 
       AssertJUnit.assertEquals(2, counter);
+      StaticTestingErrorHandler.assertAllGood(cache1, cache2);
    }
 
 }
