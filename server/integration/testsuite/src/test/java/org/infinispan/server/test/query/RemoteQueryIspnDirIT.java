@@ -13,10 +13,10 @@ import org.junit.runner.RunWith;
  * @author Adrian Nistor
  */
 @RunWith(Arquillian.class)
-@WithRunningServer({@RunningServer(name = "remote-query-infinispan-dir")})
+@WithRunningServer({@RunningServer(name = "remote-query-infinispan-dir-1"), @RunningServer(name = "remote-query-infinispan-dir-2")})
 public class RemoteQueryIspnDirIT extends RemoteQueryIT {
 
-   @InfinispanResource("remote-query-infinispan-dir")
+   @InfinispanResource("remote-query-infinispan-dir-1")
    protected RemoteInfinispanServer server;
 
    public RemoteQueryIspnDirIT() {

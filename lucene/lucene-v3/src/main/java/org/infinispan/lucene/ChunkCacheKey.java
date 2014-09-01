@@ -17,7 +17,7 @@ import org.infinispan.commons.util.Util;
  * @author Lukasz Moren
  * @author Sanne Grinovero
  */
-public final class ChunkCacheKey implements Serializable, IndexScopedKey {
+public final class ChunkCacheKey implements IndexScopedKey {
 
    /** The serialVersionUID */
    private static final long serialVersionUID = 4429712073623290126L;

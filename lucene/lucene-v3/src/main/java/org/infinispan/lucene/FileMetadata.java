@@ -18,7 +18,7 @@ import org.infinispan.commons.util.Util;
  * @author Lukasz Moren
  * @see org.infinispan.lucene.FileCacheKey
  */
-public final class FileMetadata implements Serializable {
+public final class FileMetadata {
 
    /** The serialVersionUID */
    private static final long serialVersionUID = -7150923427362644166L;

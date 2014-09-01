@@ -36,6 +36,7 @@
         <module name="org.infinispan.query" optional="true" services="import"/>
         <module name="org.jboss.marshalling"/>
         <module name="org.jboss.marshalling.river" services="import"/>
+        <module name="org.infinispan.lucene-directory" export="true" services="export"/>
         <module name="org.jgroups"/>
         <module name="sun.jdk"/>
     </dependencies>

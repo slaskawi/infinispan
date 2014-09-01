@@ -15,8 +15,21 @@
                     <transaction mode="NONE" />
                     <indexing index="ALL">
                         <property name="default.directory_provider">infinispan</property>
+                        <property name="default.indexmanager">org.infinispan.query.indexmanager.InfinispanIndexManager</property>
                         <property name="lucene_version">LUCENE_36</property>
                     </indexing>
+                </replicated-cache>
+                <distributed-cache name="LuceneIndexesData" mode="SYNC">
+                    <state-transfer enabled="true"/>
+                    <indexing index="NONE"/>
+                </distributed-cache>
+                <replicated-cache name="LuceneIndexesLocking" mode="SYNC">
+                    <state-transfer enabled="true"/>
+                    <indexing index="NONE"/>
+                </replicated-cache>
+                <replicated-cache name="LuceneIndexesMetadata" mode="SYNC">
+                    <state-transfer enabled="true"/>
+                    <indexing index="NONE"/>
                 </replicated-cache>
             </cache-container>
             <cache-container name="security"/>

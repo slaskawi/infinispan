@@ -11,11 +11,11 @@
         <module name="javax.transaction.api"/>
         <module name="org.apache.lucene" export="true"  slot="${slot}"/>
         <module name="org.apache.solr" export="true" optional="true"  slot="${slot}"/>
-        <module name="org.codehaus.jackson.jackson-mapper-asl" />
+        <module name="org.codehaus.jackson.jackson-mapper-asl" export="true"/>
         <module name="org.hibernate" />
         <module name="org.hibernate.commons-annotations" />
         <module name="org.infinispan"  slot="${slot}"/>
-        <module name="org.infinispan.lucene-directory"  slot="${slot}"/>
+        <module name="org.infinispan.lucene-directory"  slot="${slot}" services="export"/>
         <module name="org.jboss.logging" />
         <module name="org.jboss.as.naming" />
         <module name="org.jgroups" slot="${jgroups.slot}"/>
