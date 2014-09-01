@@ -48,6 +48,9 @@ public class NonIndexedQueryDslConditionsTest extends QueryDslConditionsTest {
       super.testInvalidEmbeddedAttributeQuery();
    }
 
+   /**
+    * This test works for non-indexed mode so we re-enable it here.
+    */
    @Test
    @Override
    public void testNullOnIntegerField() throws Exception {
@@ -64,5 +67,6 @@ public class NonIndexedQueryDslConditionsTest extends QueryDslConditionsTest {
 
       List<User> list = q.list();
       assertEquals(1, list.size());
+      assertEquals(1, list.get(0).getId());
    }
 }
