@@ -17,7 +17,7 @@ import java.util.Set;
  * @author Bela Ban
  * @since 5.0
  */
-public final class JGroupsTopologyAwareAddress extends JGroupsAddress implements TopologyAwareAddress {
+public class JGroupsTopologyAwareAddress extends JGroupsAddress implements TopologyAwareAddress {
 
    private final TopologyUUID topologyAddress;
 
