@@ -186,7 +186,7 @@
                                     <version>${project.version}</version>
                                     <type>zip</type>
                                     <overWrite>false</overWrite>
-                                    <outputDirectory>${project.build.directory}/jboss-eap-6.2</outputDirectory>
+                                    <outputDirectory>${project.build.directory}/jboss-eap-6.3</outputDirectory>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>
@@ -205,7 +205,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/jboss-eap-6.2</outputDirectory>
+                            <outputDirectory>${project.build.directory}/jboss-eap-6.3</outputDirectory>
                             <overwrite>true</overwrite>
                             <resources>
                                 <resource>
