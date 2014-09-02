@@ -2,7 +2,6 @@ package org.infinispan.lucene.impl;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Set;
 
 import org.apache.lucene.store.IndexOutput;
 import org.infinispan.AdvancedCache;
@@ -51,17 +50,11 @@ final class DirectoryImplementor {
      }
 
     String[] list() {
-       final Set<String> files = fileOps.getFileList();
-       //Careful! if you think you can optimize this array allocation, think again.
-       //The _files_ are a concurrent structure, its size could vary in parallel:
-       //the array population and dimensioning need to be performed atomically
-       //to avoid trailing null elements in the returned array.
-       final String[] array = files.toArray(new String[0]);
-       return array;
+       return fileOps.listFilenames();
     }
 
     boolean fileExists(final String name) {
-       return fileOps.getFileList().contains(name);
+       return fileOps.fileExists(name);
     }
 
     /**

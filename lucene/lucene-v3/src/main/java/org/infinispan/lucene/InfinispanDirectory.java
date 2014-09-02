@@ -140,14 +140,7 @@ public class InfinispanDirectory extends Directory {
 
    //Overrides in some Lucene versions
    public String[] list() {
-      ensureOpen();
-      Set<String> files = fileOps.getFileList();
-      //Careful! if you think you can optimize this array allocation, think again.
-      //The _files_ are a concurrent structure, its size could vary in parallel:
-      //the array population and dimensioning need to be performed atomically
-      //to avoid trailing null elements in the returned array.
-      String[] array = files.toArray(new String[0]);
-      return array;
+      return fileOps.listFilenames();
    }
 
    /**
@@ -156,7 +149,7 @@ public class InfinispanDirectory extends Directory {
    @Override
    public boolean fileExists(String name) {
       ensureOpen();
-      return fileOps.getFileList().contains(name);
+      return fileOps.fileExists(name);
    }
 
    /**
