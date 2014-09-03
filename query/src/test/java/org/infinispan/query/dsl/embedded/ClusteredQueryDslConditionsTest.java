@@ -50,15 +50,13 @@ public class ClusteredQueryDslConditionsTest extends MultipleCacheManagersTest {
 
    @Override
    protected void createCacheManagers() throws Throwable {
-      ConfigurationBuilder defaultCacheConfiguration = getDefaultClusteredCacheConfig(CacheMode.REPL_SYNC, transactionsEnabled());
-      defaultCacheConfiguration
-            .clustering()
+      ConfigurationBuilder defaultConfiguration = getDefaultClusteredCacheConfig(CacheMode.REPL_SYNC, false);
+      defaultConfiguration.clustering()
             .stateTransfer().fetchInMemoryState(true);
-      createClusteredCaches(2, defaultCacheConfiguration);
+      createClusteredCaches(2, defaultConfiguration);
 
-      ConfigurationBuilder cacheCfg = getDefaultClusteredCacheConfig(CacheMode.REPL_SYNC, transactionsEnabled());
-      cacheCfg
-            .clustering()
+      ConfigurationBuilder cfg = initialCacheConfiguration();
+      cfg.clustering()
             .stateTransfer().fetchInMemoryState(true)
             .indexing()
             .enable()
@@ -66,14 +64,14 @@ public class ClusteredQueryDslConditionsTest extends MultipleCacheManagersTest {
             .addProperty("default.indexmanager", "org.infinispan.query.indexmanager.InfinispanIndexManager")
             .addProperty("lucene_version", "LUCENE_36");
 
-      cacheManagers.get(0).defineConfiguration("custom", cacheCfg.build());
-      cacheManagers.get(1).defineConfiguration("custom", cacheCfg.build());
+      cacheManagers.get(0).defineConfiguration("custom", cfg.build());
+      cacheManagers.get(1).defineConfiguration("custom", cfg.build());
       cache1 = cacheManagers.get(0).getCache("custom");
       cache2 = cacheManagers.get(1).getCache("custom");
    }
 
-   protected boolean transactionsEnabled() {
-      return false;
+   protected ConfigurationBuilder initialCacheConfiguration() {
+      return getDefaultClusteredCacheConfig(CacheMode.REPL_SYNC, false);
    }
 
    @BeforeMethod(alwaysRun = true)
