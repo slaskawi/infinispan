@@ -37,6 +37,6 @@ public class ComponentRegistryUtils {
    }
 
    public static QueryCache getQueryCache(Cache<?, ?> cache) {
-      return cache.getCacheManager().getGlobalComponentRegistry().getComponent(QueryCache.class);
+      return SecurityActions.getCacheGlobalComponentRegistry(cache.getAdvancedCache()).getComponent(QueryCache.class);
    }
 }
