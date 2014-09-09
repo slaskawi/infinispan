@@ -11,21 +11,15 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.cache.annotation.CachePut;
+import javax.cache.annotation.CacheRemove;
+import javax.cache.annotation.CacheRemoveAll;
+import javax.cache.annotation.CacheResult;
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Instance;
-import javax.enterprise.inject.spi.AfterBeanDiscovery;
-import javax.enterprise.inject.spi.Annotated;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.Extension;
-import javax.enterprise.inject.spi.InjectionPoint;
-import javax.enterprise.inject.spi.InjectionTarget;
-import javax.enterprise.inject.spi.ProcessBean;
-import javax.enterprise.inject.spi.ProcessInjectionTarget;
-import javax.enterprise.inject.spi.ProcessProducer;
-import javax.enterprise.inject.spi.Producer;
+import javax.enterprise.inject.spi.*;
 import javax.enterprise.util.AnnotationLiteral;
 import javax.enterprise.util.TypeLiteral;
 
@@ -69,6 +63,13 @@ public class InfinispanExtension implements Extension {
    public InfinispanExtension() {
       this.configurations = new HashSet<InfinispanExtension.ConfigurationHolder>();
       this.remoteCacheInjectionPoints = new HashMap<Type, Set<Annotation>>();
+   }
+
+   void registerInterceptorBindings(@Observes BeforeBeanDiscovery event) {
+      event.addInterceptorBinding(CacheResult.class);
+      event.addInterceptorBinding(CachePut.class);
+      event.addInterceptorBinding(CacheRemove.class);
+      event.addInterceptorBinding(CacheRemoveAll.class);
    }
 
    void saveRemoteCacheProducer(@Observes ProcessProducer<RemoteCacheProducer, RemoteCache<?, ?>> event) {
@@ -169,22 +170,22 @@ public class InfinispanExtension implements Extension {
       @SuppressWarnings("serial")
       TypeLiteral<Cache<K, V>> typeLiteral = new TypeLiteral<Cache<K, V>>() {};
       event.addBean(new BeanBuilder<Cache<K, V>>(beanManager)
-               .readFromType(beanManager.createAnnotatedType(typeLiteral.getRawType()))
-               .addType(typeLiteral.getType()).qualifiers(new InputLiteral())
-               .beanLifecycle(new ContextualLifecycle<Cache<K, V>>() {
+            .readFromType(beanManager.createAnnotatedType(typeLiteral.getRawType()))
+            .addType(typeLiteral.getType()).qualifiers(new InputLiteral())
+            .beanLifecycle(new ContextualLifecycle<Cache<K, V>>() {
 
-                  @Override
-                  public Cache<K, V> create(Bean<Cache<K, V>> bean,
-                           CreationalContext<Cache<K, V>> creationalContext) {
-                     return ContextInputCache.get();
-                  }
+               @Override
+               public Cache<K, V> create(Bean<Cache<K, V>> bean,
+                     CreationalContext<Cache<K, V>> creationalContext) {
+                  return ContextInputCache.get();
+               }
 
-                  @Override
-                  public void destroy(Bean<Cache<K, V>> bean, Cache<K, V> instance,
-                           CreationalContext<Cache<K, V>> creationalContext) {
+               @Override
+               public void destroy(Bean<Cache<K, V>> bean, Cache<K, V> instance,
+                     CreationalContext<Cache<K, V>> creationalContext) {
 
-                  }
-               }).create());
+               }
+            }).create());
    }
 
    public void observeDefaultEmbeddedCacheManagerInstalled(@Observes @Installed DefaultBeanHolder bean) {

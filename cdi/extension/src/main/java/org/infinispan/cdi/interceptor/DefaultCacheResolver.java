@@ -1,33 +1,60 @@
+/*
+ * JBoss, Home of Professional Open Source
+ * Copyright 2011 Red Hat Inc. and/or its affiliates and other
+ * contributors as indicated by the @author tags. All rights reserved.
+ * See the copyright.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.infinispan.cdi.interceptor;
 
-import javax.cache.Cache;
-import javax.cache.CacheManager;
-import javax.cache.Caching;
+import org.infinispan.Cache;
+import org.infinispan.manager.EmbeddedCacheManager;
+
 import javax.cache.annotation.CacheInvocationContext;
-import javax.cache.annotation.CacheResolver;
-import javax.cache.spi.CachingProvider;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Any;
+import javax.enterprise.inject.Default;
+import javax.enterprise.inject.Instance;
+import javax.enterprise.util.AnnotationLiteral;
+import javax.inject.Inject;
 import java.lang.annotation.Annotation;
 
 import static org.infinispan.cdi.util.Contracts.assertNotNull;
 
 /**
- * Default {@link javax.cache.annotation.CacheResolver} implementation for
- * standalone environments, where no Cache/CacheManagers are injected via CDI.
+ * Default {@link CacheResolver} implementation.
  *
  * @author Kevin Pollet <kevin.pollet@serli.com> (C) 2011 SERLI
- * @author Galder Zamarreño
  */
 @ApplicationScoped
 public class DefaultCacheResolver implements CacheResolver {
 
-   private CacheManager defaultCacheManager;
+   private EmbeddedCacheManager defaultCacheManager;
+   private Instance<EmbeddedCacheManager> cacheManagers;
 
-   // Created by proxy
-   @SuppressWarnings("unused")
-   DefaultCacheResolver() {
-      CachingProvider provider = Caching.getCachingProvider();
-      defaultCacheManager = provider.getCacheManager(provider.getDefaultURI(), provider.getDefaultClassLoader());
+   @Inject
+   public DefaultCacheResolver(@Any Instance<EmbeddedCacheManager> cacheManagers) {
+      this.cacheManagers = cacheManagers;
+      this.defaultCacheManager = cacheManagers.select(new AnnotationLiteral<Default>() {}).get();
+   }
+
+   // for proxy.
+   protected DefaultCacheResolver() {
    }
 
    @Override
@@ -36,22 +63,21 @@ public class DefaultCacheResolver implements CacheResolver {
 
       final String cacheName = cacheInvocationContext.getCacheName();
 
-      // If cache name is empty, default cache of default cache manager is returned
+      // if the cache name is empty the default cache of the default cache manager is returned.
       if (cacheName.trim().isEmpty()) {
-         return defaultCacheManager.createCache(cacheName,
-               new javax.cache.configuration.MutableConfiguration<K, V>());
+         return defaultCacheManager.getCache();
       }
 
-      for (String name : defaultCacheManager.getCacheNames()) {
-         if (name.equals(cacheName))
-            return defaultCacheManager.getCache(cacheName);
+      // here we need to iterate on all cache managers because the cache used by the interceptor could use a specific
+      // cache manager.
+      for (EmbeddedCacheManager oneCacheManager : cacheManagers) {
+         if (oneCacheManager.getCacheNames().contains(cacheName)) {
+            return oneCacheManager.getCache(cacheName);
+         }
       }
 
-      // If the cache has not been defined in the default cache manager or
-      // in a specific one a new cache is created in the default cache manager
-      // with the default configuration.
-      return defaultCacheManager.createCache(cacheName,
-            new javax.cache.configuration.MutableConfiguration<K, V>());
+      // if the cache has not been defined in the default cache manager or in a specific one a new cache is created in
+      // the default cache manager with the default configuration.
+      return defaultCacheManager.getCache(cacheName);
    }
-
 }

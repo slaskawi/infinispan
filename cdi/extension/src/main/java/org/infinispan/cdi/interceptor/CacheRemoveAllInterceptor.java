@@ -1,13 +1,39 @@
+/*
+ * JBoss, Home of Professional Open Source
+ * Copyright 2011 Red Hat Inc. and/or its affiliates and other
+ * contributors as indicated by the @author tags. All rights reserved.
+ * See the copyright.txt in the distribution for a full listing of
+ * individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.infinispan.cdi.interceptor;
 
+import org.infinispan.Cache;
 import org.infinispan.cdi.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
+import javax.cache.annotation.CacheKey;
+import javax.cache.annotation.CacheKeyInvocationContext;
 import javax.cache.annotation.CacheRemoveAll;
 import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
+import java.io.Serializable;
 
 /**
  * <p>{@link javax.cache.annotation.CacheRemoveAll} interceptor implementation. This interceptor uses the following algorithm describes in
@@ -22,24 +48,46 @@ import javax.interceptor.InvocationContext;
  */
 @Interceptor
 @CacheRemoveAll
-public class CacheRemoveAllInterceptor extends AbstractCacheRemoveAllInterceptor {
+public class CacheRemoveAllInterceptor implements Serializable {
 
+   private static final long serialVersionUID = -8763819640664021763L;
    private static final Log log = LogFactory.getLog(CacheRemoveAllInterceptor.class, Log.class);
 
+   private final CacheResolver cacheResolver;
+   private final CacheKeyInvocationContextFactory contextFactory;
+
    @Inject
-   public CacheRemoveAllInterceptor(DefaultCacheResolver cacheResolver,
-         CacheKeyInvocationContextFactory contextFactory) {
-      super(cacheResolver, contextFactory);
+   public CacheRemoveAllInterceptor(CacheResolver cacheResolver, CacheKeyInvocationContextFactory contextFactory) {
+      this.cacheResolver = cacheResolver;
+      this.contextFactory = contextFactory;
    }
 
    @AroundInvoke
    public Object cacheRemoveAll(InvocationContext invocationContext) throws Exception {
-      return super.cacheRemoveAll(invocationContext);
-   }
+      if (log.isTraceEnabled()) {
+         log.tracef("Interception of method named '%s'", invocationContext.getMethod().getName());
+      }
 
-   @Override
-   protected Log getLog() {
-      return log;
-   }
+      final CacheKeyInvocationContext<CacheRemoveAll> cacheKeyInvocationContext = contextFactory.getCacheKeyInvocationContext(invocationContext);
+      final CacheRemoveAll cacheRemoveAll = cacheKeyInvocationContext.getCacheAnnotation();
+      final Cache<CacheKey, Object> cache = cacheResolver.resolveCache(cacheKeyInvocationContext);
 
+      if (!cacheRemoveAll.afterInvocation()) {
+         cache.clear();
+         if (log.isTraceEnabled()) {
+            log.tracef("Clear cache '%s' before method invocation", cache.getName());
+         }
+      }
+
+      final Object result = invocationContext.proceed();
+
+      if (cacheRemoveAll.afterInvocation()) {
+         cache.clear();
+         if (log.isTraceEnabled()) {
+            log.tracef("Clear cache '%s' after method invocation", cache.getName());
+         }
+      }
+
+      return result;
+   }
 }
