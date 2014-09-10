@@ -2,33 +2,29 @@ package org.infinispan.query.dsl.embedded;
 
 import org.infinispan.query.FetchOptions;
 import org.infinispan.query.ResultIterator;
-import org.infinispan.query.Search;
 import org.infinispan.query.dsl.Query;
 import org.infinispan.query.dsl.QueryBuilder;
 import org.infinispan.query.dsl.QueryFactory;
 import org.infinispan.query.dsl.SortOrder;
 import org.infinispan.query.dsl.embedded.sample_domain_model.User;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import static org.testng.AssertJUnit.assertEquals;
-import static org.testng.AssertJUnit.assertNotNull;
-import static org.testng.AssertJUnit.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Test for orderBy, projections and generally iteration.
  *
  * @author rvansa@redhat.com
+ * @author anistor@redhat.com
  * @since 6.0
  */
 @Test(groups = "functional", testName = "query.dsl.QueryDslIterationTest")
 public class QueryDslIterationTest extends AbstractQueryDslTest {
 
-   @BeforeMethod
+   @BeforeClass(alwaysRun = true)
    protected void populateCache() throws Exception {
       User user1 = new User();
       user1.setId(1);
@@ -50,19 +46,14 @@ public class QueryDslIterationTest extends AbstractQueryDslTest {
       user4.setName("Michael");
       user4.setSurname("Black");
 
-      cache.put("user_" + user1.getId(), user1);
-      cache.put("user_" + user2.getId(), user2);
-      cache.put("user_" + user3.getId(), user3);
-      cache.put("user_" + user4.getId(), user4);
-   }
-
-   @AfterMethod
-   protected void cleanCache() {
-      cache.clear();
+      getCacheForWrite().put("user_" + user1.getId(), user1);
+      getCacheForWrite().put("user_" + user2.getId(), user2);
+      getCacheForWrite().put("user_" + user3.getId(), user3);
+      getCacheForWrite().put("user_" + user4.getId(), user4);
    }
 
    public void testOrderByAsc() throws Exception {
-      QueryFactory qf = Search.getSearchManager(cache).getQueryFactory();
+      QueryFactory qf = getQueryFactory();
 
       Query q = qf.from(User.class)
             .orderBy("name", SortOrder.ASC).build();
@@ -75,7 +66,7 @@ public class QueryDslIterationTest extends AbstractQueryDslTest {
    }
 
    public void testOrderByDesc() throws Exception {
-      QueryFactory qf = Search.getSearchManager(cache).getQueryFactory();
+      QueryFactory qf = getQueryFactory();
 
       Query q = qf.from(User.class)
             .orderBy("surname", SortOrder.DESC).build();
@@ -88,7 +79,7 @@ public class QueryDslIterationTest extends AbstractQueryDslTest {
    }
 
    public void testMaxResults() throws Exception {
-      QueryFactory qf = Search.getSearchManager(cache).getQueryFactory();
+      QueryFactory qf = getQueryFactory();
 
       Query q = qf.from(User.class)
             .orderBy("name", SortOrder.ASC).maxResults(2).build();
@@ -101,7 +92,7 @@ public class QueryDslIterationTest extends AbstractQueryDslTest {
    }
 
    public void testStartOffset() throws Exception {
-      QueryFactory qf = Search.getSearchManager(cache).getQueryFactory();
+      QueryFactory qf = getQueryFactory();
 
       Query q = qf.from(User.class)
             .orderBy("name", SortOrder.ASC).startOffset(2).build();
@@ -114,15 +105,15 @@ public class QueryDslIterationTest extends AbstractQueryDslTest {
    }
 
    public void testProjection1() throws Exception {
-      QueryFactory qf = Search.getSearchManager(cache).getQueryFactory();
+      QueryFactory qf = getQueryFactory();
 
       Query q = qf.from(User.class)
-            .setProjection("id", "name").build();
+            .setProjection("id", "name").maxResults(3).build();
 
       assertEquals(4, q.getResultSize());
 
       List<Object[]> list = q.list();
-      assertEquals(4, list.size());
+      assertEquals(3, list.size());
       for (Object[] u : list) {
          assertNotNull(u[1]);
          assertTrue(u[0] instanceof Integer);
@@ -155,7 +146,7 @@ public class QueryDslIterationTest extends AbstractQueryDslTest {
    }
 
    private LuceneQuery getIterationQuery() {
-      QueryFactory qf = Search.getSearchManager(cache).getQueryFactory();
+      QueryFactory qf = getQueryFactory();
 
       QueryBuilder<LuceneQuery> queryQueryBuilder = qf.from(User.class)
             .not().having("surname").eq("Blue").toBuilder();

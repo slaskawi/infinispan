@@ -12,17 +12,20 @@ import java.util.List;
 
 import org.hibernate.hql.ParsingException;
 import org.hibernate.search.engine.spi.SearchFactoryImplementor;
+import org.hibernate.search.indexes.impl.IndexManagerHolder;
+import org.infinispan.Cache;
 import org.infinispan.query.Search;
 import org.infinispan.query.dsl.FilterConditionEndContext;
 import org.infinispan.query.dsl.Query;
 import org.infinispan.query.dsl.QueryBuilder;
 import org.infinispan.query.dsl.QueryFactory;
 import org.infinispan.query.dsl.SortOrder;
+import org.infinispan.query.dsl.embedded.impl.EmbeddedLuceneQueryFactory;
 import org.infinispan.query.dsl.embedded.sample_domain_model.Account;
 import org.infinispan.query.dsl.embedded.sample_domain_model.Address;
 import org.infinispan.query.dsl.embedded.sample_domain_model.Transaction;
 import org.infinispan.query.dsl.embedded.sample_domain_model.User;
-import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 /**
@@ -35,7 +38,7 @@ import org.testng.annotations.Test;
 @Test(groups = "functional", testName = "query.dsl.QueryDslConditionsTest")
 public class QueryDslConditionsTest extends AbstractQueryDslTest {
 
-   @BeforeMethod(alwaysRun = true)
+   @BeforeClass(alwaysRun = true)
    protected void populateCache() throws Exception {
       // create the test objects
       User user1 = new User();
@@ -76,23 +79,23 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
       Account account1 = new Account();
       account1.setId(1);
       account1.setDescription("John Doe's first bank account");
-      account1.setCreationDate(DATE_FORMAT.parse("2013-01-03"));
+      account1.setCreationDate(makeDate("2013-01-03"));
 
       Account account2 = new Account();
       account2.setId(2);
       account2.setDescription("John Doe's second bank account");
-      account2.setCreationDate(DATE_FORMAT.parse("2013-01-04"));
+      account2.setCreationDate(makeDate("2013-01-04"));
 
       Account account3 = new Account();
       account3.setId(3);
-      account3.setCreationDate(DATE_FORMAT.parse("2013-01-20"));
+      account3.setCreationDate(makeDate("2013-01-20"));
 
       Transaction transaction0 = new Transaction();
       transaction0.setId(0);
       transaction0.setDescription("Birthday present");
       transaction0.setAccountId(1);
       transaction0.setAmount(1800);
-      transaction0.setDate(DATE_FORMAT.parse("2012-09-07"));
+      transaction0.setDate(makeDate("2012-09-07"));
       transaction0.setDebit(false);
 
       Transaction transaction1 = new Transaction();
@@ -100,7 +103,7 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
       transaction1.setDescription("Feb. rent payment");
       transaction1.setAccountId(1);
       transaction1.setAmount(1500);
-      transaction1.setDate(DATE_FORMAT.parse("2013-01-05"));
+      transaction1.setDate(makeDate("2013-01-05"));
       transaction1.setDebit(true);
 
       Transaction transaction2 = new Transaction();
@@ -108,7 +111,7 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
       transaction2.setDescription("Starbucks");
       transaction2.setAccountId(1);
       transaction2.setAmount(23);
-      transaction2.setDate(DATE_FORMAT.parse("2013-01-09"));
+      transaction2.setDate(makeDate("2013-01-09"));
       transaction2.setDebit(true);
 
       Transaction transaction3 = new Transaction();
@@ -116,7 +119,7 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
       transaction3.setDescription("Hotel");
       transaction3.setAccountId(2);
       transaction3.setAmount(45);
-      transaction3.setDate(DATE_FORMAT.parse("2013-02-27"));
+      transaction3.setDate(makeDate("2013-02-27"));
       transaction3.setDebit(true);
 
       Transaction transaction4 = new Transaction();
@@ -124,7 +127,7 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
       transaction4.setDescription("Last january");
       transaction4.setAccountId(2);
       transaction4.setAmount(95);
-      transaction4.setDate(DATE_FORMAT.parse("2013-01-31"));
+      transaction4.setDate(makeDate("2013-01-31"));
       transaction4.setDebit(true);
 
       Transaction transaction5 = new Transaction();
@@ -132,35 +135,55 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
       transaction5.setDescription("Popcorn");
       transaction5.setAccountId(2);
       transaction5.setAmount(5);
-      transaction5.setDate(DATE_FORMAT.parse("2013-01-01"));
+      transaction5.setDate(makeDate("2013-01-01"));
       transaction5.setDebit(true);
 
       // persist and index the test objects
       // we put all of them in the same cache for the sake of simplicity
-      cache.put("user_" + user1.getId(), user1);
-      cache.put("user_" + user2.getId(), user2);
-      cache.put("user_" + user3.getId(), user3);
-      cache.put("account_" + account1.getId(), account1);
-      cache.put("account_" + account2.getId(), account2);
-      cache.put("account_" + account3.getId(), account3);
-      cache.put("transaction_" + transaction0.getId(), transaction0);
-      cache.put("transaction_" + transaction1.getId(), transaction1);
-      cache.put("transaction_" + transaction2.getId(), transaction2);
-      cache.put("transaction_" + transaction3.getId(), transaction3);
-      cache.put("transaction_" + transaction4.getId(), transaction4);
-      cache.put("transaction_" + transaction5.getId(), transaction5);
-   }
+      getCacheForWrite().put("user_" + user1.getId(), user1);
+      getCacheForWrite().put("user_" + user2.getId(), user2);
+      getCacheForWrite().put("user_" + user3.getId(), user3);
+      getCacheForWrite().put("account_" + account1.getId(), account1);
+      getCacheForWrite().put("account_" + account2.getId(), account2);
+      getCacheForWrite().put("account_" + account3.getId(), account3);
+      getCacheForWrite().put("transaction_" + transaction0.getId(), transaction0);
+      getCacheForWrite().put("transaction_" + transaction1.getId(), transaction1);
+      getCacheForWrite().put("transaction_" + transaction2.getId(), transaction2);
+      getCacheForWrite().put("transaction_" + transaction3.getId(), transaction3);
+      getCacheForWrite().put("transaction_" + transaction4.getId(), transaction4);
+      getCacheForWrite().put("transaction_" + transaction5.getId(), transaction5);
 
-   protected QueryFactory getQueryFactory() {
-      return Search.getSearchManager(cache).getQueryFactory();
+      for (int i = 0; i < 50; i++) {
+         Transaction transaction = new Transaction();
+         transaction.setId(50 + i);
+         transaction.setDescription("Expensive shoes " + i);
+         transaction.setAccountId(2);
+         transaction.setAmount(100 + i);
+         transaction.setDate(makeDate("2013-08-20"));
+         transaction.setDebit(true);
+         getCacheForWrite().put("transaction_" + transaction.getId(), transaction);
+      }
    }
 
    public void testIndexPresence() {
-      SearchFactoryImplementor searchFactory = (SearchFactoryImplementor) Search.getSearchManager(cache).getSearchFactory();
-      assertNotNull(searchFactory.getIndexManagerHolder().getIndexManager(User.class.getName()));
-      assertNotNull(searchFactory.getIndexManagerHolder().getIndexManager(Account.class.getName()));
-      assertNotNull(searchFactory.getIndexManagerHolder().getIndexManager(Transaction.class.getName()));
-      assertNull(searchFactory.getIndexManagerHolder().getIndexManager(Address.class.getName()));
+      SearchFactoryImplementor searchFactory = (SearchFactoryImplementor) Search.getSearchManager((Cache) getCacheForQuery()).getSearchFactory();
+      IndexManagerHolder indexManagerHolder = searchFactory.getIndexManagerHolder();
+
+      assertTrue(searchFactory.getIndexedTypes().contains(User.class));
+      assertNotNull(indexManagerHolder.getIndexManager(User.class.getName()));
+
+      assertTrue(searchFactory.getIndexedTypes().contains(Account.class));
+      assertNotNull(indexManagerHolder.getIndexManager(Account.class.getName()));
+
+      assertTrue(searchFactory.getIndexedTypes().contains(Transaction.class));
+      assertNotNull(indexManagerHolder.getIndexManager(Transaction.class.getName()));
+
+      assertFalse(searchFactory.getIndexedTypes().contains(Address.class));
+      assertNull(indexManagerHolder.getIndexManager(Address.class.getName()));
+   }
+
+   public void testQueryFactoryType() {
+      assertEquals(EmbeddedLuceneQueryFactory.class, getQueryFactory().getClass());
    }
 
    public void testEq1() throws Exception {
@@ -231,14 +254,14 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
 
       // all the transactions that happened in January 2013
       Query q = qf.from(Transaction.class)
-            .having("date").between(DATE_FORMAT.parse("2013-01-01"), DATE_FORMAT.parse("2013-01-31"))
+            .having("date").between(makeDate("2013-01-01"), makeDate("2013-01-31"))
             .toBuilder().build();
 
       List<Transaction> list = q.list();
       assertEquals(4, list.size());
       for (Transaction t : list) {
-         assertTrue(t.getDate().compareTo(DATE_FORMAT.parse("2013-01-31")) <= 0);
-         assertTrue(t.getDate().compareTo(DATE_FORMAT.parse("2013-01-01")) >= 0);
+         assertTrue(t.getDate().compareTo(makeDate("2013-01-31")) <= 0);
+         assertTrue(t.getDate().compareTo(makeDate("2013-01-01")) >= 0);
       }
    }
 
@@ -247,14 +270,14 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
 
       // all the transactions that happened in January 2013
       Query q = qf.from(Transaction.class)
-            .having("date").between(DATE_FORMAT.parse("2013-01-01"), DATE_FORMAT.parse("2013-01-31")).includeUpper(false)
+            .having("date").between(makeDate("2013-01-01"), makeDate("2013-01-31")).includeUpper(false)
             .toBuilder().build();
 
       List<Transaction> list = q.list();
       assertEquals(3, list.size());
       for (Transaction t : list) {
-         assertTrue(t.getDate().compareTo(DATE_FORMAT.parse("2013-01-31")) < 0);
-         assertTrue(t.getDate().compareTo(DATE_FORMAT.parse("2013-01-01")) >= 0);
+         assertTrue(t.getDate().compareTo(makeDate("2013-01-31")) < 0);
+         assertTrue(t.getDate().compareTo(makeDate("2013-01-01")) >= 0);
       }
    }
 
@@ -263,14 +286,14 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
 
       // all the transactions that happened in January 2013
       Query q = qf.from(Transaction.class)
-            .having("date").between(DATE_FORMAT.parse("2013-01-01"), DATE_FORMAT.parse("2013-01-31")).includeLower(false)
+            .having("date").between(makeDate("2013-01-01"), makeDate("2013-01-31")).includeLower(false)
             .toBuilder().build();
 
       List<Transaction> list = q.list();
       assertEquals(3, list.size());
       for (Transaction t : list) {
-         assertTrue(t.getDate().compareTo(DATE_FORMAT.parse("2013-01-31")) <= 0);
-         assertTrue(t.getDate().compareTo(DATE_FORMAT.parse("2013-01-01")) > 0);
+         assertTrue(t.getDate().compareTo(makeDate("2013-01-31")) <= 0);
+         assertTrue(t.getDate().compareTo(makeDate("2013-01-01")) > 0);
       }
    }
 
@@ -309,7 +332,7 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
             .toBuilder().build();
 
       List<Transaction> list = q.list();
-      assertEquals(4, list.size());
+      assertEquals(54, list.size());
       for (Transaction t : list) {
          assertTrue(t.getAmount() < 1500);
       }
@@ -323,7 +346,7 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
             .toBuilder().build();
 
       List<Transaction> list = q.list();
-      assertEquals(5, list.size());
+      assertEquals(55, list.size());
       for (Transaction t : list) {
          assertTrue(t.getAmount() <= 1500);
       }
@@ -971,14 +994,14 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
 
       // all the transactions that happened in January 2013
       Query q = qf.from(Transaction.class)
-            .having("date").between(DATE_FORMAT.parse("2013-01-01"), DATE_FORMAT.parse("2013-01-31"))
+            .having("date").between(makeDate("2013-01-01"), makeDate("2013-01-31"))
             .toBuilder().build();
 
       List<Transaction> list = q.list();
       assertEquals(4, list.size());
       for (Transaction t : list) {
-         assertTrue(t.getDate().compareTo(DATE_FORMAT.parse("2013-01-31")) <= 0);
-         assertTrue(t.getDate().compareTo(DATE_FORMAT.parse("2013-01-01")) >= 0);
+         assertTrue(t.getDate().compareTo(makeDate("2013-01-31")) <= 0);
+         assertTrue(t.getDate().compareTo(makeDate("2013-01-01")) >= 0);
       }
    }
 
@@ -988,7 +1011,7 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
       // all the transactions that happened in January 2013, projected by date field only
       Query q = qf.from(Transaction.class)
             .setProjection("date")
-            .having("date").between(DATE_FORMAT.parse("2013-01-01"), DATE_FORMAT.parse("2013-01-31"))
+            .having("date").between(makeDate("2013-01-01"), makeDate("2013-01-31"))
             .toBuilder().build();
 
       List<Object[]> list = q.list();
@@ -1000,8 +1023,8 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
 
       for (int i = 0; i < 4; i++) {
          Date d = (Date) list.get(i)[0];
-         assertTrue(d.compareTo(DATE_FORMAT.parse("2013-01-31")) <= 0);
-         assertTrue(d.compareTo(DATE_FORMAT.parse("2013-01-01")) >= 0);
+         assertTrue(d.compareTo(makeDate("2013-01-31")) <= 0);
+         assertTrue(d.compareTo(makeDate("2013-01-01")) >= 0);
       }
    }
 
@@ -1015,7 +1038,7 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
             .toBuilder().build();
 
       List<Transaction> list = q.list();
-      assertEquals(2, list.size());
+      assertEquals(52, list.size());
       assertTrue(list.get(0).getAmount() > 40);
       assertTrue(list.get(1).getAmount() > 40);
    }
@@ -1089,17 +1112,6 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
    }
 
    public void testSampleDomainQuery16() throws Exception {
-      for (int i = 0; i < 50; i++) {
-         Transaction transaction = new Transaction();
-         transaction.setId(50 + i);
-         transaction.setDescription("Expensive shoes " + i);
-         transaction.setAccountId(2);
-         transaction.setAmount(100 + i);
-         transaction.setDate(DATE_FORMAT.parse("2013-08-20"));
-         transaction.setDebit(true);
-         cache.put("transaction_" + transaction.getId(), transaction);
-      }
-
       QueryFactory qf = getQueryFactory();
 
       // third batch of 10 transactions for a given account
@@ -1143,7 +1155,7 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
             .orderBy("description", SortOrder.ASC)
             .having("accountId").eq(1)
             .and(qf.having("amount").gt(1600)
-                  .or().having("description").like("%rent%")).toBuilder().build();
+                       .or().having("description").like("%rent%")).toBuilder().build();
 
       List<Transaction> list = q.list();
       assertEquals(2, list.size());
@@ -1169,7 +1181,8 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
       assertNull(list.get(2)[1]);
    }
 
-   @Test(enabled = false, description = "Nulls not correctly indexed for numeric properties, see ISPN-4046")  //todo [anistor] fix disabled test
+   //todo [anistor] fix disabled test
+   @Test(enabled = false, description = "Nulls not correctly indexed for numeric properties, see ISPN-4046")
    public void testNullOnIntegerField() throws Exception {
       QueryFactory qf = getQueryFactory();
 
@@ -1272,7 +1285,7 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
       QueryFactory qf = getQueryFactory();
 
       Query q = qf.from(Account.class)
-            .having("creationDate").eq(DATE_FORMAT.parse("2013-01-20"))
+            .having("creationDate").eq(makeDate("2013-01-20"))
             .toBuilder().build();
 
       List<Account> list = q.list();
@@ -1284,7 +1297,8 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
       QueryFactory qf = getQueryFactory();
 
       Query q = qf.from(Account.class)
-            .having("creationDate").lt(DATE_FORMAT.parse("2013-01-20"))
+            .orderBy("id", SortOrder.ASC)
+            .having("creationDate").lt(makeDate("2013-01-20"))
             .toBuilder().build();
 
       List<Account> list = q.list();
@@ -1298,7 +1312,7 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
 
       Query q = qf.from(Account.class)
             .orderBy("id", SortOrder.ASC)
-            .having("creationDate").lte(DATE_FORMAT.parse("2013-01-20"))
+            .having("creationDate").lte(makeDate("2013-01-20"))
             .toBuilder().build();
 
       List<Account> list = q.list();
@@ -1312,7 +1326,7 @@ public class QueryDslConditionsTest extends AbstractQueryDslTest {
       QueryFactory qf = getQueryFactory();
 
       Query q = qf.from(Account.class)
-            .having("creationDate").gt(DATE_FORMAT.parse("2013-01-04"))
+            .having("creationDate").gt(makeDate("2013-01-04"))
             .toBuilder().build();
 
       List<Account> list = q.list();

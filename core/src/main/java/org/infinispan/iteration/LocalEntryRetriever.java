@@ -3,7 +3,9 @@ package org.infinispan.iteration;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.commons.CacheException;
+import org.infinispan.commons.equivalence.Equivalence;
 import org.infinispan.commons.util.CloseableIterator;
+import org.infinispan.commons.util.CollectionFactory;
 import org.infinispan.commons.util.concurrent.ParallelIterableMap;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.container.DataContainer;
@@ -33,7 +35,6 @@ import org.infinispan.persistence.manager.PersistenceManager;
 import org.infinispan.persistence.spi.AdvancedCacheLoader;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.util.TimeService;
-import org.infinispan.util.concurrent.ConcurrentHashSet;
 import org.infinispan.util.concurrent.TimeoutException;
 import org.infinispan.util.concurrent.WithinThreadExecutor;
 import org.infinispan.util.logging.Log;
@@ -72,6 +73,7 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
    protected Cache<K, V> cache;
    protected TimeService timeService;
    protected InternalEntryFactory entryFactory;
+   protected Equivalence<K> keyEquivalence;
 
    protected final Executor withinThreadExecutor = new WithinThreadExecutor();
 
@@ -90,6 +92,7 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
       this.cache = cache;
 
       this.passivationEnabled = config.persistence().passivation();
+      this.keyEquivalence = config.dataContainer().keyEquivalence();
    }
 
    public LocalEntryRetriever(int batchSize, long timeout, TimeUnit unit) {
@@ -194,7 +197,7 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
          @Override
          public void run() {
             try {
-               final Set<K> processedKeys = new ConcurrentHashSet<K>();
+               final Set<K> processedKeys = CollectionFactory.makeSet(keyEquivalence);
                Queue<CacheEntry> queue = new ArrayDeque<CacheEntry>(batchSize) {
                   @Override
                   public boolean add(CacheEntry kcEntry) {
@@ -215,7 +218,7 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
                                                                     unwrapMarshalledvalue(entry.getValue()), entry);
                      K key = (K) clone.getKey();
                      if (filter != null) {
-                        if (filter instanceof KeyValueFilterConverter && usedConverter == null) {
+                        if (usedConverter == null && filter instanceof KeyValueFilterConverter) {
                            C converted = ((KeyValueFilterConverter<K, V, C>)filter).filterAndConvert(
                                  key, (V) clone.getValue(), clone.getMetadata());
                            if (converted != null) {
@@ -242,11 +245,14 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
                         cache.addListener(listener);
                      }
                      KeyFilter<K> loaderFilter;
-                     if (filter != null) {
+                     if (filter == null || usedConverter == null && filter instanceof KeyValueFilterConverter) {
+                        loaderFilter = new CollectionKeyFilter<K>(processedKeys);
+                     } else {
                         loaderFilter = new CompositeKeyFilter<K>(new CollectionKeyFilter<K>(processedKeys),
                                                                  new KeyValueFilterAsKeyFilter<K>(filter));
-                     } else {
-                        loaderFilter = new CollectionKeyFilter<K>(processedKeys);
+                     }
+                     if (usedConverter == null && filter instanceof KeyValueFilterConverter) {
+                        action = new MapAction(batchSize, (KeyValueFilterConverter) filter, queue, handler);
                      }
                      persistenceManager.processOnAllStores(withinThreadExecutor, new KeyFilterBridge(loaderFilter),
                                                            new KeyValueActionForCacheLoaderTask(action), true, true);
@@ -303,6 +309,9 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
          CacheEntry clone = (CacheEntry)kvInternalCacheEntry.clone();
          if (converter != null) {
             C value = converter.convert((K) k, (V) kvInternalCacheEntry.getValue(), kvInternalCacheEntry.getMetadata());
+            if (value == null && converter instanceof KeyValueFilterConverter) {
+               return;
+            }            
             clone.setValue(value);
          }
          // We use just an immortal cache entry since it has low serialization overhead
@@ -311,7 +320,7 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
             try {
                handler.handleBatch(false, queue);
             } catch (InterruptedException e) {
-               Thread.currentThread().interrupt();;
+               Thread.currentThread().interrupt();
             }
             queue.clear();
          }

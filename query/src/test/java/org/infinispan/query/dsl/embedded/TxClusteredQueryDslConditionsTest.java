@@ -2,13 +2,7 @@ package org.infinispan.query.dsl.embedded;
 
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.test.fwk.CleanupAfterMethod;
 import org.testng.annotations.Test;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Verifies the functionality of Query DSL in clustered environment for ISPN directory provider.
@@ -17,7 +11,6 @@ import static org.junit.Assert.assertTrue;
  * @since 7.0
  */
 @Test(groups = "functional", testName = "query.dsl.embedded.TxClusteredQueryDslConditionsTest")
-@CleanupAfterMethod
 public class TxClusteredQueryDslConditionsTest extends ClusteredQueryDslConditionsTest {
 
    @Override

@@ -6,7 +6,6 @@ import org.infinispan.commons.util.CloseableIterator;
 import org.infinispan.commons.util.CollectionFactory;
 import org.infinispan.commons.util.concurrent.ParallelIterableMap;
 import org.infinispan.container.entries.CacheEntry;
-import org.infinispan.container.entries.ImmortalCacheEntry;
 import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.context.Flag;
 import org.infinispan.distribution.DistributionManager;
@@ -331,7 +330,7 @@ public class DistributedEntryRetriever<K, V> extends LocalEntryRetriever<K, V> {
                   SegmentChangeListener segmentChangeListener = new SegmentChangeListener();
                   changeListener.put(identifier, segmentChangeListener);
                   try {
-                     final Set<K> processedKeys = new ConcurrentHashSet<K>();
+                     final Set<K> processedKeys = CollectionFactory.makeSet(keyEquivalence);
                      Queue<CacheEntry> queue = new ConcurrentLinkedQueue<CacheEntry>() {
                         @Override
                         public boolean add(CacheEntry kcEntry) {
@@ -351,7 +350,7 @@ public class DistributedEntryRetriever<K, V> extends LocalEntryRetriever<K, V> {
                                                                           unwrapMarshalledvalue(entry.getValue()), entry);
                            K key = (K) clone.getKey();
                            if (filter != null) {
-                              if (filter instanceof KeyValueFilterConverter && converter == null) {
+                              if (converter == null && filter instanceof KeyValueFilterConverter) {
                                  C converted = ((KeyValueFilterConverter<K, V, C>)filter).filterAndConvert(
                                        key, (V) clone.getValue(), clone.getMetadata());
                                  if (converted != null) {
@@ -373,7 +372,7 @@ public class DistributedEntryRetriever<K, V> extends LocalEntryRetriever<K, V> {
                               listener = new PassivationListener<K, V>();
                               cache.addListener(listener);
                            }
-                           if (filter == null) {
+                           if (filter == null || converter == null && filter instanceof KeyValueFilterConverter) {
                               loaderFilter = new CompositeKeyFilter<K>(new SegmentFilter<K>(hashToUse, segmentsToUse),
                                                                        // We rely on this keeping a reference and not copying
                                                                        // contents
@@ -382,6 +381,9 @@ public class DistributedEntryRetriever<K, V> extends LocalEntryRetriever<K, V> {
                               loaderFilter = new CompositeKeyFilter<K>(new SegmentFilter<K>(hashToUse, segmentsToUse),
                                                                        new CollectionKeyFilter<K>(processedKeys),
                                                                        new KeyValueFilterAsKeyFilter<K>(filter));
+                           }
+                           if (converter == null && filter instanceof KeyValueFilterConverter) {
+                              action = new MapAction(identifier, segmentsToUse, inDoubtSegmentsToUse, batchSize, (KeyValueFilterConverter) filter, handler, queue);
                            }
                            persistenceManager.processOnAllStores(withinThreadExecutor, new KeyFilterBridge(loaderFilter),
                                                                  new KeyValueActionForCacheLoaderTask(action), true, true);
@@ -1063,6 +1065,9 @@ public class DistributedEntryRetriever<K, V> extends LocalEntryRetriever<K, V> {
             CacheEntry clone = (CacheEntry)kvInternalCacheEntry.clone();
             if (converter != null) {
                C value = converter.convert((K) k, (V) kvInternalCacheEntry.getValue(), kvInternalCacheEntry.getMetadata());
+               if (value == null && converter instanceof KeyValueFilterConverter) {
+                  return;
+               }               
                clone.setValue(value);
             }
             // We use just an immortal cache entry since it has low serialization overhead
