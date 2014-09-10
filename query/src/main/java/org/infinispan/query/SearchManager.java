@@ -15,7 +15,7 @@ import org.infinispan.query.dsl.embedded.LuceneQuery;
 public interface SearchManager {
 
    /**
-    * Experimental! Obtains the factory for DSL-based queries backed by Lucene indexes.
+    * Obtains the factory for DSL-based queries backed by Lucene indexes.
     *
     * @return a factory capable of building queries for the cache this SearchManager belongs to
     * @deprecated see {@link Search#getQueryFactory}
@@ -34,20 +34,17 @@ public interface SearchManager {
    CacheQuery getQuery(Query luceneQuery, Class<?>... classes);
 
    /**
-    * Experimental.
     * Provides Hibernate Search DSL to build full text queries
     * @return
     */
    EntityContext buildQueryBuilderForClass(Class<?> entityType);
 
    /**
-    * Experimental.
     * Access the SearchFactory
     */
    SearchFactory getSearchFactory();
 
    /**
-    * Experimental!
     * Use it to try out the newly introduced distributed queries.
     *
     * @param luceneQuery
