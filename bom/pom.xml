@@ -64,7 +64,7 @@
       <version.protobuf>2.5.0</version.protobuf>
       <version.antlr>3.4</version.antlr>
       <version.gnu.getopt>1.0.13.redhat-4</version.gnu.getopt>
-      <version.hibernate.search>4.5.0.Final-redhat-1</version.hibernate.search>
+      <version.hibernate.search>4.5.0.Final-redhat-2</version.hibernate.search>
       <version.jansi>1.9.redhat-4</version.jansi>
       <version.jboss.marshalling>1.4.6.Final-redhat-1</version.jboss.marshalling>
       <version.jboss.logging>3.1.4.GA-redhat-1</version.jboss.logging>
