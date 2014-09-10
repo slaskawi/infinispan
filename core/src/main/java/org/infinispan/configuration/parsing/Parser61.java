@@ -1328,7 +1328,8 @@ public class Parser61 implements ConfigurationParser {
          Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
          switch (attribute) {
             case FACTORY:
-               builder.clustering().hash().consistentHashFactory(Util.<ConsistentHashFactory>getInstance(value, holder.getClassLoader()));
+               if (value.length() > 0)
+                  builder.clustering().hash().consistentHashFactory(Util.<ConsistentHashFactory>getInstance(value, holder.getClassLoader()));
                break;
             case HASH_FUNCTION_CLASS:
                builder.clustering().hash().hash(Util.<Hash>getInstance(value, holder.getClassLoader()));

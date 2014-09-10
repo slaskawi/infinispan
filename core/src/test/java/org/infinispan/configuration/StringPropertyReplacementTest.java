@@ -46,6 +46,7 @@ public class StringPropertyReplacementTest extends SingleCacheManagerTest {
       assert configuration.locking().isolationLevel().equals(IsolationLevel.READ_COMMITTED);
       assert !configuration.locking().writeSkewCheck();
       assert configuration.transaction().syncCommitPhase();
+      assert configuration.clustering().hash().consistentHashFactory() == null;
    }
 }
 

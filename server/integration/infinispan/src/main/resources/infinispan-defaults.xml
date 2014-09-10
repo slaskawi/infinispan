@@ -48,14 +48,14 @@
         <clustering mode="distribution">
             <stateTransfer timeout="60000" fetchInMemoryState="true"/>
             <sync replTimeout="17500"/>
-            <hash factory="${org.infinispan.consistenthashfactory:org.infinispan.distribution.ch.DefaultConsistentHashFactory}"/>
+            <hash factory="${org.infinispan.consistenthashfactory:}"/>
         </clustering>
     </namedCache>
     <namedCache name="DIST_ASYNC">
         <clustering mode="distribution">
             <stateTransfer timeout="60000" fetchInMemoryState="true"/>
             <async/>
-            <hash factory="${org.infinispan.consistenthashfactory:org.infinispan.distribution.ch.DefaultConsistentHashFactory}"/>
+            <hash factory="${org.infinispan.consistenthashfactory:}"/>
         </clustering>
     </namedCache>
     <namedCache name="INVALIDATION_SYNC">

@@ -49,6 +49,7 @@
 
       <clustering mode="REPL">
          <sync/>
+         <hash factory="${test.property.consistentHashFactory:}"/>
       </clustering>
    </default>
 </infinispan>
