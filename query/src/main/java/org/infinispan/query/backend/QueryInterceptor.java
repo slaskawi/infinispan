@@ -48,6 +48,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * This interceptor will be created when the System Property "infinispan.query.indexLocalOnly" is "false"
@@ -68,6 +69,7 @@ public class QueryInterceptor extends CommandInterceptor {
    private final SearchFactoryIntegrator searchFactory;
    private final KeyTransformationHandler keyTransformationHandler = new KeyTransformationHandler();
    private final KnownClassesRegistryListener registryListener = new KnownClassesRegistryListener();
+   private final AtomicBoolean stopping = new AtomicBoolean(false);
 
    private ReadIntensiveClusterRegistryWrapper<String, Class<?>, Boolean> clusterRegistry;
 
@@ -115,11 +117,16 @@ public class QueryInterceptor extends CommandInterceptor {
       Class<?>[] array = keys.toArray(new Class<?>[keys.size()]);
       //Important to enable them all in a single call, much more efficient:
       enableClasses(array);
+      stopping.set(false);
    }
 
    @Stop
    protected void stop() {
       clusterRegistry.removeListener(registryListener);
+   }
+
+   public void prepareForStopping() {
+      stopping.set(true);
    }
 
    @Listener
@@ -458,5 +465,8 @@ public class QueryInterceptor extends CommandInterceptor {
       return command != null && command.hasFlag(Flag.SKIP_INDEX_CLEANUP);
    }
 
+   public boolean isStopping() {
+      return stopping.get();
+   }
 
 }

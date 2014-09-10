@@ -62,7 +62,7 @@ class SearchFactoryHandler {
       mutating.lock();
       try {
          //Need to re-filter the new types while holding the lock
-         final List<Class<?>> reducedSet = new ArrayList<>(classes.length);
+         final List<Class<?>> reducedSet = new ArrayList<Class<?>>(classes.length);
          for (Class<?> type : classes) {
             if (!isIndexed(type)) {
                reducedSet.add(type);
