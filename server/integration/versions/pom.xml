@@ -48,7 +48,7 @@
       <version.karaf>2.3.3</version.karaf>
       <version.pax.exam>4.1.0</version.pax.exam>
       <version.javax.inject>1</version.javax.inject>
-      <version.h2.database>1.4.180.redhat-2</version.h2.database>
+      <version.h2.database>1.4.180.redhat-3</version.h2.database>
       <relocations />
 
    </properties>
