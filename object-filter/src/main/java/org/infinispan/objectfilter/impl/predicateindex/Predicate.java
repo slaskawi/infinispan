@@ -1,7 +1,5 @@
 package org.infinispan.objectfilter.impl.predicateindex;
 
-import org.infinispan.objectfilter.impl.util.Interval;
-
 /**
  * A predicate attached to an attribute. It comes in two flavors: condition predicate or interval predicate. An interval
  * predicate represents a range of values (possibly infinite at one end but not both). It requires that the attribute
@@ -11,36 +9,32 @@ import org.infinispan.objectfilter.impl.util.Interval;
  * @author anistor@redhat.com
  * @since 7.0
  */
-public final class Predicate<AttributeDomain> {
-
-   public interface Callback {
-
-      void handleValue(MatcherEvalContext<?> ctx, boolean isMatching);
-   }
+public class Predicate<AttributeDomain> {
 
    protected AttributeNode attributeNode;
 
-   // only one of these fields is non-null
-   private final Interval<AttributeDomain> interval;    // just for interval predicates
+   /**
+    * Indicates if this predicate is attached to a repeated attribute (one of the attribute path components is a
+    * collection/array) and thus it will have multiple evaluations.
+    */
+   private final boolean isRepeated;
 
-   private final Condition<AttributeDomain> condition;  // just for condition predicates
+   /**
+    * The condition, never null. There is always an equivalent condition even for interval predicates.
+    */
+   private final Condition<AttributeDomain> condition;
 
-   public Predicate(Interval<AttributeDomain> interval) {
-      this.interval = interval;
-      this.condition = null;
-   }
-
-   public Predicate(Condition<AttributeDomain> condition) {
-      this.interval = null;
+   public Predicate(boolean isRepeated, Condition<AttributeDomain> condition) {
+      this.isRepeated = isRepeated;
       this.condition = condition;
    }
 
-   public Interval<AttributeDomain> getInterval() {
-      return interval;
+   public boolean isRepeated() {
+      return isRepeated;
    }
 
-   public Condition<AttributeDomain> getCondition() {
-      return condition;
+   public boolean match(AttributeDomain attributeValue) {
+      return condition.match(attributeValue);
    }
 
    @Override
@@ -49,17 +43,20 @@ public final class Predicate<AttributeDomain> {
       if (obj == null || getClass() != obj.getClass()) return false;
 
       Predicate other = (Predicate) obj;
-      return attributeNode == other.attributeNode && (interval != null ? interval.equals(other.interval) : condition.equals(other.condition));
+      return attributeNode == other.attributeNode
+            && isRepeated == other.isRepeated
+            && condition.equals(other.condition);
    }
 
    @Override
    public int hashCode() {
-      int i = interval != null ? interval.hashCode() : condition.hashCode();
-      return i + 31 * attributeNode.hashCode();
+      int i = condition.hashCode();
+      i = i + 31 * attributeNode.hashCode();
+      return 31 * i + (isRepeated ? 1 : 0);
    }
 
    @Override
    public String toString() {
-      return "Predicate(" + attributeNode + ", " + (interval != null ? interval.toString() : condition.toString()) + ")";
+      return "Predicate(" + attributeNode + ", isRepeated=" + isRepeated + ", " + condition + ")";
    }
 }

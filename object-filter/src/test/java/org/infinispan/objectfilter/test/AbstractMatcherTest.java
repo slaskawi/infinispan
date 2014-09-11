@@ -365,9 +365,8 @@ public abstract class AbstractMatcherTest {
 
       ObjectFilter objectFilter = matcher.getObjectFilter(queryString);
 
-      matcher.match(person);
-
       ObjectFilter.FilterResult result = objectFilter.filter(person);
+      assertNotNull(result);
       assertTrue(result.getInstance() == person);
    }
 
@@ -413,6 +412,35 @@ public abstract class AbstractMatcherTest {
    }
 
    @Test
+   public void testMatcherAndObjectFilterWithDSL() throws Exception {
+      Matcher matcher = createMatcher();
+      Object person = createPerson1();
+
+      QueryFactory qf = matcher.getQueryFactory();
+      Query q = qf.from(Person.class)
+            .having("name").eq("John").toBuilder().build();
+
+      final boolean b[] = new boolean[1];
+
+      FilterSubscription filterSubscription = matcher.registerFilter(q, new FilterCallback() {
+         @Override
+         public void onFilterResult(Object instance, Object[] projection, Comparable[] sortProjection) {
+            b[0] = true;
+         }
+      });
+
+      ObjectFilter objectFilter = matcher.getObjectFilter(filterSubscription);
+
+      ObjectFilter.FilterResult result = objectFilter.filter(person);
+      assertNotNull(result);
+      assertTrue(result.getInstance() == person);
+
+      matcher.match(person);
+      assertTrue(b[0]);
+   }
+
+
+   @Test
    public void testObjectFilterWithDSL() throws Exception {
       Matcher matcher = createMatcher();
       Object person = createPerson1();
@@ -423,9 +451,8 @@ public abstract class AbstractMatcherTest {
 
       ObjectFilter objectFilter = matcher.getObjectFilter(q);
 
-      matcher.match(person);
-
       ObjectFilter.FilterResult result = objectFilter.filter(person);
+      assertNotNull(result);
       assertTrue(result.getInstance() == person);
    }
 

@@ -4,7 +4,6 @@ import com.google.protobuf.Descriptors;
 import org.infinispan.objectfilter.impl.hql.FilterProcessingChain;
 import org.infinispan.objectfilter.impl.hql.ProtobufEntityNamesResolver;
 import org.infinispan.objectfilter.impl.hql.ProtobufPropertyHelper;
-import org.infinispan.objectfilter.impl.predicateindex.MatcherEvalContext;
 import org.infinispan.objectfilter.impl.predicateindex.ProtobufMatcherEvalContext;
 import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.WrappedMessage;
@@ -12,13 +11,12 @@ import org.infinispan.protostream.WrappedMessage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author anistor@redhat.com
  * @since 7.0
  */
-public class ProtobufMatcher extends BaseMatcher<Descriptors.Descriptor, Integer> {
+public final class ProtobufMatcher extends BaseMatcher<Descriptors.Descriptor, Descriptors.FieldDescriptor, Integer> {
 
    private final SerializationContext serializationContext;
 
@@ -36,10 +34,29 @@ public class ProtobufMatcher extends BaseMatcher<Descriptors.Descriptor, Integer
    }
 
    @Override
-   protected MatcherEvalContext<Integer> startContext(Object instance, Set<String> knownTypes) {
+   protected ProtobufMatcherEvalContext startContext(Object instance) {
+      ProtobufMatcherEvalContext context = createContext(instance);
+      if (context.getEntityType() != null) {
+         FilterRegistry<Descriptors.Descriptor, Descriptors.FieldDescriptor, Integer> filterRegistry = getFilterRegistryForType(context.getEntityType());
+         if (filterRegistry != null) {
+            context.initMultiFilterContext(filterRegistry);
+            return context;
+         }
+      }
+      return null;
+   }
+
+   @Override
+   protected ProtobufMatcherEvalContext startContext(Object instance, FilterSubscriptionImpl<Descriptors.Descriptor, Descriptors.FieldDescriptor, Integer> filterSubscription) {
+      ProtobufMatcherEvalContext ctx = createContext(instance);
+      return ctx.getEntityType() != null && ctx.getEntityType().getFullName().equals(filterSubscription.getEntityTypeName()) ? ctx : null;
+   }
+
+   @Override
+   protected ProtobufMatcherEvalContext createContext(Object instance) {
       ProtobufMatcherEvalContext ctx = new ProtobufMatcherEvalContext(instance, wrappedMessageDescriptor, serializationContext);
       ctx.unwrapPayload();
-      return ctx.getEntityTypeName() != null && knownTypes.contains(ctx.getEntityTypeName()) ? ctx : null;
+      return ctx;
    }
 
    @Override
@@ -48,11 +65,16 @@ public class ProtobufMatcher extends BaseMatcher<Descriptors.Descriptor, Integer
    }
 
    @Override
-   protected FilterRegistry<Integer> createFilterRegistryForType(Descriptors.Descriptor messageDescriptor) {
-      return new FilterRegistry<Integer>(new MetadataAdapterImpl(messageDescriptor));
+   protected FilterRegistry<Descriptors.Descriptor, Descriptors.FieldDescriptor, Integer> getFilterRegistryForType(Descriptors.Descriptor entityType) {
+      return filtersByTypeName.get(entityType.getFullName());
    }
 
-   private static class MetadataAdapterImpl implements MetadataAdapter<Descriptors.FieldDescriptor, Integer> {
+   @Override
+   protected MetadataAdapter<Descriptors.Descriptor, Descriptors.FieldDescriptor, Integer> createMetadataAdapter(Descriptors.Descriptor messageDescriptor) {
+      return new MetadataAdapterImpl(messageDescriptor);
+   }
+
+   private static class MetadataAdapterImpl implements MetadataAdapter<Descriptors.Descriptor, Descriptors.FieldDescriptor, Integer> {
 
       private final Descriptors.Descriptor messageDescriptor;
 

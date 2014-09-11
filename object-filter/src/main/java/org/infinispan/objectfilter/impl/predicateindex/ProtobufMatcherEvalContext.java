@@ -8,13 +8,12 @@ import org.infinispan.protostream.TagHandler;
 import org.infinispan.protostream.impl.WrappedMessageMarshaller;
 
 import java.io.IOException;
-import java.util.Iterator;
 
 /**
  * @author anistor@redhat.com
  * @since 7.0
  */
-public class ProtobufMatcherEvalContext extends MatcherEvalContext<Integer> implements TagHandler {
+public class ProtobufMatcherEvalContext extends MatcherEvalContext<Descriptors.Descriptor, Descriptors.FieldDescriptor, Integer> implements TagHandler {
 
    private static final Object DUMMY_VALUE = new Object();
 
@@ -23,6 +22,7 @@ public class ProtobufMatcherEvalContext extends MatcherEvalContext<Integer> impl
 
    private byte[] payload;
    private Descriptors.Descriptor payloadMessageDescriptor;
+   private String entityTypeName;
    private MessageContext messageContext;
 
    private final SerializationContext serializationContext;
@@ -32,6 +32,11 @@ public class ProtobufMatcherEvalContext extends MatcherEvalContext<Integer> impl
       super(instance);
       this.wrappedMessageDescriptor = wrappedMessageDescriptor;
       this.serializationContext = serializationContext;
+   }
+
+   @Override
+   public Descriptors.Descriptor getEntityType() {
+      return payloadMessageDescriptor;
    }
 
    public void unwrapPayload() {
@@ -51,7 +56,7 @@ public class ProtobufMatcherEvalContext extends MatcherEvalContext<Integer> impl
    public void onTag(int fieldNumber, String fieldName, Descriptors.FieldDescriptor.Type type, Descriptors.FieldDescriptor.JavaType javaType, Object tagValue) {
       if (payloadStarted) {
          if (skipping == 0) {
-            AttributeNode<Integer> attrNode = currentNode.getChild(fieldNumber);
+            AttributeNode<Descriptors.FieldDescriptor, Integer> attrNode = currentNode.getChild(fieldNumber);
             if (attrNode != null) { // process only 'interesting' tags
                messageContext.markField(fieldNumber);
                attrNode.processValue(tagValue, this);
@@ -77,7 +82,7 @@ public class ProtobufMatcherEvalContext extends MatcherEvalContext<Integer> impl
    public void onStartNested(int fieldNumber, String fieldName, Descriptors.Descriptor messageDescriptor) {
       if (payloadStarted) {
          if (skipping == 0) {
-            AttributeNode<Integer> attrNode = currentNode.getChild(fieldNumber);
+            AttributeNode<Descriptors.FieldDescriptor, Integer> attrNode = currentNode.getChild(fieldNumber);
             if (attrNode != null) { // ignore 'uninteresting' tags
                messageContext.markField(fieldNumber);
                pushContext(fieldName, messageDescriptor);
@@ -126,7 +131,7 @@ public class ProtobufMatcherEvalContext extends MatcherEvalContext<Integer> impl
    }
 
    @Override
-   protected void processAttributes(AttributeNode<Integer> node, Object instance) {
+   protected void processAttributes(AttributeNode<Descriptors.FieldDescriptor, Integer> node, Object instance) {
       try {
          ProtobufParser.INSTANCE.parse(this, payloadMessageDescriptor, payload);
       } catch (IOException e) {
@@ -145,7 +150,7 @@ public class ProtobufMatcherEvalContext extends MatcherEvalContext<Integer> impl
 
    private void processMissingFields() {
       for (Descriptors.FieldDescriptor fd : messageContext.getMessageDescriptor().getFields()) {
-         AttributeNode<Integer> attributeNode = currentNode.getChild(fd.getNumber());
+         AttributeNode<Descriptors.FieldDescriptor, Integer> attributeNode = currentNode.getChild(fd.getNumber());
          boolean fieldSeen = messageContext.isFieldMarked(fd.getNumber());
          if (attributeNode != null && (fd.isRepeated() || !fieldSeen)) {
             if (fd.isRepeated()) {
@@ -168,11 +173,9 @@ public class ProtobufMatcherEvalContext extends MatcherEvalContext<Integer> impl
       }
    }
 
-   private void processNullAttribute(AttributeNode<Integer> attributeNode) {
+   private void processNullAttribute(AttributeNode<Descriptors.FieldDescriptor, Integer> attributeNode) {
       attributeNode.processValue(null, this);
-      Iterator<AttributeNode<Integer>> children = attributeNode.getChildrenIterator();
-      while (children.hasNext()) {
-         AttributeNode<Integer> childAttribute = children.next();
+      for (AttributeNode<Descriptors.FieldDescriptor, Integer> childAttribute : attributeNode.getChildren()) {
          processNullAttribute(childAttribute);
       }
    }

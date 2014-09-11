@@ -4,19 +4,17 @@ import org.hibernate.hql.ast.spi.EntityNamesResolver;
 import org.infinispan.objectfilter.impl.hql.FilterProcessingChain;
 import org.infinispan.objectfilter.impl.hql.ReflectionEntityNamesResolver;
 import org.infinispan.objectfilter.impl.hql.ReflectionPropertyHelper;
-import org.infinispan.objectfilter.impl.predicateindex.MatcherEvalContext;
 import org.infinispan.objectfilter.impl.predicateindex.ReflectionMatcherEvalContext;
 import org.infinispan.objectfilter.impl.util.ReflectionHelper;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author anistor@redhat.com
  * @since 7.0
  */
-public class ReflectionMatcher extends BaseMatcher<Class<?>, String> {
+public class ReflectionMatcher extends BaseMatcher<Class<?>, ReflectionHelper.PropertyAccessor, String> {
 
    private final EntityNamesResolver entityNamesResolver;
 
@@ -35,13 +33,28 @@ public class ReflectionMatcher extends BaseMatcher<Class<?>, String> {
    }
 
    @Override
-   protected MatcherEvalContext<String> startContext(Object instance, Set<String> knownTypes) {
-      String typeName = instance.getClass().getCanonicalName();
-      if (knownTypes.contains(typeName)) {
-         return new ReflectionMatcherEvalContext(instance);
+   protected ReflectionMatcherEvalContext startContext(Object instance) {
+      FilterRegistry<Class<?>, ReflectionHelper.PropertyAccessor, String> filterRegistry = getFilterRegistryForType(instance.getClass());
+      if (filterRegistry != null) {
+         ReflectionMatcherEvalContext context = createContext(instance);
+         context.initMultiFilterContext(filterRegistry);
+         return context;
+      }
+      return null;
+   }
+
+   @Override
+   protected ReflectionMatcherEvalContext startContext(Object instance, FilterSubscriptionImpl<Class<?>, ReflectionHelper.PropertyAccessor, String> filterSubscription) {
+      if (filterSubscription.getMetadataAdapter().getTypeMetadata() == instance.getClass()) {
+         return createContext(instance);
       } else {
          return null;
       }
+   }
+
+   @Override
+   protected ReflectionMatcherEvalContext createContext(Object instance) {
+      return new ReflectionMatcherEvalContext(instance);
    }
 
    @Override
@@ -50,11 +63,16 @@ public class ReflectionMatcher extends BaseMatcher<Class<?>, String> {
    }
 
    @Override
-   protected FilterRegistry<String> createFilterRegistryForType(Class<?> clazz) {
-      return new FilterRegistry<String>(new MetadataAdapterImpl(clazz));
+   protected FilterRegistry<Class<?>, ReflectionHelper.PropertyAccessor, String> getFilterRegistryForType(Class<?> entityType) {
+      return filtersByType.get(entityType);
    }
 
-   private static class MetadataAdapterImpl implements MetadataAdapter<ReflectionHelper.PropertyAccessor, String> {
+   @Override
+   protected MetadataAdapter<Class<?>, ReflectionHelper.PropertyAccessor, String> createMetadataAdapter(Class<?> clazz) {
+      return new MetadataAdapterImpl(clazz);
+   }
+
+   private static class MetadataAdapterImpl implements MetadataAdapter<Class<?>, ReflectionHelper.PropertyAccessor, String> {
 
       private final Class<?> clazz;
 
