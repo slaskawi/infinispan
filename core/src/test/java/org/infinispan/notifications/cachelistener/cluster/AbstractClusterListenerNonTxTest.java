@@ -47,7 +47,7 @@ public abstract class AbstractClusterListenerNonTxTest extends AbstractClusterLi
       cache0.addListener(clusterListener);
 
       CyclicBarrier barrier = new CyclicBarrier(2);
-      BlockingInterceptor blockingInterceptor = new BlockingInterceptor(barrier, PutKeyValueCommand.class, true);
+      BlockingInterceptor blockingInterceptor = new BlockingInterceptor(barrier, PutKeyValueCommand.class, true, false);
       cache1.getAdvancedCache().addInterceptorBefore(blockingInterceptor, NonTxDistributionInterceptor.class);
 
       final MagicKey key = new MagicKey(cache1, cache2);

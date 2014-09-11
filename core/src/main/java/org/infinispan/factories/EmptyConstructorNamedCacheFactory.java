@@ -71,8 +71,6 @@ import static org.infinispan.commons.util.Util.getInstance;
       PartitionHandlingManager.class})
 public class EmptyConstructorNamedCacheFactory extends AbstractNamedCacheComponentFactory implements AutoInstantiableFactory {
 
-   private static Log log = LogFactory.getLog(EmptyConstructorNamedCacheFactory.class);
-
    @Override
    @SuppressWarnings("unchecked")
    public <T> T construct(Class<T> componentType) {

@@ -74,7 +74,7 @@ public abstract class BaseDistSyncL1Test extends BaseDistFunctionalTest<Object, 
                                          Class<? extends VisitableCommand> commandClass,
                                          Class<? extends CommandInterceptor> interceptorPosition,
                                          boolean blockAfterCommand) {
-      cache.getAdvancedCache().addInterceptorBefore(new BlockingInterceptor(barrier, commandClass, blockAfterCommand),
+      cache.getAdvancedCache().addInterceptorBefore(new BlockingInterceptor(barrier, commandClass, blockAfterCommand, false),
                                                     interceptorPosition);
    }
 
@@ -180,7 +180,7 @@ public abstract class BaseDistSyncL1Test extends BaseDistFunctionalTest<Object, 
       CyclicBarrier invalidationBarrier = new CyclicBarrier(2);
       // We want to block right before the invalidation would hit the L1 interceptor to prevent it from invaliding until we want
       nonOwnerCache.getAdvancedCache().addInterceptorBefore(
-            new BlockingInterceptor(invalidationBarrier, InvalidateL1Command.class, false), getL1InterceptorClass());
+            new BlockingInterceptor(invalidationBarrier, InvalidateL1Command.class, false, false), getL1InterceptorClass());
 
       try {
          assertEquals(firstValue, nonOwnerCache.get(key));
@@ -313,9 +313,9 @@ public abstract class BaseDistSyncL1Test extends BaseDistFunctionalTest<Object, 
       // Add a barrier to block the owner/backupowner from going further after retrieving the value before coming back into the L1
       // interceptor
       CyclicBarrier getBarrier = new CyclicBarrier(3);
-      ownerCache.getAdvancedCache().addInterceptorAfter(new BlockingInterceptor(getBarrier, GetKeyValueCommand.class, true),
+      ownerCache.getAdvancedCache().addInterceptorAfter(new BlockingInterceptor(getBarrier, GetKeyValueCommand.class, true, false),
                                                         getL1InterceptorClass());
-      backupOwnerCache.getAdvancedCache().addInterceptorAfter(new BlockingInterceptor(getBarrier, GetKeyValueCommand.class, true),
+      backupOwnerCache.getAdvancedCache().addInterceptorAfter(new BlockingInterceptor(getBarrier, GetKeyValueCommand.class, true, false),
                                                        getL1InterceptorClass());
 
       try {

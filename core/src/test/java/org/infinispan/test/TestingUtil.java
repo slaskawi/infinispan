@@ -48,6 +48,7 @@ import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.container.entries.InternalCacheValue;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.context.InvocationContextFactory;
+import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.factories.ComponentRegistry;
 import org.infinispan.factories.GlobalComponentRegistry;
 import org.infinispan.factories.KnownComponentNames;
@@ -81,8 +82,6 @@ import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
 import org.infinispan.security.impl.SecureCacheImpl;
 import org.infinispan.statetransfer.StateTransferManager;
 import org.infinispan.topology.CacheTopology;
-import org.infinispan.topology.DefaultRebalancePolicy;
-import org.infinispan.topology.RebalancePolicy;
 import org.infinispan.transaction.TransactionTable;
 import org.infinispan.util.concurrent.WithinThreadExecutor;
 import org.infinispan.util.concurrent.locks.LockManager;
@@ -176,22 +175,28 @@ public class TestingUtil {
    }
 
    public static void waitForRehashToComplete(Cache... caches) {
-      int gracetime = 180000; // 180 seconds
-      long giveup = System.currentTimeMillis() + gracetime;
+      final int REHASH_TIMEOUT_SECONDS = 60; //Needs to be rather large to prevent sporadic failures on CI
+      final long giveup = System.nanoTime() + TimeUnit.SECONDS.toNanos(REHASH_TIMEOUT_SECONDS);
       for (Cache c : caches) {
          if (c instanceof SecureCacheImpl) {
             c = (Cache) extractField(SecureCacheImpl.class, c, "delegate");
          }
          StateTransferManager stateTransferManager = extractComponent(c, StateTransferManager.class);
-         DefaultRebalancePolicy rebalancePolicy = (DefaultRebalancePolicy) TestingUtil.extractGlobalComponent(c.getCacheManager(), RebalancePolicy.class);
          Address cacheAddress = c.getAdvancedCache().getRpcManager().getAddress();
          while (true) {
             CacheTopology cacheTopology = stateTransferManager.getCacheTopology();
-            boolean rebalanceInProgress = stateTransferManager.isStateTransferInProgress();
-            boolean currentChIsBalanced = rebalancePolicy.isBalanced(cacheTopology.getCurrentCH());
-            boolean chIsBalanced = !rebalanceInProgress && currentChIsBalanced;
-            boolean chContainsAllMembers = cacheTopology.getCurrentCH().getMembers().size() == caches.length;
-            if (chIsBalanced && chContainsAllMembers)
+            ConsistentHash currentCH = cacheTopology.getCurrentCH();
+            boolean rebalanceInProgress = cacheTopology.getPendingCH() != null;
+            boolean chContainsAllMembers = currentCH.getMembers().size() == caches.length;
+            boolean currentChIsBalanced = true;
+            int actualNumOwners = Math.min(currentCH.getNumOwners(), currentCH.getMembers().size());
+            for (int i = 0; i < currentCH.getNumSegments(); i++) {
+               if (currentCH.locateOwnersForSegment(i).size() < actualNumOwners) {
+                  currentChIsBalanced = false;
+                  break;
+               }
+            }
+            if (chContainsAllMembers && !rebalanceInProgress && currentChIsBalanced)
                break;
 
             if (System.currentTimeMillis() > giveup) {
@@ -1098,7 +1103,7 @@ public class TestingUtil {
    }
 
    /**
-    * See {@link #tmpDirectory(AbstractInfinispanTest)}
+    * See {@link #tmpDirectory(Class)}
     *
     * @return an absolute path
     */

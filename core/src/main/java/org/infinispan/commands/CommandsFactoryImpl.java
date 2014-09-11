@@ -61,7 +61,6 @@ import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.annotations.Start;
 import org.infinispan.interceptors.InterceptorChain;
 import org.infinispan.partionhandling.impl.PartitionHandlingManager;
-import org.infinispan.partionhandling.impl.PartitionStateControlCommand;
 import org.infinispan.statetransfer.StateProvider;
 import org.infinispan.statetransfer.StateConsumer;
 import org.infinispan.statetransfer.StateRequestCommand;
@@ -469,10 +468,6 @@ public class CommandsFactoryImpl implements CommandsFactory {
          case XSiteStatePushCommand.COMMAND_ID:
             XSiteStatePushCommand xSiteStatePushCommand = (XSiteStatePushCommand) c;
             xSiteStatePushCommand.initialize(xSiteStateConsumer);
-            break;
-         case PartitionStateControlCommand.COMMAND_ID:
-            PartitionStateControlCommand stateControlCommand = (PartitionStateControlCommand) c;
-            stateControlCommand.init(partitionHandlingManager);
             break;
          default:
             ModuleCommandInitializer mci = moduleCommandInitializers.get(c.getCommandId());
