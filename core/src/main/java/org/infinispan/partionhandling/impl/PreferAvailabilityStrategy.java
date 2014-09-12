@@ -28,7 +28,7 @@ public class PreferAvailabilityStrategy implements AvailabilityStrategy {
          return;
       }
       if (context.getStableTopology() != null && isDataLost(context.getStableTopology().getCurrentCH(), newMembers)) {
-         log.errorf("Cache %s lost data because of graceful leaver %s", context.getCacheName(), leaver);
+         log.lostDataBecauseOfGracefulLeaver(context.getCacheName(), leaver);
       }
 
       // We have to do this in case rebalancing is disabled, or there is another rebalance in progress
@@ -41,7 +41,7 @@ public class PreferAvailabilityStrategy implements AvailabilityStrategy {
       CacheTopology currentTopology = context.getCurrentTopology();
       List<Address> newMembers = new ArrayList<Address>(currentTopology.getMembers());
       if (!newMembers.retainAll(clusterMembers)) {
-         log.debugf("Cache %s did not lose any members, skipping rebalance", context.getCacheName());
+         log.tracef("Cache %s did not lose any members, skipping rebalance", context.getCacheName());
          return;
       }
 
@@ -58,11 +58,10 @@ public class PreferAvailabilityStrategy implements AvailabilityStrategy {
       List<Address> lostMembers = new ArrayList<Address>(stableMembers);
       lostMembers.removeAll(newMembers);
       if (isDataLost(stableTopology.getCurrentCH(), newMembers)) {
-         log.errorf("Cache %s lost data because of abrupt leavers %s", lostMembers);
+         log.lostDataBecauseOfAbruptLeavers(context.getCacheName(), lostMembers);
       }
       if (lostMembers.size() >= Math.ceil(stableMembers.size() / 2d)) {
-         log.errorf("Cache %s lost a majority of members (%d out of %d), possible split brain causing data inconsistency",
-               lostMembers.size(), stableMembers.size());
+         log.minorityPartition(context.getCacheName(), lostMembers.size(), stableMembers.size());
       }
    }
 
