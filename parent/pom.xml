@@ -111,7 +111,7 @@
       <version.guava>13.0.1-redhat-1</version.guava>
       <version.geronimo.tm>3.1.1</version.geronimo.tm>
       <version.h2.driver>1.4.180.redhat-3</version.h2.driver>
-      <version.hibernate.core>4.2.14.SP1-redhat-1</version.hibernate.core>
+      <version.hibernate.core>4.2.14.SP1-redhat-5</version.hibernate.core>
       <version.hibernate.entitymanager>${version.hibernate.core}</version.hibernate.entitymanager>
       <version.hibernate.hql.parser>1.0.0.CR2-redhat-1</version.hibernate.hql.parser>
       <version.hibernate.javax.persistence>1.0.1.Final-redhat-2</version.hibernate.javax.persistence>
