@@ -80,6 +80,7 @@ import org.infinispan.remoting.transport.jgroups.JGroupsTopologyAwareAddress;
 import org.infinispan.statetransfer.StateChunk;
 import org.infinispan.statetransfer.TransactionInfo;
 import org.infinispan.topology.CacheJoinInfo;
+import org.infinispan.topology.CacheStatusResponse;
 import org.infinispan.topology.CacheTopology;
 import org.infinispan.transaction.xa.DldGlobalTransaction;
 import org.infinispan.transaction.xa.GlobalTransaction;
@@ -321,6 +322,7 @@ public class ExternalizerTable implements ObjectTable {
       addInternalExternalizer(new ClusterListenerRemoveCallable.Externalizer());
       addInternalExternalizer(new ClusterListenerReplicateCallable.Externalizer());
       addInternalExternalizer(new XSiteState.XSiteStateExternalizer());
+      addInternalExternalizer(new CacheStatusResponse.Externalizer());
    }
 
    void addInternalExternalizer(AdvancedExternalizer<?> ext) {
