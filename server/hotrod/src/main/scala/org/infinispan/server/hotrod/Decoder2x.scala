@@ -10,6 +10,13 @@ import javax.security.sasl.SaslServer
 import org.infinispan.container.entries.CacheEntry
 import org.infinispan.container.versioning.NumericVersion
 import org.infinispan.context.Flag.{SKIP_CACHE_LOAD, IGNORE_RETURN_VALUES}
+import org.infinispan.IllegalLifecycleStateException
+import org.infinispan.commons.CacheException
+import org.infinispan.container.entries.CacheEntry
+import org.infinispan.container.versioning.NumericVersion
+import org.infinispan.context.Flag.{SKIP_CACHE_LOAD, IGNORE_RETURN_VALUES}
+import org.infinispan.distexec.mapreduce._
+import org.infinispan.remoting.transport.jgroups.SuspectException
 import org.infinispan.server.core.Operation._
 import org.infinispan.server.core._
 import org.infinispan.server.core.transport.ExtendedByteBuf._
@@ -384,16 +391,33 @@ object Decoder2x extends AbstractVersionedDecoder with ServerConstants with Log 
 
    override def createErrorResponse(h: HotRodHeader, t: Throwable): ErrorResponse = {
       t match {
+         case _ : SuspectException => createNodeSuspectedErrorResponse(h, t)
+         case e: IllegalLifecycleStateException =>
+            new ErrorResponse(h.version, h.messageId, h.cacheName, h.clientIntel,
+               IllegalLifecycleState, h.topologyId, t.toString)
          case i: IOException =>
             new ErrorResponse(h.version, h.messageId, h.cacheName, h.clientIntel,
                ParseError, h.topologyId, i.toString)
          case t: TimeoutException =>
             new ErrorResponse(h.version, h.messageId, h.cacheName, h.clientIntel,
                OperationTimedOut, h.topologyId, t.toString)
-         case t: Throwable =>
-            new ErrorResponse(h.version, h.messageId, h.cacheName, h.clientIntel,
-               ServerError, h.topologyId, t.toString)
+         case c: CacheException => c.getCause match {
+            // JGroups exceptions come wrapped up
+            case _ : org.jgroups.SuspectedException => createNodeSuspectedErrorResponse(h, t)
+            case _ => createServerErrorResponse(h, t)
+         }
+         case t: Throwable => createServerErrorResponse(h, t)
       }
+   }
+
+   private def createNodeSuspectedErrorResponse(h: HotRodHeader, t: Throwable): ErrorResponse = {
+      new ErrorResponse(h.version, h.messageId, h.cacheName, h.clientIntel,
+         NodeSuspected, h.topologyId, t.toString)
+   }
+
+   private def createServerErrorResponse(h: HotRodHeader, t: Throwable): ErrorResponse = {
+      new ErrorResponse(h.version, h.messageId, h.cacheName, h.clientIntel,
+         ServerError, h.topologyId, t.toString)
    }
 
    override def getOptimizedCache(h: HotRodHeader, c: Cache): Cache = {
@@ -433,35 +457,9 @@ object Decoder2x extends AbstractVersionedDecoder with ServerConstants with Log 
       optCache
    }
 
-<<<<<<< HEAD
-   def toResponse(request: Enumeration#Value): OperationResponse = {
-      request match {
-         case PutRequest => PutResponse
-         case GetRequest => GetResponse
-         case PutIfAbsentRequest => PutIfAbsentResponse
-         case ReplaceRequest => ReplaceResponse
-         case ReplaceIfUnmodifiedRequest => ReplaceIfUnmodifiedResponse
-         case RemoveRequest => RemoveResponse
-         case RemoveIfUnmodifiedRequest => RemoveIfUnmodifiedResponse
-         case ContainsKeyRequest => ContainsKeyResponse
-         case GetWithVersionRequest => GetWithVersionResponse
-         case ClearRequest => ClearResponse
-         case StatsRequest => StatsResponse
-         case PingRequest => PingResponse
-         case BulkGetRequest => BulkGetResponse
-         case GetWithMetadataRequest => GetWithMetadataResponse
-         case BulkGetKeysRequest => BulkGetKeysResponse
-         case QueryRequest => QueryResponse
-         case AuthMechListRequest => AuthMechListResponse
-         case AuthRequest => AuthResponse
-      }
-   }
-
    private def isCacheTransactional(c: Cache): Boolean =
       SecurityActions.getCacheConfiguration(c).transaction().transactionMode().isTransactional
 
-=======
->>>>>>> 916891c... ISPN-374 Hot Rod remote events server and Java Client implementation
    def normalizeAuthorizationId(id: String): String = {
       val realm = id.indexOf('@')
       if (realm >= 0) id.substring(0, realm) else id
