@@ -541,6 +541,11 @@
                             <xs:documentation>The state transfer configuration for distribution and replicated caches.</xs:documentation>
                         </xs:annotation>
                     </xs:element>
+                    <xs:element name="partition-handling" type="tns:partition-handling" minOccurs="0">
+                      <xs:annotation>
+                          <xs:documentation>The partition handling configuration for distribution and replicated caches.</xs:documentation>
+                      </xs:annotation>
+                    </xs:element>
                 </xs:sequence>
             </xs:extension>
         </xs:complexContent>
@@ -553,6 +558,11 @@
                     <xs:element name="state-transfer" type="tns:state-transfer" minOccurs="0">
                         <xs:annotation>
                             <xs:documentation>The state transfer configuration for distribution and replicated caches.</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="partition-handling" type="tns:partition-handling" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation>The partition handling configuration for distribution and replicated caches.</xs:documentation>
                         </xs:annotation>
                     </xs:element>
                 </xs:sequence>
@@ -1159,6 +1169,14 @@
         <xs:attribute name="await-initial-transfer" type="xs:boolean" default="true">
             <xs:annotation>
                 <xs:documentation>If enabled, this will cause the cache to wait for initial state transfer to complete before responding to requests.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="partition-handling">
+        <xs:attribute name="enabled" type="xs:boolean" default="true">
+            <xs:annotation>
+                <xs:documentation>If enabled, the cache will enter degraded mode when it loses too many nodes.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
