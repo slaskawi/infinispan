@@ -70,6 +70,10 @@
             <maven-resource group="org.infinispan" artifact="infinispan-commons" />
         </module-def>
 
+        <module-def name="javax.cache.api" slot="${infinispan.slot}">
+            <maven-resource group="javax.cache" artifact="cache-api" />
+        </module-def>
+
         <module-def name="org.infinispan.lucene" slot="${infinispan.slot}">
             <maven-resource group="org.infinispan" artifact="infinispan-lucene-v3" />
         </module-def>
