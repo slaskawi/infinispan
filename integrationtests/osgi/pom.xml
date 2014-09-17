@@ -16,6 +16,26 @@
    <packaging>bundle</packaging>
    <description>Integration tests for Infinispan running in OSGi/Karaf</description>
 
+   <profiles>
+      <profile>
+         <id>disable-osgi-tests</id>
+         <activation>
+            <activeByDefault>false</activeByDefault>
+            <!-- Some OSGi dependencies don't support jdk8 yet, see ISPN-4494 for details. -->
+            <jdk>[1.8,1.9]</jdk>
+         </activation>
+         <properties>
+            <skipOSGiTests>true</skipOSGiTests>
+         </properties>
+      </profile>
+      <profile>
+         <id>smoke</id>
+         <properties>
+            <skipOSGiTests>true</skipOSGiTests>
+         </properties>
+      </profile>
+   </profiles>
+
    <dependencies>
       <dependency>
          <groupId>org.infinispan</groupId>

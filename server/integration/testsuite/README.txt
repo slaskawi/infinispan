@@ -24,6 +24,8 @@ Currently these subsets are predefined:
   -P suite.others                    (Tests that do not belong to any of the suites above. Useful when running a single test that's outside
                                       of any pre-defined group)
 
+  -P smoke                             (Smoke tests. A small subset of server mode tests)
+
 Running with specific server zip distribution
 ---------------------------------------------
 
