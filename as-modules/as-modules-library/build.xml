@@ -164,6 +164,10 @@
         <module-def name="org.apache.commons.pool" slot="${infinispan.slot}">
             <maven-resource group="commons-pool" artifact="commons-pool"/>
         </module-def>
+
+        <module-def name="com.squareup.protoparser" slot="${infinispan.slot}">
+            <maven-resource group="com.squareup" artifact="protoparser" />
+        </module-def>
     </target>
 
     <target name="all" depends="clean, copy-files, modules" />

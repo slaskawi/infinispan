@@ -1,12 +1,14 @@
 package org.infinispan.objectfilter.impl;
 
-import com.google.protobuf.Descriptors;
 import org.infinispan.objectfilter.impl.hql.FilterProcessingChain;
 import org.infinispan.objectfilter.impl.hql.ProtobufEntityNamesResolver;
 import org.infinispan.objectfilter.impl.hql.ProtobufPropertyHelper;
 import org.infinispan.objectfilter.impl.predicateindex.ProtobufMatcherEvalContext;
 import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.WrappedMessage;
+import org.infinispan.protostream.descriptors.Descriptor;
+import org.infinispan.protostream.descriptors.FieldDescriptor;
+import org.infinispan.protostream.descriptors.JavaType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +18,7 @@ import java.util.Map;
  * @author anistor@redhat.com
  * @since 7.0
  */
-public final class ProtobufMatcher extends BaseMatcher<Descriptors.Descriptor, Descriptors.FieldDescriptor, Integer> {
+public final class ProtobufMatcher extends BaseMatcher<Descriptor, FieldDescriptor, Integer> {
 
    private final SerializationContext serializationContext;
 
@@ -24,7 +26,7 @@ public final class ProtobufMatcher extends BaseMatcher<Descriptors.Descriptor, D
 
    private final ProtobufPropertyHelper propertyHelper;
 
-   private final Descriptors.Descriptor wrappedMessageDescriptor;
+   private final Descriptor wrappedMessageDescriptor;
 
    public ProtobufMatcher(SerializationContext serializationContext) {
       this.serializationContext = serializationContext;
@@ -37,7 +39,7 @@ public final class ProtobufMatcher extends BaseMatcher<Descriptors.Descriptor, D
    protected ProtobufMatcherEvalContext startContext(Object instance) {
       ProtobufMatcherEvalContext context = createContext(instance);
       if (context.getEntityType() != null) {
-         FilterRegistry<Descriptors.Descriptor, Descriptors.FieldDescriptor, Integer> filterRegistry = getFilterRegistryForType(context.getEntityType());
+         FilterRegistry<Descriptor, FieldDescriptor, Integer> filterRegistry = getFilterRegistryForType(context.getEntityType());
          if (filterRegistry != null) {
             context.initMultiFilterContext(filterRegistry);
             return context;
@@ -47,7 +49,7 @@ public final class ProtobufMatcher extends BaseMatcher<Descriptors.Descriptor, D
    }
 
    @Override
-   protected ProtobufMatcherEvalContext startContext(Object instance, FilterSubscriptionImpl<Descriptors.Descriptor, Descriptors.FieldDescriptor, Integer> filterSubscription) {
+   protected ProtobufMatcherEvalContext startContext(Object instance, FilterSubscriptionImpl<Descriptor, FieldDescriptor, Integer> filterSubscription) {
       ProtobufMatcherEvalContext ctx = createContext(instance);
       return ctx.getEntityType() != null && ctx.getEntityType().getFullName().equals(filterSubscription.getEntityTypeName()) ? ctx : null;
    }
@@ -60,25 +62,25 @@ public final class ProtobufMatcher extends BaseMatcher<Descriptors.Descriptor, D
    }
 
    @Override
-   protected FilterProcessingChain<Descriptors.Descriptor> createFilterProcessingChain(Map<String, Object> namedParameters) {
+   protected FilterProcessingChain<Descriptor> createFilterProcessingChain(Map<String, Object> namedParameters) {
       return FilterProcessingChain.build(entityNamesResolver, propertyHelper, namedParameters);
    }
 
    @Override
-   protected FilterRegistry<Descriptors.Descriptor, Descriptors.FieldDescriptor, Integer> getFilterRegistryForType(Descriptors.Descriptor entityType) {
+   protected FilterRegistry<Descriptor, FieldDescriptor, Integer> getFilterRegistryForType(Descriptor entityType) {
       return filtersByTypeName.get(entityType.getFullName());
    }
 
    @Override
-   protected MetadataAdapter<Descriptors.Descriptor, Descriptors.FieldDescriptor, Integer> createMetadataAdapter(Descriptors.Descriptor messageDescriptor) {
+   protected MetadataAdapter<Descriptor, FieldDescriptor, Integer> createMetadataAdapter(Descriptor messageDescriptor) {
       return new MetadataAdapterImpl(messageDescriptor);
    }
 
-   private static class MetadataAdapterImpl implements MetadataAdapter<Descriptors.Descriptor, Descriptors.FieldDescriptor, Integer> {
+   private static class MetadataAdapterImpl implements MetadataAdapter<Descriptor, FieldDescriptor, Integer> {
 
-      private final Descriptors.Descriptor messageDescriptor;
+      private final Descriptor messageDescriptor;
 
-      MetadataAdapterImpl(Descriptors.Descriptor messageDescriptor) {
+      MetadataAdapterImpl(Descriptor messageDescriptor) {
          this.messageDescriptor = messageDescriptor;
       }
 
@@ -88,18 +90,18 @@ public final class ProtobufMatcher extends BaseMatcher<Descriptors.Descriptor, D
       }
 
       @Override
-      public Descriptors.Descriptor getTypeMetadata() {
+      public Descriptor getTypeMetadata() {
          return messageDescriptor;
       }
 
       @Override
       public List<Integer> translatePropertyPath(List<String> path) {
          List<Integer> propPath = new ArrayList<Integer>(path.size());
-         Descriptors.Descriptor md = messageDescriptor;
+         Descriptor md = messageDescriptor;
          for (String prop : path) {
-            Descriptors.FieldDescriptor fd = md.findFieldByName(prop);
+            FieldDescriptor fd = md.findFieldByName(prop);
             propPath.add(fd.getNumber());
-            if (fd.getJavaType() == Descriptors.FieldDescriptor.JavaType.MESSAGE) {
+            if (fd.getJavaType() == JavaType.MESSAGE) {
                md = fd.getMessageType();
             } else {
                md = null; // iteration is expected to stop here
@@ -110,13 +112,13 @@ public final class ProtobufMatcher extends BaseMatcher<Descriptors.Descriptor, D
 
       @Override
       public boolean isRepeatedProperty(List<String> propertyPath) {
-         Descriptors.Descriptor md = messageDescriptor;
+         Descriptor md = messageDescriptor;
          for (String prop : propertyPath) {
-            Descriptors.FieldDescriptor fd = md.findFieldByName(prop);
+            FieldDescriptor fd = md.findFieldByName(prop);
             if (fd.isRepeated()) {
                return true;
             }
-            if (fd.getJavaType() == Descriptors.FieldDescriptor.JavaType.MESSAGE) {
+            if (fd.getJavaType() == JavaType.MESSAGE) {
                md = fd.getMessageType();
             } else {
                md = null; // iteration is expected to stop here
@@ -126,13 +128,13 @@ public final class ProtobufMatcher extends BaseMatcher<Descriptors.Descriptor, D
       }
 
       @Override
-      public Descriptors.FieldDescriptor makeChildAttributeMetadata(Descriptors.FieldDescriptor parentAttributeMetadata, Integer attribute) {
+      public FieldDescriptor makeChildAttributeMetadata(FieldDescriptor parentAttributeMetadata, Integer attribute) {
          return parentAttributeMetadata == null ?
                messageDescriptor.findFieldByNumber(attribute) : parentAttributeMetadata.getMessageType().findFieldByNumber(attribute);
       }
 
       @Override
-      public boolean isComparableProperty(Descriptors.FieldDescriptor attributeMetadata) {
+      public boolean isComparableProperty(FieldDescriptor attributeMetadata) {
          switch (attributeMetadata.getJavaType()) {
             case INT:
             case LONG:

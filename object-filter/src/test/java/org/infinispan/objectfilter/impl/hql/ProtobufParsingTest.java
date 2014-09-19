@@ -1,12 +1,12 @@
 package org.infinispan.objectfilter.impl.hql;
 
-import com.google.protobuf.Descriptors;
 import org.hibernate.hql.ast.spi.EntityNamesResolver;
 import org.infinispan.objectfilter.test.model.MarshallerRegistration;
 import org.infinispan.protostream.ConfigurationBuilder;
+import org.infinispan.protostream.DescriptorParserException;
 import org.infinispan.protostream.ProtobufUtil;
 import org.infinispan.protostream.SerializationContext;
-import org.junit.Ignore;
+import org.infinispan.protostream.descriptors.Descriptor;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -21,7 +21,7 @@ import static org.junit.Assert.assertNotNull;
 public class ProtobufParsingTest extends AbstractParsingTest {
 
    @Override
-   protected FilterProcessingChain<Descriptors.Descriptor> createFilterProcessingChain() throws IOException, Descriptors.DescriptorValidationException {
+   protected FilterProcessingChain<Descriptor> createFilterProcessingChain() throws IOException, DescriptorParserException {
       SerializationContext serCtx = ProtobufUtil.newSerializationContext(new ConfigurationBuilder().build());
       MarshallerRegistration.registerMarshallers(serCtx);
       EntityNamesResolver entityNamesResolver = new ProtobufEntityNamesResolver(serCtx);
@@ -32,7 +32,7 @@ public class ProtobufParsingTest extends AbstractParsingTest {
    @Test
    public void testParsingResult() throws Exception {
       String jpaQuery = "from org.infinispan.objectfilter.test.model.Person p where p.name is not null";
-      FilterParsingResult<Descriptors.Descriptor> result = queryParser.parseQuery(jpaQuery, createFilterProcessingChain());
+      FilterParsingResult<Descriptor> result = queryParser.parseQuery(jpaQuery, createFilterProcessingChain());
 
       assertNotNull(result.getQuery());
 
@@ -48,11 +48,9 @@ public class ProtobufParsingTest extends AbstractParsingTest {
       assertEquals(0, result.getSortFields().size());
    }
 
-   @Ignore("protobuf does not have a Date type")
    @Test
    @Override
    public void testInvalidDateLiteral() throws Exception {
-      // keep this test here just as a reminder
-      super.testInvalidDateLiteral();
+      // protobuf does not have a Date type, but keep this empty test here just as a reminder
    }
 }

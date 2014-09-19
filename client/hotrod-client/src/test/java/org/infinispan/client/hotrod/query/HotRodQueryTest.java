@@ -36,6 +36,7 @@ import static org.infinispan.client.hotrod.test.HotRodClientTestingUtil.killRemo
 import static org.infinispan.client.hotrod.test.HotRodClientTestingUtil.killServers;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author anistor@redhat.com
@@ -82,10 +83,11 @@ public class HotRodQueryTest extends SingleCacheManagerTest {
                                                 + ",component=" + ProtobufMetadataManager.OBJECT_NAME);
 
       //initialize server-side serialization context via JMX
-      byte[] descriptor = readClasspathResource("/sample_bank_account/bank.protobin");
       MBeanServer mBeanServer = PerThreadMBeanServerLookup.getThreadMBeanServer();
-      mBeanServer.invoke(objName, "registerProtofile", new Object[]{descriptor}, new String[]{byte[].class.getName()});
-
+      String[] fileNames = {"bank.proto", "indexing.proto", "descriptor.proto"};
+      String[] fileContents = {read("/sample_bank_account/bank.proto"), read("/infinispan/indexing.proto"), read("/google/protobuf/descriptor.proto")};
+      mBeanServer.invoke(objName, "registerProtofiles", new Object[]{fileNames, fileContents}, new String[]{String[].class.getName(), String[].class.getName()});
+      
       //initialize client-side serialization context
       MarshallerRegistration.registerMarshallers(ProtoStreamMarshaller.getSerializationContext(remoteCacheManager));
 
@@ -106,15 +108,9 @@ public class HotRodQueryTest extends SingleCacheManagerTest {
       return "ram";
    }
 
-   private byte[] readClasspathResource(String classPathResource) throws IOException {
+   private String read(String classPathResource) throws IOException {
       InputStream is = getClass().getResourceAsStream(classPathResource);
-      try {
-         return Util.readStream(is);
-      } finally {
-         if (is != null) {
-            is.close();
-         }
-      }
+      return Util.read(is);
    }
 
    @AfterTest
@@ -199,7 +195,7 @@ public class HotRodQueryTest extends SingleCacheManagerTest {
       user.setName("Tom");
       user.setSurname("Cat");
       user.setGender(User.Gender.MALE);
-      user.setAccountIds(Collections.singletonList(12));
+      user.setAccountIds(Collections.singleton(12));
       Address address = new Address();
       address.setStreet("Dark Alley");
       address.setPostCode("1234");
@@ -227,7 +223,7 @@ public class HotRodQueryTest extends SingleCacheManagerTest {
       assertEquals(User.Gender.MALE, user.getGender());
       assertNotNull(user.getAccountIds());
       assertEquals(1, user.getAccountIds().size());
-      assertEquals(12, user.getAccountIds().get(0).intValue());
+      assertTrue(user.getAccountIds().contains(12));
       assertNotNull(user.getAddresses());
       assertEquals(1, user.getAddresses().size());
       assertEquals("Dark Alley", user.getAddresses().get(0).getStreet());

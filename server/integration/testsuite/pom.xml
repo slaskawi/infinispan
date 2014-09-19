@@ -119,7 +119,7 @@
             <groupId>org.apache.directory.server</groupId>
             <artifactId>apacheds-all</artifactId> 
             <scope>test</scope>
-      </dependency>
+        </dependency>
         <dependency>
             <groupId>org.iq80.leveldb</groupId>
             <artifactId>leveldb</artifactId>
@@ -927,7 +927,7 @@
                                         <java classname="org.infinispan.server.test.util.ProtofileRegistrar"
                                               fork="false"
                                               failonerror="true">
-                                            <arg value="/sample_bank_account/bank.protobin"/>
+                                            <arg value="/sample_bank_account/bank.proto,/infinispan/indexing.proto,/google/protobuf/descriptor.proto"/>
                                             <arg value="localhost"/>
                                             <arg value="9999"/>
                                             <classpath>

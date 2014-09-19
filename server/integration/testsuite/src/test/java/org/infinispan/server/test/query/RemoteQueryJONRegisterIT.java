@@ -13,16 +13,12 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 
-import java.net.URL;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
 /**
  * Tests for remote queries over HotRod but registering the proto file via JON/RHQ plugin.
@@ -46,12 +42,15 @@ public class RemoteQueryJONRegisterIT extends RemoteQueryIT {
       remoteCache = remoteCacheManager.getCache(cacheName);
 
       //initialize server-side serialization context via JON/RHQ
-      URL resource = getClass().getResource("/sample_bank_account/bank.protobin");
+      ModelNode resourceList = new ModelNode()
+              .add(getClass().getResource("/infinispan/indexing.proto").toString())
+              .add(getClass().getResource("/sample_bank_account/bank.proto").toString())
+              .add(getClass().getResource("/google/protobuf/descriptor.proto").toString());
+
       ModelControllerClient client = ModelControllerClient.Factory.create(
             getServer().getHotrodEndpoint().getInetAddress().getHostName(), 9999);
 
-      ModelNode addProtobufFileOp = getOperation("local", "upload-proto-file", new ModelNode().add().set(
-            "proto-url", resource.toString()));
+      ModelNode addProtobufFileOp = getOperation("local", "upload-proto-schemas", "proto-urls", resourceList);
 
       ModelNode result = client.execute(addProtobufFileOp);
       Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
@@ -62,13 +61,17 @@ public class RemoteQueryJONRegisterIT extends RemoteQueryIT {
       MarshallerRegistration.registerMarshallers(ProtoStreamMarshaller.getSerializationContext(remoteCacheManager));
    }
 
-   protected static PathAddress getCacheContainerAddress(String containerName) {
+   protected PathAddress getCacheContainerAddress(String containerName) {
       return PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM,
                                                              InfinispanExtension.SUBSYSTEM_NAME)).append("cache-container", containerName);
    }
 
-   protected static ModelNode getOperation(String containerName, String operationName, ModelNode arguments) {
+   protected ModelNode getOperation(String containerName, String operationName, String argumentName, ModelNode arguments) {
       PathAddress cacheAddress = getCacheContainerAddress(containerName);
-      return Util.getOperation(operationName, cacheAddress, arguments);
+      ModelNode op = new ModelNode();
+      op.get(OP).set(operationName);
+      op.get(OP_ADDR).set(cacheAddress.toModelNode());
+      op.get(argumentName).set(arguments);
+      return op;
    }
 }

@@ -1,10 +1,13 @@
 package org.infinispan.objectfilter.impl.predicateindex;
 
-import com.google.protobuf.Descriptors;
 import org.infinispan.protostream.MessageContext;
 import org.infinispan.protostream.ProtobufParser;
 import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.TagHandler;
+import org.infinispan.protostream.descriptors.Descriptor;
+import org.infinispan.protostream.descriptors.FieldDescriptor;
+import org.infinispan.protostream.descriptors.JavaType;
+import org.infinispan.protostream.descriptors.Type;
 import org.infinispan.protostream.impl.WrappedMessageMarshaller;
 
 import java.io.IOException;
@@ -13,7 +16,7 @@ import java.io.IOException;
  * @author anistor@redhat.com
  * @since 7.0
  */
-public class ProtobufMatcherEvalContext extends MatcherEvalContext<Descriptors.Descriptor, Descriptors.FieldDescriptor, Integer> implements TagHandler {
+public class ProtobufMatcherEvalContext extends MatcherEvalContext<Descriptor, FieldDescriptor, Integer> implements TagHandler {
 
    private static final Object DUMMY_VALUE = new Object();
 
@@ -21,21 +24,21 @@ public class ProtobufMatcherEvalContext extends MatcherEvalContext<Descriptors.D
    private int skipping = 0;
 
    private byte[] payload;
-   private Descriptors.Descriptor payloadMessageDescriptor;
    private String entityTypeName;
+   private Descriptor payloadMessageDescriptor;
    private MessageContext messageContext;
 
    private final SerializationContext serializationContext;
-   private final Descriptors.Descriptor wrappedMessageDescriptor;
+   private final Descriptor wrappedMessageDescriptor;
 
-   public ProtobufMatcherEvalContext(Object instance, Descriptors.Descriptor wrappedMessageDescriptor, SerializationContext serializationContext) {
+   public ProtobufMatcherEvalContext(Object instance, Descriptor wrappedMessageDescriptor, SerializationContext serializationContext) {
       super(instance);
       this.wrappedMessageDescriptor = wrappedMessageDescriptor;
       this.serializationContext = serializationContext;
    }
 
    @Override
-   public Descriptors.Descriptor getEntityType() {
+   public Descriptor getEntityType() {
       return payloadMessageDescriptor;
    }
 
@@ -53,10 +56,10 @@ public class ProtobufMatcherEvalContext extends MatcherEvalContext<Descriptors.D
 
    //todo [anistor] missing tags need to be fired with default value defined in proto schema or null if they admit null; missing messages need to be fired with null at end of the nesting level. BTW, seems like this is better to be included in Protostream as a feature
    @Override
-   public void onTag(int fieldNumber, String fieldName, Descriptors.FieldDescriptor.Type type, Descriptors.FieldDescriptor.JavaType javaType, Object tagValue) {
+   public void onTag(int fieldNumber, String fieldName, Type type, JavaType javaType, Object tagValue) {
       if (payloadStarted) {
          if (skipping == 0) {
-            AttributeNode<Descriptors.FieldDescriptor, Integer> attrNode = currentNode.getChild(fieldNumber);
+            AttributeNode<FieldDescriptor, Integer> attrNode = currentNode.getChild(fieldNumber);
             if (attrNode != null) { // process only 'interesting' tags
                messageContext.markField(fieldNumber);
                attrNode.processValue(tagValue, this);
@@ -79,10 +82,10 @@ public class ProtobufMatcherEvalContext extends MatcherEvalContext<Descriptors.D
    }
 
    @Override
-   public void onStartNested(int fieldNumber, String fieldName, Descriptors.Descriptor messageDescriptor) {
+   public void onStartNested(int fieldNumber, String fieldName, Descriptor messageDescriptor) {
       if (payloadStarted) {
          if (skipping == 0) {
-            AttributeNode<Descriptors.FieldDescriptor, Integer> attrNode = currentNode.getChild(fieldNumber);
+            AttributeNode<FieldDescriptor, Integer> attrNode = currentNode.getChild(fieldNumber);
             if (attrNode != null) { // ignore 'uninteresting' tags
                messageContext.markField(fieldNumber);
                pushContext(fieldName, messageDescriptor);
@@ -99,7 +102,7 @@ public class ProtobufMatcherEvalContext extends MatcherEvalContext<Descriptors.D
    }
 
    @Override
-   public void onEndNested(int fieldNumber, String fieldName, Descriptors.Descriptor messageDescriptor) {
+   public void onEndNested(int fieldNumber, String fieldName, Descriptor messageDescriptor) {
       if (payloadStarted) {
          if (skipping == 0) {
             popContext();
@@ -131,7 +134,7 @@ public class ProtobufMatcherEvalContext extends MatcherEvalContext<Descriptors.D
    }
 
    @Override
-   protected void processAttributes(AttributeNode<Descriptors.FieldDescriptor, Integer> node, Object instance) {
+   protected void processAttributes(AttributeNode<FieldDescriptor, Integer> node, Object instance) {
       try {
          ProtobufParser.INSTANCE.parse(this, payloadMessageDescriptor, payload);
       } catch (IOException e) {
@@ -139,7 +142,7 @@ public class ProtobufMatcherEvalContext extends MatcherEvalContext<Descriptors.D
       }
    }
 
-   private void pushContext(String fieldName, Descriptors.Descriptor messageDescriptor) {
+   private void pushContext(String fieldName, Descriptor messageDescriptor) {
       messageContext = new MessageContext<MessageContext>(messageContext, fieldName, messageDescriptor);
    }
 
@@ -149,8 +152,8 @@ public class ProtobufMatcherEvalContext extends MatcherEvalContext<Descriptors.D
    }
 
    private void processMissingFields() {
-      for (Descriptors.FieldDescriptor fd : messageContext.getMessageDescriptor().getFields()) {
-         AttributeNode<Descriptors.FieldDescriptor, Integer> attributeNode = currentNode.getChild(fd.getNumber());
+      for (FieldDescriptor fd : messageContext.getMessageDescriptor().getFields()) {
+         AttributeNode<FieldDescriptor, Integer> attributeNode = currentNode.getChild(fd.getNumber());
          boolean fieldSeen = messageContext.isFieldMarked(fd.getNumber());
          if (attributeNode != null && (fd.isRepeated() || !fieldSeen)) {
             if (fd.isRepeated()) {
@@ -162,10 +165,10 @@ public class ProtobufMatcherEvalContext extends MatcherEvalContext<Descriptors.D
                   processNullAttribute(attributeNode);
                }
             } else {
-               if (fd.getJavaType() == Descriptors.FieldDescriptor.JavaType.MESSAGE) {
+               if (fd.getJavaType() == JavaType.MESSAGE) {
                   processNullAttribute(attributeNode);
                } else {
-                  Object defaultValue = fd.toProto().getDefaultValue().isEmpty() ? null : fd.getDefaultValue();
+                  Object defaultValue = fd.hasDefaultValue() ? fd.getDefaultValue() : null;
                   attributeNode.processValue(defaultValue, this);
                }
             }
@@ -173,9 +176,9 @@ public class ProtobufMatcherEvalContext extends MatcherEvalContext<Descriptors.D
       }
    }
 
-   private void processNullAttribute(AttributeNode<Descriptors.FieldDescriptor, Integer> attributeNode) {
+   private void processNullAttribute(AttributeNode<FieldDescriptor, Integer> attributeNode) {
       attributeNode.processValue(null, this);
-      for (AttributeNode<Descriptors.FieldDescriptor, Integer> childAttribute : attributeNode.getChildren()) {
+      for (AttributeNode<FieldDescriptor, Integer> childAttribute : attributeNode.getChildren()) {
          processNullAttribute(childAttribute);
       }
    }

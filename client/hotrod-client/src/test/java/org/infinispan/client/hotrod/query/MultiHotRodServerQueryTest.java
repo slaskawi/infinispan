@@ -22,6 +22,7 @@ import java.util.List;
 import static org.infinispan.server.hotrod.test.HotRodTestingUtil.hotRodCacheConfiguration;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author anistor@redhat.com
@@ -42,7 +43,8 @@ public class MultiHotRodServerQueryTest extends MultiHotRodServersTest {
 
       //initialize server-side serialization context
       for (EmbeddedCacheManager cm : cacheManagers) {
-         cm.getGlobalComponentRegistry().getComponent(ProtobufMetadataManager.class).registerProtofile("/sample_bank_account/bank.protobin");
+         cm.getGlobalComponentRegistry().getComponent(ProtobufMetadataManager.class)
+                 .registerProtofiles("/sample_bank_account/bank.proto", "/infinispan/indexing.proto", "/google/protobuf/descriptor.proto");
       }
 
       //initialize client-side serialization context
@@ -125,7 +127,7 @@ public class MultiHotRodServerQueryTest extends MultiHotRodServersTest {
       user.setName("Tom");
       user.setSurname("Cat");
       user.setGender(User.Gender.MALE);
-      user.setAccountIds(Collections.singletonList(12));
+      user.setAccountIds(Collections.singleton(12));
       Address address = new Address();
       address.setStreet("Dark Alley");
       address.setPostCode("1234");
@@ -153,7 +155,7 @@ public class MultiHotRodServerQueryTest extends MultiHotRodServersTest {
       assertEquals(User.Gender.MALE, user.getGender());
       assertNotNull(user.getAccountIds());
       assertEquals(1, user.getAccountIds().size());
-      assertEquals(12, user.getAccountIds().get(0).intValue());
+      assertTrue(user.getAccountIds().contains(12));
       assertNotNull(user.getAddresses());
       assertEquals(1, user.getAddresses().size());
       assertEquals("Dark Alley", user.getAddresses().get(0).getStreet());

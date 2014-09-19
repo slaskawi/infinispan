@@ -29,8 +29,6 @@ import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.infinispan.commons.util.ReflectionUtil.EMPTY_CLASS_ARRAY;
-
 /**
  * This class was entirely copied from JGroups 2.7 (same name there). Couldn't simply reuse it because JGroups does not
  * ship with MBean, ManagedAttribute and ManagedOperation. Once JGroups will ship these classes, the code can be
@@ -270,9 +268,18 @@ public class ResourceDMBean implements DynamicMBean {
          Method method = getObject().getClass().getMethod(opInfo.getName(), classes);
          return method.invoke(getObject(), args);
       } catch (Exception e) {
-         throw new MBeanException(e);
+         throw new MBeanException(new Exception(getRootCause(e)));
       }
    }
+
+   public Throwable getRootCause(Throwable throwable) {
+      Throwable cause;
+      while ((cause = throwable.getCause()) != null) {
+         throwable = cause;
+      }
+      return throwable;
+   }
+
 
    private Attribute getNamedAttribute(String name) {
       Attribute result = null;

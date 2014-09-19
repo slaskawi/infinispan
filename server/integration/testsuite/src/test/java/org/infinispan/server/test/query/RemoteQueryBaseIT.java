@@ -15,7 +15,6 @@ import org.junit.Before;
 
 import javax.management.ObjectName;
 import java.io.IOException;
-import java.io.InputStream;
 
 import static org.infinispan.server.test.util.ITestUtils.invokeOperation;
 
@@ -59,8 +58,9 @@ public abstract class RemoteQueryBaseIT {
             + ",component=ProtobufMetadataManager";
 
       //initialize server-side serialization context via JMX
-      byte[] descriptor = readClasspathResource("/sample_bank_account/bank.protobin");
-      invokeOperation(jmxConnectionProvider, mbean, "registerProtofile", new Object[]{descriptor}, new String[]{byte[].class.getName()});
+      String[] fileNames = {"bank.proto", "indexing.proto", "descriptor.proto"};
+      String[] fileContents = {read("/sample_bank_account/bank.proto"), read("/infinispan/indexing.proto"), read("/google/protobuf/descriptor.proto")};
+      invokeOperation(jmxConnectionProvider, mbean, "registerProtofiles", new Object[]{fileNames, fileContents}, new String[]{String[].class.getName(), String[].class.getName()});
 
       //initialize client-side serialization context
       MarshallerRegistration.registerMarshallers(ProtoStreamMarshaller.getSerializationContext(remoteCacheManager));
@@ -77,14 +77,7 @@ public abstract class RemoteQueryBaseIT {
       rcmFactory = null;
    }
 
-   private byte[] readClasspathResource(String resourcePath) throws IOException {
-      InputStream is = getClass().getResourceAsStream(resourcePath);
-      try {
-         return Util.readStream(is);
-      } finally {
-         if (is != null) {
-            is.close();
-         }
-      }
+   private String read(String resourcePath) throws IOException {
+      return Util.read(getClass().getResourceAsStream(resourcePath));
    }
 }

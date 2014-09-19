@@ -1,10 +1,6 @@
 package org.infinispan.server.test.client.hotrod.osgi;
 
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.io.Serializable;
-import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 
@@ -13,10 +9,7 @@ import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.Search;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.marshall.ProtoStreamMarshaller;
-import org.infinispan.commons.io.ByteBuffer;
-import org.infinispan.commons.io.ByteBufferImpl;
-import org.infinispan.commons.marshall.AbstractMarshaller;
-import org.infinispan.commons.marshall.Externalizer;
+import org.infinispan.protostream.FileDescriptorSource;
 import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.sampledomain.Address;
 import org.infinispan.protostream.sampledomain.User;
@@ -42,9 +35,11 @@ import org.ops4j.pax.exam.karaf.options.KarafDistributionOption;
 import org.ops4j.pax.exam.options.RawUrlReference;
 import org.ops4j.pax.exam.spi.reactors.ExamReactorStrategy;
 import org.ops4j.pax.exam.spi.reactors.PerClass;
+import org.osgi.framework.Bundle;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.ops4j.pax.exam.CoreOptions.maven;
 
 /**
@@ -117,8 +112,12 @@ public class RemoteCacheOsgiIT extends KarafTestSupport {
 
         SerializationContext ctx = ProtoStreamMarshaller.getSerializationContext(manager);
 
-        URL resourceUrl = bundleContext.getBundle().getResource("/sample_bank_account/bank.protobin");
-        ctx.registerProtofile(resourceUrl.openStream());
+        FileDescriptorSource fds = new FileDescriptorSource();
+        fds.addProtoFile("bank.proto", bundleContext.getBundle().getResource("/sample_bank_account/bank.proto").openStream());
+        Bundle sampleDomainDefinitionBundle = getInstalledBundle("org.infinispan.protostream.sample-domain-definition");
+        fds.addProtoFile("indexing.proto", sampleDomainDefinitionBundle.getResource("/infinispan/indexing.proto").openStream());
+        fds.addProtoFile("descriptor.proto", sampleDomainDefinitionBundle.getResource("/google/protobuf/descriptor.proto").openStream());
+        ctx.registerProtoFiles(fds);
 
         ctx.registerMarshaller(new UserMarshaller());
         ctx.registerMarshaller(new GenderMarshaller());
@@ -152,7 +151,7 @@ public class RemoteCacheOsgiIT extends KarafTestSupport {
         user.setName("Tom");
         user.setSurname("Cat");
         user.setGender(User.Gender.MALE);
-        user.setAccountIds(Collections.singletonList(12));
+        user.setAccountIds(Collections.singleton(12));
         Address address = new Address();
         address.setStreet("Dark Alley");
         address.setPostCode("1234");
@@ -181,7 +180,7 @@ public class RemoteCacheOsgiIT extends KarafTestSupport {
         assertEquals(User.Gender.MALE, user.getGender());
         assertNotNull(user.getAccountIds());
         assertEquals(1, user.getAccountIds().size());
-        assertEquals(12, user.getAccountIds().get(0).intValue());
+        assertTrue(user.getAccountIds().contains(12));
         assertNotNull(user.getAddresses());
         assertEquals(1, user.getAddresses().size());
         assertEquals("Dark Alley", user.getAddresses().get(0).getStreet());

@@ -34,6 +34,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 import static org.infinispan.client.hotrod.test.HotRodClientTestingUtil.killRemoteCacheManager;
@@ -76,7 +77,8 @@ public class RemoteQueryDslConditionsTest extends SingleCacheManagerTest {
       remoteCache = remoteCacheManager.getCache();
 
       //initialize server-side serialization context
-      cacheManager.getGlobalComponentRegistry().getComponent(ProtobufMetadataManager.class).registerProtofile("/sample_bank_account/bank.protobin");
+      cacheManager.getGlobalComponentRegistry().getComponent(ProtobufMetadataManager.class)
+              .registerProtofiles("/infinispan/indexing.proto", "/sample_bank_account/bank.proto", "/google/protobuf/descriptor.proto");
 
       //initialize client-side serialization context
       MarshallerRegistration.registerMarshallers(ProtoStreamMarshaller.getSerializationContext(remoteCacheManager));
@@ -112,7 +114,7 @@ public class RemoteQueryDslConditionsTest extends SingleCacheManagerTest {
       user1.setSurname("Doe");
       user1.setGender(User.Gender.MALE);
       user1.setAge(22);
-      user1.setAccountIds(Arrays.asList(1, 2));
+      user1.setAccountIds(new HashSet<Integer>(Arrays.asList(1, 2)));
 
       Address address1 = new Address();
       address1.setStreet("Main Street");
@@ -124,7 +126,7 @@ public class RemoteQueryDslConditionsTest extends SingleCacheManagerTest {
       user2.setName("Spider");
       user2.setSurname("Man");
       user2.setGender(User.Gender.MALE);
-      user2.setAccountIds(Collections.singletonList(3));
+      user2.setAccountIds(Collections.singleton(3));
 
       Address address2 = new Address();
       address2.setStreet("Old Street");
@@ -139,7 +141,7 @@ public class RemoteQueryDslConditionsTest extends SingleCacheManagerTest {
       user3.setName("Spider");
       user3.setSurname("Woman");
       user3.setGender(User.Gender.FEMALE);
-      user3.setAccountIds(Collections.<Integer>emptyList());
+      user3.setAccountIds(Collections.<Integer>emptySet());
 
       Account account1 = new Account();
       account1.setId(1);
@@ -298,8 +300,8 @@ public class RemoteQueryDslConditionsTest extends SingleCacheManagerTest {
       List<Transaction> list = q.list();
       assertEquals(4, list.size());
       for (Transaction t : list) {
-         assertTrue(t.getDate() <= DATE_FORMAT.parse("2013-01-31").getTime());
-         assertTrue(t.getDate() >= DATE_FORMAT.parse("2013-01-01").getTime());
+         assertTrue(t.getDate().getTime() <= DATE_FORMAT.parse("2013-01-31").getTime());
+         assertTrue(t.getDate().getTime() >= DATE_FORMAT.parse("2013-01-01").getTime());
       }
    }
 
@@ -314,8 +316,8 @@ public class RemoteQueryDslConditionsTest extends SingleCacheManagerTest {
       List<Transaction> list = q.list();
       assertEquals(3, list.size());
       for (Transaction t : list) {
-         assertTrue(t.getDate() < DATE_FORMAT.parse("2013-01-31").getTime());
-         assertTrue(t.getDate() >= DATE_FORMAT.parse("2013-01-01").getTime());
+         assertTrue(t.getDate().getTime() < DATE_FORMAT.parse("2013-01-31").getTime());
+         assertTrue(t.getDate().getTime() >= DATE_FORMAT.parse("2013-01-01").getTime());
       }
    }
 
@@ -330,8 +332,8 @@ public class RemoteQueryDslConditionsTest extends SingleCacheManagerTest {
       List<Transaction> list = q.list();
       assertEquals(3, list.size());
       for (Transaction t : list) {
-         assertTrue(t.getDate() <= DATE_FORMAT.parse("2013-01-31").getTime());
-         assertTrue(t.getDate() > DATE_FORMAT.parse("2013-01-01").getTime());
+         assertTrue(t.getDate().getTime() <= DATE_FORMAT.parse("2013-01-31").getTime());
+         assertTrue(t.getDate().getTime() > DATE_FORMAT.parse("2013-01-01").getTime());
       }
    }
 
@@ -941,8 +943,8 @@ public class RemoteQueryDslConditionsTest extends SingleCacheManagerTest {
       List<Transaction> list = q.list();
       assertEquals(4, list.size());
       for (Transaction t : list) {
-         assertTrue(t.getDate() <= DATE_FORMAT.parse("2013-01-31").getTime());
-         assertTrue(t.getDate() >= DATE_FORMAT.parse("2013-01-01").getTime());
+         assertTrue(t.getDate().getTime() <= DATE_FORMAT.parse("2013-01-31").getTime());
+         assertTrue(t.getDate().getTime() >= DATE_FORMAT.parse("2013-01-01").getTime());
       }
    }
 

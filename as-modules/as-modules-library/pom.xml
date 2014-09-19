@@ -103,6 +103,17 @@
          <groupId>commons-pool</groupId>
          <artifactId>commons-pool</artifactId>
       </dependency>
+
+      <dependency>
+         <groupId>com.google.protobuf</groupId>
+         <artifactId>protobuf-java</artifactId>
+         <version>${version.protobuf}</version>
+      </dependency>
+
+      <dependency>
+         <groupId>org.infinispan.protostream</groupId>
+         <artifactId>protostream</artifactId>
+      </dependency>
    </dependencies>
 
    <build>
