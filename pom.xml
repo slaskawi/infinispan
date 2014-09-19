@@ -87,7 +87,7 @@
                            <goal>aggregate-jar</goal>
                         </goals>
                         <configuration>
-                           <doclet>org.infinispan.tools.doclet.PublicAPI</doclet>
+                           <doclet>org.infinispan.tools.doclet.DocletMultiplexer</doclet>
                            <docletArtifact>
                               <groupId>org.infinispan</groupId>
                               <artifactId>infinispan-tools</artifactId>
@@ -121,135 +121,6 @@ pageTracker._trackPageview();
                            </footer>
                            <excludePackageNames>org.jboss.as:org.infinispan.server.endpoint:org.infinispan.server.rhq</excludePackageNames>
                         </configuration>
-                     </execution>
-                  </executions>
-               </plugin>
-               <plugin>
-                  <groupId>org.apache.maven.plugins</groupId>
-                  <artifactId>maven-jar-plugin</artifactId>
-                  <executions>
-                     <execution>
-                        <id>build-test-jar</id>
-                        <phase>none</phase>
-                     </execution>
-                  </executions>
-               </plugin>
-               <plugin>
-                  <groupId>org.apache.maven.plugins</groupId>
-                  <artifactId>maven-assembly-plugin</artifactId>
-                  <executions>
-                     <execution>
-                        <id>assemble</id>
-                        <phase>package</phase>
-                        <goals>
-                           <goal>single</goal>
-                        </goals>
-                     </execution>
-                  </executions>
-                  <configuration>
-                     <descriptors>
-                        <descriptor>src/main/resources/assemblies/jdg-bin.xml</descriptor>
-                        <descriptor>src/main/resources/assemblies/jdg-src.xml</descriptor>
-                        <descriptor>src/main/resources/assemblies/jdg-remote-java.xml</descriptor>
-                     </descriptors>
-                     <finalName>${project.artifactId}-${project.version}</finalName>
-                     <outputDirectory>${buildDirectory}/distribution</outputDirectory>
-                     <workDirectory>${buildDirectory}/assembly/work</workDirectory>
-                  </configuration>
-               </plugin>
-            </plugins>
-         </build>
-      </profile>
-
-      
-      <profile>
-         <id>minimal-distribution</id>
-         <activation>
-            <activeByDefault>false</activeByDefault>
-         </activation>
-         <properties>
-            <maven.test.skip.exec>true</maven.test.skip.exec>
-         </properties>
-         <build>
-            <plugins>
-               <plugin>
-                  <groupId>org.apache.maven.plugins</groupId>
-                  <artifactId>maven-jar-plugin</artifactId>
-                  <executions>
-                     <execution>
-                        <id>build-test-jar</id>
-                        <phase>none</phase>
-                     </execution>
-                  </executions>
-               </plugin>
-               <plugin>
-                  <groupId>org.apache.maven.plugins</groupId>
-                  <artifactId>maven-assembly-plugin</artifactId>
-                  <executions>
-                     <execution>
-                        <id>assemble</id>
-                        <phase>package</phase>
-                        <goals>
-                           <goal>single</goal>
-                        </goals>
-                     </execution>
-                  </executions>
-                  <configuration>
-                     <descriptors>
-                        <descriptor>src/main/resources/assemblies/jdg-bin.xml</descriptor>
-                        <descriptor>src/main/resources/assemblies/jdg-src.xml</descriptor>
-                        <descriptor>src/main/resources/assemblies/jdg-remote-java.xml</descriptor>
-                     </descriptors>
-                     <finalName>${project.artifactId}-${project.version}</finalName>
-                     <outputDirectory>${buildDirectory}/distribution</outputDirectory>
-                     <workDirectory>${buildDirectory}/assembly/work</workDirectory>
-                  </configuration>
-               </plugin>
-            </plugins>
-         </build>
-      </profile>
-
-      
-      <profile>
-         <id>jmxdoc</id>
-         <activation>
-            <activeByDefault>false</activeByDefault>
-         </activation>
-         <properties>
-            <maven.test.skip.exec>true</maven.test.skip.exec>
-         </properties>
-         <build>
-            <plugins>
-               <plugin>
-                  <groupId>org.apache.maven.plugins</groupId>
-                  <artifactId>maven-javadoc-plugin</artifactId>
-                  <configuration>
-                     <doclet>org.infinispan.tools.doclet.jmx.JmxDoclet</doclet>
-                     <docletArtifact>
-                        <groupId>org.infinispan</groupId>
-                        <artifactId>infinispan-tools</artifactId>
-                        <version>${project.version}</version>
-                     </docletArtifact>
-                     <footer>
-                &lt;!-- Google Analytics --&gt;
-&lt;script type='text/javascript'&gt;
-var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-&lt;/script&gt;
-&lt;script type='text/javascript'&gt;
-try {
-var pageTracker = _gat._getTracker("UA-8601422-4");
-pageTracker._trackPageview();
-} catch(err) {}&lt;/script&gt;
-               </footer>
-                  </configuration>
-                  <executions>
-                     <execution>
-                        <id>javadoc</id>
-                        <phase>package</phase>
-                        <goals>
-                           <goal>aggregate</goal>
-                        </goals>
                      </execution>
                   </executions>
                </plugin>
@@ -294,10 +165,44 @@ pageTracker._trackPageview();
                      </dependency>
                   </dependencies>
                </plugin>
+               <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-jar-plugin</artifactId>
+                  <executions>
+                     <execution>
+                        <id>build-test-jar</id>
+                        <phase>none</phase>
+                     </execution>
+                  </executions>
+               </plugin>
+               <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-assembly-plugin</artifactId>
+                  <executions>
+                     <execution>
+                        <id>assemble</id>
+                        <phase>package</phase>
+                        <goals>
+                           <goal>single</goal>
+                        </goals>
+                     </execution>
+                  </executions>
+                  <configuration>
+                     <descriptors>
+                        <descriptor>src/main/resources/assemblies/jdg-bin.xml</descriptor>
+                        <descriptor>src/main/resources/assemblies/jdg-src.xml</descriptor>
+                        <descriptor>src/main/resources/assemblies/jdg-remote-java.xml</descriptor>
+                     </descriptors>
+                     <finalName>${project.artifactId}-${project.version}</finalName>
+                     <outputDirectory>${buildDirectory}/distribution</outputDirectory>
+                     <workDirectory>${buildDirectory}/assembly/work</workDirectory>
+                  </configuration>
+               </plugin>
             </plugins>
          </build>
       </profile>
    </profiles>
+
    <dependencies>
       <dependency>
          <groupId>org.jboss.remotingjmx</groupId>

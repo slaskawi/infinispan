@@ -30,6 +30,11 @@
          <outputDirectory>doc/apidocs</outputDirectory>
       </fileSet>
       
+      <fileSet>
+         <directory>target/site/configdocs</directory>
+         <outputDirectory>doc/config</outputDirectory>
+      </fileSet>
+      
       <!-- CLI -->
       <fileSet>
          <directory>cli/cli-client/src/main/release/bin</directory>

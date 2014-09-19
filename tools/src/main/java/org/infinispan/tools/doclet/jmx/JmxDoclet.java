@@ -1,19 +1,5 @@
 package org.infinispan.tools.doclet.jmx;
 
-import com.sun.javadoc.AnnotationDesc;
-import com.sun.javadoc.AnnotationTypeDoc;
-import com.sun.javadoc.ClassDoc;
-import com.sun.javadoc.DocErrorReporter;
-import com.sun.javadoc.FieldDoc;
-import com.sun.javadoc.MethodDoc;
-import com.sun.javadoc.Parameter;
-import com.sun.javadoc.RootDoc;
-import com.sun.tools.doclets.formats.html.ConfigurationImpl;
-import org.infinispan.jmx.annotations.MBean;
-import org.infinispan.jmx.annotations.ManagedAttribute;
-import org.infinispan.jmx.annotations.ManagedOperation;
-import org.infinispan.tools.doclet.html.HtmlGenerator;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -21,16 +7,42 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.infinispan.jmx.annotations.MBean;
+import org.infinispan.jmx.annotations.ManagedAttribute;
+import org.infinispan.jmx.annotations.ManagedOperation;
+import org.infinispan.tools.doclet.html.HtmlGenerator;
+
+import com.sun.javadoc.AnnotationDesc;
+import com.sun.javadoc.AnnotationTypeDoc;
+import com.sun.javadoc.ClassDoc;
+import com.sun.javadoc.DocErrorReporter;
+import com.sun.javadoc.FieldDoc;
+import com.sun.javadoc.LanguageVersion;
+import com.sun.javadoc.MethodDoc;
+import com.sun.javadoc.Parameter;
+import com.sun.javadoc.RootDoc;
+import com.sun.tools.doclets.standard.Standard;
+import com.sun.tools.javadoc.Main;
+
 /**
  * A Doclet that generates a guide to all JMX components exposed by Infinispan
  *
  * @author Manik Surtani
  * @since 4.0
  */
-@SuppressWarnings("restriction")
 public class JmxDoclet {
-   static String outputDirectory = ".";
-   static String header, footer, encoding, title, bottom;
+
+   private static String outputDirectory;
+   private static String encoding;
+   private static String bottom;
+   private static String footer;
+   private static String header;
+   private static String title;
+
+   public static void main(String[] args) {
+      String name = JmxDoclet.class.getName();
+      Main.execute(name, name, args);
+   }
 
    public static boolean start(RootDoc root) throws IOException {
       ClassDoc[] classes = root.classes();
@@ -39,45 +51,55 @@ public class JmxDoclet {
 
       for (ClassDoc cd : classes) {
          MBeanComponent mbean = toJmxComponent(cd);
-         if (mbean != null) mbeans.add(mbean);
+         if (mbean != null)
+            mbeans.add(mbean);
       }
 
       // sort components alphabetically
       Collections.sort(mbeans);
 
-      HtmlGenerator generator = new JmxHtmlGenerator(encoding, jmxTitle(), bottom, footer, header, "JMX components exposed by Infinispan",
-                                                     Arrays.asList("JMX", "Infinispan", "Data Grids", "Documentation", "Reference", "MBeans", "Management", "Console"),
-                                                     mbeans);
-      generator.generateHtml(outputDirectory + File.separator + "jmxComponents.html");
+      HtmlGenerator generator = new JmxHtmlGenerator(encoding, jmxTitle(), bottom, footer, header,
+            "JMX components exposed by Infinispan", Arrays.asList("JMX", "Infinispan", "Data Grids", "Documentation",
+                  "Reference", "MBeans", "Management", "Console"), mbeans);
+      generator.generateHtml(new File(outputDirectory, "jmxComponents.html").getAbsolutePath());
 
       return true;
    }
 
+   public static LanguageVersion languageVersion() {
+      return LanguageVersion.JAVA_1_5;
+   }
+
+   public static int optionLength(String option) {
+      return Standard.optionLength(option);
+   }
+
+   public static boolean validOptions(String options[][], DocErrorReporter reporter) {
+      for (String[] option : options) {
+         if (option[0].equals("-d"))
+            outputDirectory = option[1];
+         else if (option[0].equals("-encoding"))
+            encoding = option[1];
+         else if (option[0].equals("-bottom"))
+            bottom = option[1];
+         else if (option[0].equals("-footer"))
+            footer = option[1];
+         else if (option[0].equals("-header"))
+            header = option[1];
+         else if (option[0].equals("-doctitle"))
+            title = option[1];
+      }
+      return Standard.validOptions(options, reporter);
+   }
+
    private static String jmxTitle() {
       String s = "JMX Components";
-      if (title == null || title.length() == 0)
+      if (title.length() == 0)
          return s;
       else {
          s += " (" + title + ")";
          return s;
       }
-   }
-
-   public static int optionLength(String option) {
-      return (ConfigurationImpl.getInstance()).optionLength(option);
-   }
-
-   public static boolean validOptions(String options[][], DocErrorReporter reporter) {
-      for (String[] option : options) {
-//         System.out.println("  >> Option " + Arrays.toString(option));
-         if (option[0].equals("-d")) outputDirectory = option[1];
-         else if (option[0].equals("-encoding")) encoding = option[1];
-         else if (option[0].equals("-bottom")) bottom = option[1];
-         else if (option[0].equals("-footer")) footer = option[1];
-         else if (option[0].equals("-header")) header = option[1];
-         else if (option[0].equals("-doctitle")) title = option[1];
-      }
-      return (ConfigurationImpl.getInstance()).validOptions(options, reporter);
    }
 
    private static MBeanComponent toJmxComponent(ClassDoc cd) {
@@ -106,9 +128,9 @@ public class JmxDoclet {
                o.name = method.name();
                setNameDesc(a.elementValues(), o);
                o.returnType = method.returnType().simpleTypeName();
-               for (Parameter p : method.parameters()) o.addParam(p.type().simpleTypeName());
+               for (Parameter p : method.parameters())
+                  o.addParam(p.type().simpleTypeName());
                mbc.operations.add(o);
-
 
             } else if (annotationName.equals(ManagedAttribute.class.getName())) {
                isMBean = true;
@@ -189,4 +211,3 @@ public class JmxDoclet {
       }
    }
 }
-
