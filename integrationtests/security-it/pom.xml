@@ -149,7 +149,7 @@
                      <goal>copy-resources</goal>
                   </goals>
                   <configuration>
-                     <outputDirectory>${project.build.directory}/testnode/jboss-eap-6.2</outputDirectory>
+                     <outputDirectory>${project.build.directory}/testnode/jboss-eap-6.3</outputDirectory>
                      <overwrite>true</overwrite>
                      <resources>
                         <resource>
@@ -165,7 +165,7 @@
                      <goal>copy-resources</goal>
                   </goals>
                   <configuration>
-                     <outputDirectory>${project.build.directory}/node0/jboss-eap-6.2</outputDirectory>
+                     <outputDirectory>${project.build.directory}/node0/jboss-eap-6.3</outputDirectory>
                      <overwrite>true</overwrite>
                      <resources>
                         <resource>
@@ -181,7 +181,7 @@
                      <goal>copy-resources</goal>
                   </goals>
                   <configuration>
-                     <outputDirectory>${project.build.directory}/node1/jboss-eap-6.2</outputDirectory>
+                     <outputDirectory>${project.build.directory}/node1/jboss-eap-6.3</outputDirectory>
                      <overwrite>true</overwrite>
                      <resources>
                         <resource>

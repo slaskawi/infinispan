@@ -12,7 +12,7 @@
             <property name="executionType">REMOTE</property>
          </protocol>
          <configuration>
-            <property name="jbossHome">${basedir}/target/testnode/jboss-eap-6.2</property>
+            <property name="jbossHome">${basedir}/target/testnode/jboss-eap-6.3</property>
             <property name="serverConfig">standalone-test.xml</property>
             <property name="javaVmArguments">-Djboss.node.name=testnode</property>
             <property name="managementPort">9999</property>
@@ -24,7 +24,7 @@
             <property name="executionType">REMOTE</property>
          </protocol>
          <configuration>
-            <property name="jbossHome">${basedir}/target/node0/jboss-eap-6.2</property>
+            <property name="jbossHome">${basedir}/target/node0/jboss-eap-6.3</property>
             <property name="serverConfig">standalone-test.xml</property>
             <property name="javaVmArguments">-Djboss.node.name=node0
                                              -Djboss.socket.binding.port-offset=100 
@@ -42,7 +42,7 @@
             <property name="executionType">REMOTE</property>
          </protocol>
          <configuration>
-            <property name="jbossHome">${basedir}/target/node1/jboss-eap-6.2</property>
+            <property name="jbossHome">${basedir}/target/node1/jboss-eap-6.3</property>
             <property name="serverConfig">standalone-test.xml</property>
             <property name="javaVmArguments">-Djboss.node.name=node1 
                                              -Djboss.socket.binding.port-offset=200 
@@ -60,7 +60,7 @@
             <property name="executionType">REMOTE</property>
          </protocol>
          <configuration>
-            <property name="jbossHome">${basedir}/target/node1/jboss-eap-6.2</property>
+            <property name="jbossHome">${basedir}/target/node1/jboss-eap-6.3</property>
             <property name="serverConfig">standalone-test.xml</property>
             <property name="javaVmArguments">-Djboss.node.name=node1 
                                              -Djboss.socket.binding.port-offset=200 
