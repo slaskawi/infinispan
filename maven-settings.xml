@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" 
-          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
   <localRepository>${user.home}/.m2/jdg-mead-repository</localRepository>
 
@@ -15,13 +15,13 @@
          *,!mead-jdg6,!mead-jdg6-plugins,!jboss-public-jdg6,!jboss-public-jdg6-plugins,!central-jdg6,!central-jdg6-plugins
       </mirrorOf>
       <name>Mirror Settings for JDG 6 build</name>
-      <url>http://download.devel.redhat.com/brewroot/repos/jb-edg-6-rhel-6-build/latest/maven/</url>
+      <url>http://download.eng.bos.redhat.com/brewroot/repos/jb-edg-6-rhel-6-build/latest/maven/</url>
     </mirror>
   </mirrors>
 
   <profiles>
     <!--  Mead repository profile must be placed after public repository profile
-     |    and before public plugin repository profile.  This allows the Mead repository 
+     |    and before public plugin repository profile.  This allows the Mead repository
      |    to be prioritized over public repositories and public plugin repositories
      |    when all repository profiles are active.
      -->
@@ -36,7 +36,7 @@
         <repository>
           <id>mead-jdg6</id>
           <name>MEAD JDG6 Maven Repository</name>
-          <url>http://download.devel.redhat.com/brewroot/repos/jb-edg-6-rhel-6-build/latest/maven/</url>
+          <url>http://download.eng.bos.redhat.com/brewroot/repos/jb-edg-6-rhel-6-build/latest/maven/</url>
           <releases>
             <enabled>true</enabled>
             <updatePolicy>never</updatePolicy>
@@ -54,7 +54,7 @@
         <pluginRepository>
           <id>mead-jdg6-plugins</id>
           <name>MEAD JDG6 Maven Plugin Repository</name>
-          <url>http://download.devel.redhat.com/brewroot/repos/jb-edg-6-rhel-6-build/latest/maven/</url>
+          <url>http://download.eng.bos.redhat.com/brewroot/repos/jb-edg-6-rhel-6-build/latest/maven/</url>
           <releases>
             <enabled>true</enabled>
             <updatePolicy>never</updatePolicy>
@@ -69,4 +69,3 @@
   </profiles>
 
 </settings>
-
