@@ -713,7 +713,7 @@ public final class CacheNotifierImpl<K, V> extends AbstractListenerImpl<Event<K,
                   // Don't process this value if we had a concurrent remove
                   continue;
                }
-               raiseEventForInitialTransfer(generatedId, entry, l.clustered());
+               raiseEventForInitialTransfer(generatedId, entry, builder.isClustered());
 
                handler.notifiedKey(entry.getKey());
             }
