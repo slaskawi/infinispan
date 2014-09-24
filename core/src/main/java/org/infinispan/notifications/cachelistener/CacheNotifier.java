@@ -6,6 +6,7 @@ import org.infinispan.context.InvocationContext;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.factories.scopes.Scope;
 import org.infinispan.factories.scopes.Scopes;
+import org.infinispan.metadata.Metadata;
 import org.infinispan.notifications.ClassLoaderAwareFilteringListenable;
 import org.infinispan.notifications.ClassLoaderAwareListenable;
 import org.infinispan.notifications.FilteringListenable;
@@ -32,15 +33,14 @@ public interface CacheNotifier<K, V> extends ClassLoaderAwareFilteringListenable
    /**
     * Notifies all registered listeners of a CacheEntryModified event.
     */
-   void notifyCacheEntryModified(Object key, Object value,
-         boolean created, boolean pre, InvocationContext ctx,
-         FlagAffectedCommand command);
+   void notifyCacheEntryModified(Object key, Object value, Object previousValue, Metadata previousMetadata, boolean pre,
+                                 InvocationContext ctx, FlagAffectedCommand command);
 
    /**
     * Notifies all registered listeners of a CacheEntryRemoved event.
     */
-   void notifyCacheEntryRemoved(Object key, Object value, Object oldValue,
-         boolean pre, InvocationContext ctx, FlagAffectedCommand command);
+   void notifyCacheEntryRemoved(Object key, Object previousValue, Metadata previousMetadata, boolean pre, InvocationContext ctx,
+                                FlagAffectedCommand command);
 
    /**
     * Notifies all registered listeners of a CacheEntryVisited event.
@@ -91,7 +91,7 @@ public interface CacheNotifier<K, V> extends ClassLoaderAwareFilteringListenable
     * Notifies all registered listeners of a transaction completion event.
     *
     * @param transaction the transaction that has just completed
-    * @param successful  if true, the transaction committed.  If false, this is a rollback event
+    * @param successful  if true, the transaction committed.  If false, this is a rollbacObject event
     */
    void notifyTransactionCompleted(GlobalTransaction transaction, boolean successful, InvocationContext ctx);
 

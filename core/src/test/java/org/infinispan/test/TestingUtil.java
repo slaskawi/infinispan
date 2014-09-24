@@ -199,7 +199,7 @@ public class TestingUtil {
             if (chContainsAllMembers && !rebalanceInProgress && currentChIsBalanced)
                break;
 
-            if (System.currentTimeMillis() > giveup) {
+            if (System.nanoTime() - giveup > 0) {
                String message;
                if (!chContainsAllMembers) {
                   Address[] addresses = new Address[caches.length];

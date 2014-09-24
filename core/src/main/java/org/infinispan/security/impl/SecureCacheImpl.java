@@ -1,42 +1,42 @@
  package org.infinispan.security.impl;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
+ import org.infinispan.AdvancedCache;
+ import org.infinispan.atomic.Delta;
+ import org.infinispan.batch.BatchContainer;
+ import org.infinispan.configuration.cache.Configuration;
+ import org.infinispan.container.DataContainer;
+ import org.infinispan.container.entries.CacheEntry;
+ import org.infinispan.context.Flag;
+ import org.infinispan.context.InvocationContextContainer;
+ import org.infinispan.distribution.DistributionManager;
+ import org.infinispan.eviction.EvictionManager;
+ import org.infinispan.factories.ComponentRegistry;
+ import org.infinispan.filter.KeyValueFilter;
+ import org.infinispan.interceptors.base.CommandInterceptor;
+ import org.infinispan.iteration.EntryIterable;
+ import org.infinispan.lifecycle.ComponentStatus;
+ import org.infinispan.manager.EmbeddedCacheManager;
+ import org.infinispan.metadata.Metadata;
+ import org.infinispan.notifications.KeyFilter;
+ import org.infinispan.notifications.cachelistener.filter.CacheEventConverter;
+ import org.infinispan.notifications.cachelistener.filter.CacheEventFilter;
+ import org.infinispan.remoting.rpc.RpcManager;
+ import org.infinispan.security.AuthorizationManager;
+ import org.infinispan.security.AuthorizationPermission;
+ import org.infinispan.security.SecureCache;
+ import org.infinispan.stats.Stats;
+ import org.infinispan.util.concurrent.NotifyingFuture;
+ import org.infinispan.util.concurrent.locks.LockManager;
 
-import javax.transaction.TransactionManager;
-import javax.transaction.xa.XAResource;
+ import javax.transaction.TransactionManager;
+ import javax.transaction.xa.XAResource;
+ import java.util.Collection;
+ import java.util.List;
+ import java.util.Map;
+ import java.util.Set;
+ import java.util.concurrent.TimeUnit;
 
-import org.infinispan.AdvancedCache;
-import org.infinispan.atomic.Delta;
-import org.infinispan.batch.BatchContainer;
-import org.infinispan.configuration.cache.Configuration;
-import org.infinispan.container.DataContainer;
-import org.infinispan.container.entries.CacheEntry;
-import org.infinispan.context.Flag;
-import org.infinispan.context.InvocationContextContainer;
-import org.infinispan.distribution.DistributionManager;
-import org.infinispan.eviction.EvictionManager;
-import org.infinispan.factories.ComponentRegistry;
-import org.infinispan.filter.Converter;
-import org.infinispan.filter.KeyValueFilter;
-import org.infinispan.interceptors.base.CommandInterceptor;
-import org.infinispan.iteration.EntryIterable;
-import org.infinispan.lifecycle.ComponentStatus;
-import org.infinispan.manager.EmbeddedCacheManager;
-import org.infinispan.metadata.Metadata;
-import org.infinispan.notifications.KeyFilter;
-import org.infinispan.remoting.rpc.RpcManager;
-import org.infinispan.security.AuthorizationManager;
-import org.infinispan.security.AuthorizationPermission;
-import org.infinispan.security.SecureCache;
-import org.infinispan.stats.Stats;
-import org.infinispan.util.concurrent.NotifyingFuture;
-import org.infinispan.util.concurrent.locks.LockManager;
-
-/**
+ /**
  * SecureCacheImpl.
  *
  * @author Tristan Tarrant
@@ -59,16 +59,16 @@ public final class SecureCacheImpl<K, V> implements SecureCache<K, V> {
    }
 
    @Override
-   public void addListener(Object listener, KeyFilter filter) {
+   public <C> void addListener(Object listener, CacheEventFilter<? super K, ? super V> filter,
+                               CacheEventConverter<? super K, ? super V, C> converter) {
       authzManager.checkPermission(AuthorizationPermission.LISTEN);
-      delegate.addListener(listener, filter);
+      delegate.addListener(listener, filter, converter);
    }
 
    @Override
-   public <C> void addListener(Object listener, KeyValueFilter<? super K, ? super V> filter, Converter<? super K,
-         ? super V, C> converter) {
+   public void addListener(Object listener, KeyFilter filter) {
       authzManager.checkPermission(AuthorizationPermission.LISTEN);
-      delegate.addListener(listener, filter, converter);
+      delegate.addListener(listener, filter);
    }
 
    @Override

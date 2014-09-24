@@ -85,6 +85,8 @@ import org.infinispan.metadata.EmbeddedMetadata;
 import org.infinispan.metadata.Metadata;
 import org.infinispan.notifications.KeyFilter;
 import org.infinispan.notifications.cachelistener.CacheNotifier;
+import org.infinispan.notifications.cachelistener.filter.CacheEventConverter;
+import org.infinispan.notifications.cachelistener.filter.CacheEventFilter;
 import org.infinispan.remoting.rpc.RpcManager;
 import org.infinispan.security.AuthorizationManager;
 import org.infinispan.stats.Stats;
@@ -573,8 +575,8 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
    }
 
    @Override
-   public <C> void addListener(Object listener, KeyValueFilter<? super K, ? super V> filter,
-                               Converter<? super K, ? super V, C> converter) {
+   public <C> void addListener(Object listener, CacheEventFilter<? super K, ? super V> filter,
+                               CacheEventConverter<? super K, ? super V, C> converter) {
       notifier.addListener(listener, filter, converter);
    }
 

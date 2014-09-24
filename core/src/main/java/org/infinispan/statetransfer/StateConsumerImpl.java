@@ -316,14 +316,16 @@ public class StateConsumerImpl implements StateConsumer {
 
                addedSegments = getOwnedSegments(newWriteCh);
 
-               Collection<DistributedCallable> callables = getClusterListeners(cacheTopology);
+               if (configuration.clustering().cacheMode().isDistributed()) {
+                  Collection<DistributedCallable> callables = getClusterListeners(cacheTopology);
 
-               for (DistributedCallable callable : callables) {
-                  callable.setEnvironment(cache, null);
-                  try {
-                     callable.call();
-                  } catch (Exception e) {
-                     log.clusterListenerInstallationFailure(e);
+                  for (DistributedCallable callable : callables) {
+                     callable.setEnvironment(cache, null);
+                     try {
+                        callable.call();
+                     } catch (Exception e) {
+                        log.clusterListenerInstallationFailure(e);
+                     }
                   }
                }
 
