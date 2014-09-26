@@ -443,6 +443,11 @@
             <scope>import</scope>
          </dependency>
          <dependency>
+            <groupId>org.jboss.shrinkwrap.resolver</groupId>
+            <artifactId>shrinkwrap-resolver-impl-maven</artifactId>
+            <version>${version.shrinkwrapResolver}</version>
+         </dependency>
+         <dependency>
             <groupId>org.jboss.spec</groupId>
             <artifactId>jboss-javaee-6.0</artifactId>
             <version>${version.jboss.spec}</version>
@@ -873,6 +878,11 @@
             <version>${version.pax.url}</version>
             <scope>test</scope>
          </dependency>
+          <dependency>
+              <groupId>com.google.guava</groupId>
+              <artifactId>guava</artifactId>
+              <version>${version.guava}</version>
+          </dependency>
       </dependencies>
    </dependencyManagement>
    <dependencies>
