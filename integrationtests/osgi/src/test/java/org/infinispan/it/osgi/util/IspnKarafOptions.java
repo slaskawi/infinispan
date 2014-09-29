@@ -36,9 +36,10 @@ import org.ops4j.pax.exam.options.WrappedUrlProvisionOption;
 
 public class IspnKarafOptions {
    private static final String PROP_VERSION_KARAF = "version.karaf";
+   private static final String PROP_VERSION_PAX_EXAM = "version.pax.exam";
    private static final String PROP_VERBOSE_KARAF = "verbose.karaf";
    private static final String PROP_UBER_JAR = "uberjar";
-
+   
    private static Pattern PATTERN_HEADER = Pattern.compile("(.+)=(.+)");
 
    static {
@@ -269,14 +270,20 @@ public class IspnKarafOptions {
                        systemProperty("driver.class").value("org.h2.Driver"));
    }
 
+   public static Option bundlePaxExamSpi() throws Exception {
+      String version = MavenUtils.getProperties().getProperty(PROP_VERSION_PAX_EXAM);
+      return wrappedBundle(mavenBundle().groupId("org.ops4j.pax.exam").artifactId("pax-exam-spi").version(version));
+   }
+
    public static Option commonOptions() throws Exception {
       return composite(karafContainer(),
                        vmOptions("-Djava.net.preferIPv4Stack=true", "-Djgroups.bind_addr=127.0.0.1"),
                        verboseKaraf(),
                        junitBundles(),
                        keepRuntimeFolder(),
-            /* Required for the @Category(Per{Suite,Class,Method}) annotations. */
-            localRepoForPAXUrl());
+                       /* Required for the @Category(Per{Suite,Class,Method}) annotations. */
+                       bundlePaxExamSpi(),
+                       localRepoForPAXUrl());
    }
 
    public static Option perSuiteOptions() throws Exception {
