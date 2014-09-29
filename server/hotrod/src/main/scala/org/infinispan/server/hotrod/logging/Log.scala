@@ -1,5 +1,6 @@
 package org.infinispan.server.hotrod.logging
 
+import org.infinispan.commons.marshall.Marshaller
 import org.infinispan.util.logging.LogFactory
 import org.infinispan.notifications.cachelistener.event.Event
 
@@ -27,4 +28,6 @@ trait Log extends org.infinispan.server.core.logging.Log {
 
    def unexpectedEvent(e: Event[Bytes, Bytes]) = log.unexpectedEvent(e)
 
+   def warnMarshallerAlreadySet(existingMarshaller: Marshaller, newMarshaller: Marshaller) =
+      log.warnMarshallerAlreadySet(existingMarshaller, newMarshaller)
 }
