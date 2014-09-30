@@ -31,7 +31,6 @@ import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.exceptions.TransportException;
-import org.infinispan.server.test.category.Unstable;
 import org.infinispan.server.test.client.memcached.MemcachedClient;
 import org.infinispan.server.test.client.rest.RESTHelper;
 import org.infinispan.server.test.util.ITestUtils;
@@ -47,7 +46,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.experimental.categories.Category;
 
 import static org.infinispan.server.test.client.rest.RESTHelper.*;
 import static org.infinispan.server.test.util.ITestUtils.eventually;
@@ -63,7 +61,6 @@ import static org.junit.Assert.*;
  * @author Galder Zamarreño (galderz@redhat.com)
  * @author Michal Linhard (mlinhard@redhat.com)
  */
-@Category(Unstable.class) // See ISPN-4026
 @RunWith(Arquillian.class)
 public class ExampleConfigsIT {
 
