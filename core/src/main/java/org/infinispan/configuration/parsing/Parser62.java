@@ -53,19 +53,20 @@ import static org.infinispan.commons.util.StringPropertyReplacer.replaceProperti
 import static org.infinispan.configuration.cache.CacheMode.*;
 
 /**
- * This class implements the parser for 6.1 schema files
+ * This class implements the parser for 6.2 schema files
  *
  * @author Galder Zamarreño
- * @since 6.1
+ * @since 6.2
  */
 @Namespaces({
-   @Namespace(uri = "urn:infinispan:config:6.1", root = "infinispan"),
+   @Namespace(uri = "urn:infinispan:config:6.2", root = "infinispan"),
+   @Namespace(root = "infinispan")
 })
-public class Parser61 implements ConfigurationParser {
+public class Parser62 implements ConfigurationParser {
 
-   private static final Log log = LogFactory.getLog(Parser61.class);
+   private static final Log log = LogFactory.getLog(Parser62.class);
 
-   public Parser61() {}
+   public Parser62() {}
 
    @Override
    public void readElement(final XMLExtendedStreamReader reader, final ConfigurationBuilderHolder holder) throws XMLStreamException {

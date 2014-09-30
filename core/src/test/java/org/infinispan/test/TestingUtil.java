@@ -100,8 +100,8 @@ public class TestingUtil {
    public static final String TEST_PATH = "infinispanTempFiles";
    public static final String INFINISPAN_START_TAG = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<infinispan\n" +
          "      xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
-         "      xsi:schemaLocation=\"urn:infinispan:config:6.0 http://www.infinispan.org/schemas/infinispan-config-6.0.xsd\"\n" +
-         "      xmlns=\"urn:infinispan:config:6.0\">";
+         "      xsi:schemaLocation=\"urn:infinispan:config:6.2 http://www.infinispan.org/schemas/infinispan-config-6.2.xsd\"\n" +
+         "      xmlns=\"urn:infinispan:config:6.2\">";
    public static final String INFINISPAN_START_TAG_53 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<infinispan\n" +
          "      xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
          "      xsi:schemaLocation=\"urn:infinispan:config:5.3 http://www.infinispan.org/schemas/infinispan-config-5.3.xsd\"\n" +

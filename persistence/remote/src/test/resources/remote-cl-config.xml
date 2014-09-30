@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <infinispan
    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-   xsi:schemaLocation="urn:infinispan:config:6.0 http://www.infinispan.org/schemas/infinispan-config-6.0.xsd
+   xsi:schemaLocation="urn:infinispan:config:6.2 http://www.infinispan.org/schemas/infinispan-config-6.2.xsd
                        urn:infinispan:config:remote:6.0 http://www.infinispan.org/schemas/infinispan-cachestore-remote-config-6.0.xsd"
-   xmlns="urn:infinispan:config:6.0"
+   xmlns="urn:infinispan:config:6.2"
    xmlns:remote="urn:infinispan:config:remote:6.0" >
 
    <default>
@@ -22,7 +22,7 @@
             </servers>
             <connectionPool maxActive="99" maxIdle="97" maxTotal="98" />
             <asyncTransportExecutor factory="org.infinispan.client.hotrod.impl.async.DefaultAsyncExecutorFactory">
-              <properties xmlns="urn:infinispan:config:6.0">
+              <properties xmlns="urn:infinispan:config:6.2">
                 <property name="pool_size" value="1" />
                 <property name="queue_size" value="10000" />
               </properties>
