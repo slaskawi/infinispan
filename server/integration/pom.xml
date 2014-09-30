@@ -21,7 +21,7 @@
       <module>jgroups</module>
       <module>infinispan</module>
       <module>security</module>
-      <module>integration</module>
+      <module>endpoint</module>
       <module>cli</module>
       <module>build</module>
       <module>management/server-rhq-plugin</module>
@@ -40,7 +40,7 @@
             <module>jgroups</module>
             <module>infinispan</module>
             <module>security</module>
-            <module>integration</module>
+            <module>endpoint</module>
             <module>cli</module>
             <module>build</module>
             <module>management/server-rhq-plugin</module>
