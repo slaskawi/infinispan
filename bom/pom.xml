@@ -65,6 +65,8 @@
       <version.protoparser>3.1.4.redhat-1</version.protoparser>
       <version.antlr>3.4</version.antlr>
       <version.gnu.getopt>1.0.13.redhat-4</version.gnu.getopt>
+      <version.hibernate.core>4.2.14.SP1-redhat-1</version.hibernate.core>
+      <version.hibernate.javax.persistence>1.0.1.Final-redhat-2</version.hibernate.javax.persistence>
       <version.hibernate.search>4.5.0.Final-redhat-3</version.hibernate.search>
       <version.jansi>1.9.redhat-4</version.jansi>
       <version.jboss.marshalling>1.4.6.Final-redhat-1</version.jboss.marshalling>
@@ -237,7 +239,23 @@
             <artifactId>infinispan-jcache</artifactId>
             <version>${project.version}</version>
          </dependency>
-         
+         <!-- Infinispan aggregate jars -->
+         <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>infinispan-embedded</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>infinispan-embedded-query</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>infinispan-remote</artifactId>
+            <version>${project.version}</version>
+         </dependency>
+         <!-- Infinispan core modules dependencies -->
          <dependency>
             <groupId>commons-pool</groupId>
             <artifactId>commons-pool</artifactId>
@@ -262,6 +280,11 @@
             <groupId>org.jboss.spec.javax.transaction</groupId>
             <artifactId>jboss-transaction-api_1.1_spec</artifactId>
             <version>${version.jta}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.hibernate.javax.persistence</groupId>
+            <artifactId>hibernate-jpa-2.0-api</artifactId>
+            <version>${version.hibernate.javax.persistence}</version>
          </dependency>
          <dependency>
             <groupId>org.jboss.logging</groupId>
@@ -307,6 +330,11 @@
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.compendium</artifactId>
             <version>${version.osgi}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>${version.hibernate.core}</version>
          </dependency>
          <!-- Infinispan RHQ module dependencies -->
          <dependency>

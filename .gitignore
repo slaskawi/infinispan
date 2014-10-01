@@ -19,6 +19,7 @@ atlassian-ide-plugin.xml
 maven-ant-tasks.jar
 test-output
 classes
+dependency-reduced-pom.xml
 # log files
 *.log
 # vim files

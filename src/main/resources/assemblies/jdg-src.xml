@@ -47,6 +47,9 @@
                 <include>cli/**</include>
                 <include>cdi/extension/**</include>
                 <include>as-modules/**</include>
+                <include>all/embedded/**</include>
+                <include>all/embedded-query/**</include>
+                <include>all/remote/**</include>
                 <include>compatibility52x/**</include>
                 <include>rhq-plugin/**</include>
                 <include>integrationtests/security-it/**</include>
@@ -77,6 +80,7 @@
                 <exclude>**/PutObjectStoreDirHere/**</exclude>
                 <exclude>**/coretarget/**</exclude>
                 <exclude>**/.git/**</exclude>
+                <exclude>**/dependency-reduced-pom.xml</exclude>
             </excludes>
         </fileSet>
     </fileSets>
