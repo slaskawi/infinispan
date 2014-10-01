@@ -27,13 +27,13 @@ public class ProtofileRegistrar {
          System.exit(1);
       }
 
-      final String PROTOFILES_PATH = args[0];
-      final String SERVER_HOST = args[1];
-      final int JMX_PORT = Integer.parseInt(args[2]);
+      final String protofilesPath = args[0];
+      final String ser = args[1];
+      final int jmxPort = Integer.parseInt(args[2]);
 
       ProtofileRegistrar registrar = new ProtofileRegistrar();
       try {
-         registrar.registerProtofile(PROTOFILES_PATH, SERVER_HOST, JMX_PORT);
+         registrar.registerProtofile(protofilesPath, ser, jmxPort);
       } catch (Exception e) {
          e.printStackTrace();
          System.exit(1);
@@ -52,8 +52,9 @@ public class ProtofileRegistrar {
 
       //initialize client-side serialization context via JMX
       for (String protofile : protofilesPath.split(",")) {
-         String descriptor = readClasspathResource(protofile);
-         String name = protofile.substring(protofile.lastIndexOf('/') + 1);
+         String absPath = protofile.startsWith("/") ? protofile : "/" + protofile;
+         String descriptor = readClasspathResource(absPath);
+         String name = protofile.startsWith("/") ? protofile.substring(1) : protofile;
          fileNames.add(name);
          fileContents.add(descriptor);
       }

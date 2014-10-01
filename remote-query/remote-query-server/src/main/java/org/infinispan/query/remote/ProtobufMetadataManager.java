@@ -99,7 +99,7 @@ public class ProtobufMetadataManager implements ProtobufMetadataManagerMBean {
       this.objectName = objectName;
    }
 
-   public <T> void registerMarshaller(BaseMarshaller<T> marshaller) {
+   public void registerMarshaller(BaseMarshaller<?> marshaller) {
       ensureInit();
       serCtx.registerMarshaller(marshaller);
    }
@@ -138,8 +138,9 @@ public class ProtobufMetadataManager implements ProtobufMetadataManagerMBean {
    public void registerProtofiles(String... classPathResources) throws Exception {
       FileDescriptorSource fileDescriptorSource = getFileDescriptorSource();
       for (String classPathResource : classPathResources) {
-         String fileName = classPathResource.substring(classPathResource.lastIndexOf('/') + 1);
-         fileDescriptorSource.addProtoFile(fileName, Util.getResourceAsStream(classPathResource, getClass().getClassLoader()));
+         String absPath = classPathResource.startsWith("/") ? classPathResource : "/" + classPathResource;
+         String path = classPathResource.startsWith("/") ? classPathResource.substring(1) : classPathResource;
+         fileDescriptorSource.addProtoFile(path, Util.getResourceAsStream(absPath, getClass().getClassLoader()));
       }
       clusterRegistry.put(REGISTRY_SCOPE, REGISTRY_KEY, fileDescriptorSource);
    }

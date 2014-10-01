@@ -46,6 +46,7 @@ import static org.junit.Assert.*;
 @Test(testName = "client.hotrod.query.RemoteQueryJmxTest", groups = "functional")
 @CleanupAfterMethod
 public class RemoteQueryJmxTest extends SingleCacheManagerTest {
+
    public static final String JMX_DOMAIN = ProtobufMetadataManager.class.getSimpleName();
 
    public static final String TEST_CACHE_NAME = "userCache";
@@ -53,7 +54,7 @@ public class RemoteQueryJmxTest extends SingleCacheManagerTest {
    private HotRodServer hotRodServer;
    private RemoteCacheManager remoteCacheManager;
    private RemoteCache<Integer, User> remoteCache;
-   private MBeanServer server = null;
+   private MBeanServer server;
 
    @Override
    protected EmbeddedCacheManager createCacheManager() throws Exception {
@@ -90,19 +91,18 @@ public class RemoteQueryJmxTest extends SingleCacheManagerTest {
                                                 + ObjectName.quote("DefaultCacheManager")
                                                 + ",component=" + ProtobufMetadataManager.OBJECT_NAME);
 
-      MBeanServer mBeanServer = PerThreadMBeanServerLookup.getThreadMBeanServer();
-      ProtobufMetadataManagerMBean protobufMetadataManagerMBean = JMX.newMBeanProxy(mBeanServer, objName, ProtobufMetadataManagerMBean.class);
+      server = PerThreadMBeanServerLookup.getThreadMBeanServer();
+      ProtobufMetadataManagerMBean protobufMetadataManagerMBean = JMX.newMBeanProxy(server, objName, ProtobufMetadataManagerMBean.class);
       protobufMetadataManagerMBean.registerProtofiles(
-              new String[]{"bank.proto","indexing.proto","descriptor.proto"}, 
-              new String[]{
-                      read("/sample_bank_account/bank.proto"),
-                      read("/infinispan/indexing.proto"),
-                      read("/google/protobuf/descriptor.proto")
-              }
+            new String[]{"sample_bank_account/bank.proto", "infinispan/indexing.proto", "google/protobuf/descriptor.proto"},
+            new String[]{
+                  read("/sample_bank_account/bank.proto"),
+                  read("/infinispan/indexing.proto"),
+                  read("/google/protobuf/descriptor.proto")
+            }
       );
       //initialize client-side serialization context
       MarshallerRegistration.registerMarshallers(ProtoStreamMarshaller.getSerializationContext(remoteCacheManager));
-      server = PerThreadMBeanServerLookup.getThreadMBeanServer();
 
       return cacheManager;
    }
