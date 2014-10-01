@@ -325,6 +325,7 @@ public class LocalTopologyManagerImpl implements LocalTopologyManager {
       return (Boolean) executeOnCoordinator(command, getGlobalTimeout());
    }
 
+   @Override
    public void setRebalancingEnabled(boolean enabled) throws Exception {
       CacheTopologyControlCommand.Type type = enabled ? CacheTopologyControlCommand.Type.POLICY_ENABLE
             : CacheTopologyControlCommand.Type.POLICY_DISABLE;

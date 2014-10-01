@@ -73,4 +73,9 @@ public interface LocalTopologyManager {
     * @return the last stable topology for a cache.
     */
    CacheTopology getStableCacheTopology(String cacheName);
+
+   /**
+    * Enable or disable rebalancing in the entire cluster.
+    */
+   void setRebalancingEnabled(boolean enabled) throws Exception;
 }
