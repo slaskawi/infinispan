@@ -25,7 +25,6 @@ import org.infinispan.test.fwk.TestCacheManagerFactory;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.Test;
 
-import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import java.io.IOException;
 import java.io.InputStream;
@@ -82,12 +81,12 @@ public class HotRodQueryTest extends SingleCacheManagerTest {
                                                 + ObjectName.quote("DefaultCacheManager")
                                                 + ",component=" + ProtobufMetadataManager.OBJECT_NAME);
 
-      //initialize server-side serialization context via JMX
-      MBeanServer mBeanServer = PerThreadMBeanServerLookup.getThreadMBeanServer();
-      String[] fileNames = {"sample_bank_account/bank.proto", "infinispan/indexing.proto", "google/protobuf/descriptor.proto"};
-      String[] fileContents = {read("/sample_bank_account/bank.proto"), read("/infinispan/indexing.proto"), read("/google/protobuf/descriptor.proto")};
-      mBeanServer.invoke(objName, "registerProtofiles", new Object[]{fileNames, fileContents}, new String[]{String[].class.getName(), String[].class.getName()});
-      
+      //initialize server-side serialization
+      RemoteCache<String, String> metadataCache = remoteCacheManager.getCache(ProtobufMetadataManager.PROTOBUF_METADATA_CACHE_NAME);
+      metadataCache.put("google/protobuf/descriptor.proto", read("/google/protobuf/descriptor.proto"));
+      metadataCache.put("infinispan/indexing.proto", read("/infinispan/indexing.proto"));
+      metadataCache.put("sample_bank_account/bank.proto", read("/sample_bank_account/bank.proto"));
+
       //initialize client-side serialization context
       MarshallerRegistration.registerMarshallers(ProtoStreamMarshaller.getSerializationContext(remoteCacheManager));
 

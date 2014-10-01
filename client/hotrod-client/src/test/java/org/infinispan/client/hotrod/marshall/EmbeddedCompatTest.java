@@ -6,6 +6,7 @@ import org.infinispan.client.hotrod.Search;
 import org.infinispan.client.hotrod.TestHelper;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.commons.equivalence.AnyEquivalence;
+import org.infinispan.commons.util.Util;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.protostream.sampledomain.Account;
 import org.infinispan.protostream.sampledomain.marshallers.MarshallerRegistration;
@@ -65,8 +66,12 @@ public class EmbeddedCompatTest extends SingleCacheManagerTest {
       MarshallerRegistration.registerMarshallers(ProtoStreamMarshaller.getSerializationContext(remoteCacheManager));
 
       //initialize server-side serialization context
+      RemoteCache<String, String> metadataCache = remoteCacheManager.getCache(ProtobufMetadataManager.PROTOBUF_METADATA_CACHE_NAME);
+      metadataCache.put("google/protobuf/descriptor.proto", Util.read(Util.getResourceAsStream("/google/protobuf/descriptor.proto", getClass().getClassLoader())));
+      metadataCache.put("infinispan/indexing.proto", Util.read(Util.getResourceAsStream("/infinispan/indexing.proto", getClass().getClassLoader())));
+      metadataCache.put("sample_bank_account/bank.proto", Util.read(Util.getResourceAsStream("/sample_bank_account/bank.proto", getClass().getClassLoader())));
+
       ProtobufMetadataManager protobufMetadataManager = cacheManager.getGlobalComponentRegistry().getComponent(ProtobufMetadataManager.class);
-      protobufMetadataManager.registerProtofiles("/infinispan/indexing.proto", "/sample_bank_account/bank.proto", "/google/protobuf/descriptor.proto");
       protobufMetadataManager.registerMarshaller(new EmbeddedAccountMarshaller());
 
       return cacheManager;

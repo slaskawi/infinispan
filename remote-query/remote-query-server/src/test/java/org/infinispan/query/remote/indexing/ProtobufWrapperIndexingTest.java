@@ -28,7 +28,7 @@ import static org.junit.Assert.assertNotNull;
  * @author anistor@redhat.com
  * @since 6.0
  */
-@Test(groups = "functional", testName = "query.remote.protostream.ProtobufWrapperIndexingTest")
+@Test(groups = "functional", testName = "query.remote.indexing.ProtobufWrapperIndexingTest")
 public class ProtobufWrapperIndexingTest extends SingleCacheManagerTest {
 
    protected EmbeddedCacheManager createCacheManager() throws Exception {
@@ -102,6 +102,6 @@ public class ProtobufWrapperIndexingTest extends SingleCacheManagerTest {
       address.setPostCode("1234");
       user.setAddresses(Collections.singletonList(address));
 
-      return ProtobufUtil.toWrappedByteArray(ProtobufMetadataManager.getSerializationContext(cacheManager), user);
+      return ProtobufUtil.toWrappedByteArray(ProtobufMetadataManager.getSerializationContextInternal(cacheManager), user);
    }
 }

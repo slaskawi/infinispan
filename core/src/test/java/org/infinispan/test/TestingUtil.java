@@ -936,7 +936,7 @@ public class TestingUtil {
       }
    }
 
-   public static CommandsFactory extractCommandsFactory(Cache<Object, Object> cache) {
+   public static CommandsFactory extractCommandsFactory(Cache<?, ?> cache) {
       return (CommandsFactory) extractField(cache, "commandsFactory");
    }
 
@@ -1138,7 +1138,7 @@ public class TestingUtil {
       return prefix + m.getName();
    }
 
-   public static TransactionTable getTransactionTable(Cache<Object, Object> cache) {
+   public static TransactionTable getTransactionTable(Cache<?, ?> cache) {
       return cache.getAdvancedCache().getComponentRegistry().getComponent(TransactionTable.class);
    }
 

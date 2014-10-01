@@ -9,6 +9,7 @@ import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.Search;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.marshall.ProtoStreamMarshaller;
+import org.infinispan.commons.util.Util;
 import org.infinispan.protostream.FileDescriptorSource;
 import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.sampledomain.Address;
@@ -21,6 +22,7 @@ import org.infinispan.protostream.sampledomain.marshallers.TransactionMarshaller
 import org.infinispan.protostream.sampledomain.marshallers.UserMarshaller;
 import org.infinispan.query.dsl.Query;
 import org.infinispan.query.dsl.QueryFactory;
+import org.infinispan.query.remote.ProtobufMetadataManager;
 import org.infinispan.server.test.category.Osgi;
 import org.infinispan.server.test.util.osgi.KarafTestSupport;
 import org.junit.After;
@@ -110,22 +112,29 @@ public class RemoteCacheOsgiIT extends KarafTestSupport {
       manager = new RemoteCacheManager(builder.build());
       RemoteCache<Integer, User> cache = manager.getCache(INDEXED_CACHE);
 
-      SerializationContext ctx = ProtoStreamMarshaller.getSerializationContext(manager);
-
-      FileDescriptorSource fds = new FileDescriptorSource();
-      fds.addProtoFile("bank.proto", bundleContext.getBundle().getResource("/sample_bank_account/bank.proto").openStream());
+      // register schemas on server
+      RemoteCache<String, String> metadataCache = manager.getCache(ProtobufMetadataManager.PROTOBUF_METADATA_CACHE_NAME);
       Bundle sampleDomainDefinitionBundle = getInstalledBundle("org.infinispan.protostream.sample-domain-definition");
-      fds.addProtoFile("indexing.proto", sampleDomainDefinitionBundle.getResource("/infinispan/indexing.proto").openStream());
-      fds.addProtoFile("descriptor.proto", sampleDomainDefinitionBundle.getResource("/google/protobuf/descriptor.proto").openStream());
-      ctx.registerProtoFiles(fds);
+      String file1 = Util.read(sampleDomainDefinitionBundle.getResource("/google/protobuf/descriptor.proto").openStream());
+      String file2 = Util.read(sampleDomainDefinitionBundle.getResource("/infinispan/indexing.proto").openStream());
+      String file3 = Util.read(bundleContext.getBundle().getResource("/sample_bank_account/bank.proto").openStream());
+      metadataCache.put("google/protobuf/descriptor.proto", file1);
+      metadataCache.put("infinispan/indexing.proto", file2);
+      metadataCache.put("sample_bank_account/bank.proto", file3);
 
+      // register schemas and marshallers on client
+      SerializationContext ctx = ProtoStreamMarshaller.getSerializationContext(manager);
+      FileDescriptorSource fds = new FileDescriptorSource();
+      fds.addProtoFile("google/protobuf/descriptor.proto", file1);
+      fds.addProtoFile("infinispan/indexing.proto", file2);
+      fds.addProtoFile("sample_bank_account/bank.proto", file3);
+      ctx.registerProtoFiles(fds);
       ctx.registerMarshaller(new UserMarshaller());
       ctx.registerMarshaller(new GenderMarshaller());
       ctx.registerMarshaller(new AddressMarshaller());
       ctx.registerMarshaller(new AccountMarshaller());
       ctx.registerMarshaller(new LimitsMarshaller());
       ctx.registerMarshaller(new TransactionMarshaller());
-
       cache.put(1, createUser1());
       cache.put(2, createUser2());
 

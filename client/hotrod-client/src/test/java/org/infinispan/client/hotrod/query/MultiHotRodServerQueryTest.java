@@ -7,7 +7,6 @@ import org.infinispan.client.hotrod.marshall.ProtoStreamMarshaller;
 import org.infinispan.client.hotrod.test.MultiHotRodServersTest;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.protostream.sampledomain.Address;
 import org.infinispan.protostream.sampledomain.User;
 import org.infinispan.protostream.sampledomain.marshallers.MarshallerRegistration;
@@ -25,6 +24,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
+ * Tests query over Hot Rod in a two-node cluster.
+ *
  * @author anistor@redhat.com
  * @since 6.0
  */
@@ -42,10 +43,8 @@ public class MultiHotRodServerQueryTest extends MultiHotRodServersTest {
       createHotRodServers(2, builder);
 
       //initialize server-side serialization context
-      for (EmbeddedCacheManager cm : cacheManagers) {
-         cm.getGlobalComponentRegistry().getComponent(ProtobufMetadataManager.class)
-                 .registerProtofiles("/sample_bank_account/bank.proto", "/infinispan/indexing.proto", "/google/protobuf/descriptor.proto");
-      }
+      ProtobufMetadataManager protobufMetadataManager = manager(0).getGlobalComponentRegistry().getComponent(ProtobufMetadataManager.class);
+      protobufMetadataManager.registerProtofiles(MarshallerRegistration.PROTOBUF_RES);
 
       //initialize client-side serialization context
       for (RemoteCacheManager rcm : clients) {
