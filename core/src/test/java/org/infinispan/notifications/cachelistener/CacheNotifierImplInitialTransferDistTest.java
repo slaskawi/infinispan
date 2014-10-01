@@ -97,7 +97,11 @@ public class CacheNotifierImplInitialTransferDistTest extends MultipleCacheManag
       }
 
       cache.addListener(listener);
-      verifyEvents(isClustered(listener), listener, expectedValues);
+      try {
+         verifyEvents(isClustered(listener), listener, expectedValues);
+      } finally {
+         cache.removeListener(listener);
+      }
    }
 
    private void verifyEvents(boolean isClustered, StateListener<String, String> listener,
@@ -366,6 +370,7 @@ public class CacheNotifierImplInitialTransferDistTest extends MultipleCacheManag
          }
       } finally {
          TestingUtil.replaceComponent(cache, EntryRetriever.class, retriever, true);
+         cache.removeListener(listener);
       }
    }
 
@@ -469,7 +474,7 @@ public class CacheNotifierImplInitialTransferDistTest extends MultipleCacheManag
             value = "new-value";
             break;
          case PUT:
-            value =  cache.get(keyToChange) + "-changed";
+            value = cache.get(keyToChange) + "-changed";
             break;
          case REMOVE:
             value = null;
@@ -493,10 +498,8 @@ public class CacheNotifierImplInitialTransferDistTest extends MultipleCacheManag
          }
       });
 
-      checkPoint.awaitStrict("pre_complete_segment_invoked", 10, TimeUnit.SECONDS);
-
       try {
-
+         checkPoint.awaitStrict("pre_complete_segment_invoked", 10, TimeUnit.SECONDS);
          Object oldValue = operation.perform(cache, keyToChange, value);
 
          // Now let the iteration complete
@@ -519,7 +522,7 @@ public class CacheNotifierImplInitialTransferDistTest extends MultipleCacheManag
             CacheEntryEvent event = null;
             boolean foundEarlierCreate = false;
             // We iterate backwards so we only have to do it once
-            for (int i = listener.events.size() - 1; i > 0; --i) {
+            for (int i = listener.events.size() - 1; i >= 0; --i) {
                CacheEntryEvent currentEvent = listener.events.get(i);
                if (currentEvent.getKey().equals(keyToChange) && operation.getType() == currentEvent.getType()) {
                   if (event == null) {
@@ -587,6 +590,7 @@ public class CacheNotifierImplInitialTransferDistTest extends MultipleCacheManag
       } finally {
          TestingUtil.replaceComponent(cache, CacheNotifier.class, notifier, true);
          TestingUtil.replaceComponent(cache, ClusterCacheNotifier.class, notifier, true);
+         cache.removeListener(listener);
       }
    }
 
