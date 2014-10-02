@@ -12,15 +12,15 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
- * Maintains a Set of filenames contained in the index.
- * Does not implement Set for simplicity, and does internal locking to provide
- * a safe Externalizer.
+ * Maintains a Set of filenames contained in the index. Does not implement Set for simplicity, and does internal locking
+ * to provide a safe Externalizer.
  *
  * @author Sanne Grinovero
  * @since 7.0
@@ -49,6 +49,17 @@ public final class FileListCacheValue implements DeltaAware {
    public FileListCacheValue(String[] listAll) {
       this();
       Collections.addAll(filenames, listAll);
+   }
+
+   protected void apply(List<Operation> operations) {
+      writeLock.lock();
+      try {
+         for (Operation operation : operations) {
+            operation.apply(filenames);
+         }
+      } finally {
+         writeLock.unlock();
+      }
    }
 
    /**
@@ -82,8 +93,7 @@ public final class FileListCacheValue implements DeltaAware {
             fileListValueDelta.addOperation(fileName);
          }
          return added;
-      }
-      finally {
+      } finally {
          writeLock.unlock();
       }
    }
@@ -100,8 +110,7 @@ public final class FileListCacheValue implements DeltaAware {
             fileListValueDelta.removeOperation(toRemove);
          }
          return doneAdd || doneRemove;
-      }
-      finally {
+      } finally {
          writeLock.unlock();
       }
    }
@@ -110,8 +119,7 @@ public final class FileListCacheValue implements DeltaAware {
       readLock.lock();
       try {
          return filenames.toArray(new String[filenames.size()]);
-      }
-      finally {
+      } finally {
          readLock.unlock();
       }
    }
@@ -120,8 +128,7 @@ public final class FileListCacheValue implements DeltaAware {
       readLock.lock();
       try {
          return filenames.contains(fileName);
-      }
-      finally {
+      } finally {
          readLock.unlock();
       }
    }
@@ -131,8 +138,7 @@ public final class FileListCacheValue implements DeltaAware {
       readLock.lock();
       try {
          return filenames.hashCode();
-      }
-      finally {
+      } finally {
          readLock.unlock();
       }
    }
@@ -157,8 +163,7 @@ public final class FileListCacheValue implements DeltaAware {
       readLock.lock();
       try {
          return (filenames.equals(copyFromOther));
-      }
-      finally {
+      } finally {
          readLock.unlock();
       }
    }
@@ -168,8 +173,7 @@ public final class FileListCacheValue implements DeltaAware {
       readLock.lock();
       try {
          return "FileListCacheValue [filenames=" + filenames + "]";
-      }
-      finally {
+      } finally {
          readLock.unlock();
       }
    }
@@ -201,8 +205,7 @@ public final class FileListCacheValue implements DeltaAware {
             for (String name : key.filenames) {
                output.writeUTF(name);
             }
-         }
-         finally {
+         } finally {
             key.readLock.unlock();
          }
       }
