@@ -25,12 +25,12 @@ import org.junit.Test;
 public abstract class AbstractNodeAuthentication {
 
    protected static final String COORDINATOR_NODE = "node0";
-   protected static final String COORDINATOR_JGROUSP_CONFIG_MD5 = "jgroups-udp-sasl-md5-node0.xml";
-   protected static final String COORDINATOR_JGROUSP_CONFIG_MD5_USER = "jgroups-udp-sasl-md5-user-node0.xml";
-   protected static final String JOINING_NODE_JGROUSP_CONFIG_MD5 = "jgroups-udp-sasl-md5-node1.xml";
-   protected static final String COORDINATOR_JGROUSP_CONFIG_KRB = "jgroups-udp-sasl-krb-node0.xml";
-   protected static final String JOINING_NODE_JGROUSP_CONFIG_KRB = "jgroups-udp-sasl-krb-node1.xml";
-   protected static final String JOINING_NODE_JGROUSP_CONFIG_KRB_FAIL = "jgroups-udp-sasl-krb-node1-fail.xml";
+   protected static final String COORDINATOR_JGROUSP_CONFIG_MD5 = "jgroups-tcp-sasl-md5-node0.xml";
+   protected static final String COORDINATOR_JGROUSP_CONFIG_MD5_USER = "jgroups-tcp-sasl-md5-user-node0.xml";
+   protected static final String JOINING_NODE_JGROUSP_CONFIG_MD5 = "jgroups-tcp-sasl-md5-node1.xml";
+   protected static final String COORDINATOR_JGROUSP_CONFIG_KRB = "jgroups-tcp-sasl-krb-node0.xml";
+   protected static final String JOINING_NODE_JGROUSP_CONFIG_KRB = "jgroups-tcp-sasl-krb-node1.xml";
+   protected static final String JOINING_NODE_JGROUSP_CONFIG_KRB_FAIL = "jgroups-tcp-sasl-krb-node1-fail.xml";
 
    protected static final String CACHE_NAME = "replicatedCache";
    protected static final String TEST_ITEM_KEY = "test_key";
