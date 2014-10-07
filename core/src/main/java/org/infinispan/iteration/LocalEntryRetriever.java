@@ -11,7 +11,6 @@ import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.container.DataContainer;
 import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.container.InternalEntryFactory;
-import org.infinispan.container.entries.ImmortalCacheEntry;
 import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.context.Flag;
 import org.infinispan.factories.ComponentRegistry;
@@ -27,6 +26,7 @@ import org.infinispan.filter.KeyValueFilterConverter;
 import org.infinispan.marshall.core.MarshalledEntry;
 import org.infinispan.filter.Converter;
 import org.infinispan.marshall.core.MarshalledValue;
+import org.infinispan.metadata.InternalMetadata;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryActivated;
 import org.infinispan.notifications.cachelistener.event.CacheEntryActivatedEvent;
@@ -156,7 +156,11 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
                                AdvancedCacheLoader.TaskContext taskContext)
             throws InterruptedException {
          if (!taskContext.isStopped()) {
-            action.apply(marshalledEntry.getKey(), PersistenceUtil.convert(marshalledEntry, entryFactory));
+            InternalMetadata metadata = marshalledEntry.getMetadata();
+            if (metadata == null || !metadata.isExpired(timeService.wallClockTime())) {
+               InternalCacheEntry ice = PersistenceUtil.convert(marshalledEntry, entryFactory);
+               action.apply(marshalledEntry.getKey(), ice);
+            }
             if (Thread.interrupted()) {
                throw new InterruptedException();
             }
@@ -210,32 +214,34 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
                MapAction<C> action = new MapAction(batchSize, usedConverter, queue, handler);
 
                PassivationListener<K, V> listener = null;
-
+               long currentTime = timeService.wallClockTime();
                try {
                   int interruptCheck = 0;
                   for (InternalCacheEntry entry : dataContainer) {
-                     InternalCacheEntry clone = entryFactory.create(unwrapMarshalledvalue(entry.getKey()),
-                                                                    unwrapMarshalledvalue(entry.getValue()), entry);
-                     K key = (K) clone.getKey();
-                     if (filter != null) {
-                        if (usedConverter == null && filter instanceof KeyValueFilterConverter) {
-                           C converted = ((KeyValueFilterConverter<K, V, C>)filter).filterAndConvert(
-                                 key, (V) clone.getValue(), clone.getMetadata());
-                           if (converted != null) {
-                              clone.setValue((V) converted);
-                           } else {
+                     if (!entry.isExpired(currentTime)) {
+                        InternalCacheEntry clone = entryFactory.create(unwrapMarshalledvalue(entry.getKey()),
+                                                                       unwrapMarshalledvalue(entry.getValue()), entry);
+                        K key = (K) clone.getKey();
+                        if (filter != null) {
+                           if (usedConverter == null && filter instanceof KeyValueFilterConverter) {
+                              C converted = ((KeyValueFilterConverter<K, V, C>)filter).filterAndConvert(
+                                    key, (V) clone.getValue(), clone.getMetadata());
+                              if (converted != null) {
+                                 clone.setValue((V) converted);
+                              } else {
+                                 continue;
+                              }
+                           }
+                           else if (!filter.accept(key, (V) clone.getValue(), clone.getMetadata())) {
                               continue;
                            }
                         }
-                        else if (!filter.accept(key, (V) clone.getValue(), clone.getMetadata())) {
-                           continue;
-                        }
-                     }
 
-                     action.apply(key, clone);
-                     if (interruptCheck++ % batchSize == 0) {
-                        if (Thread.interrupted()) {
-                           throw new CacheException("Entry Iterator was interrupted!");
+                        action.apply(key, clone);
+                        if (interruptCheck++ % batchSize == 0) {
+                           if (Thread.interrupted()) {
+                              throw new CacheException("Entry Iterator was interrupted!");
+                           }
                         }
                      }
                   }

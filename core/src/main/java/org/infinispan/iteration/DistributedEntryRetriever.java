@@ -344,26 +344,29 @@ public class DistributedEntryRetriever<K, V> extends LocalEntryRetriever<K, V> {
                                          handler, queue);
 
                      PassivationListener<K, V> listener = null;
+                     long currentTime = timeService.wallClockTime();
                      try {
                         for (InternalCacheEntry entry : dataContainer) {
-                           InternalCacheEntry clone = entryFactory.create(unwrapMarshalledvalue(entry.getKey()),
-                                                                          unwrapMarshalledvalue(entry.getValue()), entry);
-                           K key = (K) clone.getKey();
-                           if (filter != null) {
-                              if (converter == null && filter instanceof KeyValueFilterConverter) {
-                                 C converted = ((KeyValueFilterConverter<K, V, C>)filter).filterAndConvert(
-                                       key, (V) clone.getValue(), clone.getMetadata());
-                                 if (converted != null) {
-                                    clone.setValue((V) converted);
-                                 } else {
+                           if (!entry.isExpired(currentTime)) {
+                              InternalCacheEntry clone = entryFactory.create(unwrapMarshalledvalue(entry.getKey()),
+                                                                             unwrapMarshalledvalue(entry.getValue()), entry);
+                              K key = (K) clone.getKey();
+                              if (filter != null) {
+                                 if (converter == null && filter instanceof KeyValueFilterConverter) {
+                                    C converted = ((KeyValueFilterConverter<K, V, C>)filter).filterAndConvert(
+                                          key, (V) clone.getValue(), clone.getMetadata());
+                                    if (converted != null) {
+                                       clone.setValue((V) converted);
+                                    } else {
+                                       continue;
+                                    }
+                                 }
+                                 else if (!filter.accept(key, (V) clone.getValue(), clone.getMetadata())) {
                                     continue;
                                  }
                               }
-                              else if (!filter.accept(key, (V) clone.getValue(), clone.getMetadata())) {
-                                 continue;
-                              }
+                              action.apply(key, clone);
                            }
-                           action.apply(key, clone);
                         }
                         if (DistributedEntryRetriever.super.shouldUseLoader(flags) &&
                               persistenceManager.getStoresAsString().size() > 0) {
@@ -1021,7 +1024,16 @@ public class DistributedEntryRetriever<K, V> extends LocalEntryRetriever<K, V> {
             Set<K> values = entry.getValue();
             // If it is empty just notify right away
             if (values.isEmpty()) {
-               notifyListenerCompletedSegment(entry.getKey(), false);
+               // If we have keys to be notified, then don't complete the segment due to this response having no valid
+               // keys.  This means a previous response came for this segment that had keys.
+               if (!keysNeededToComplete.containsKey(entry.getKey())) {
+                  notifyListenerCompletedSegment(entry.getKey(), false);
+               } else {
+                  if (log.isTraceEnabled()) {
+                     log.tracef("No keys found for segment %s, but previous response had keys - so cannot complete " +
+                                      "segment", entry.getKey());
+                  }
+               }
             }
             // Else we have to wait until we iterate over the values first
             else {
@@ -1070,7 +1082,6 @@ public class DistributedEntryRetriever<K, V> extends LocalEntryRetriever<K, V> {
                }               
                clone.setValue(value);
             }
-            // We use just an immortal cache entry since it has low serialization overhead
             queue.add(clone);
             if (insertionCount.incrementAndGet() % batchSize == 0) {
                Collection<CacheEntry> entriesToSend = new ArrayList<CacheEntry>(batchSize);
