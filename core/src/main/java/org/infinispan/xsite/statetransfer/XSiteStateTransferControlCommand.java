@@ -20,6 +20,7 @@ public class XSiteStateTransferControlCommand extends XSiteReplicateCommand {
    private XSiteStateTransferManager stateTransferManager;
    private String siteName;
    private boolean statusOk;
+   private int topologyId;
 
    public XSiteStateTransferControlCommand(String cacheName, StateTransferControl control, String siteName) {
       super(cacheName);
@@ -52,7 +53,7 @@ public class XSiteStateTransferControlCommand extends XSiteReplicateCommand {
    public Object perform(InvocationContext ctx) throws Throwable {
       switch (control) {
          case START_SEND:
-            provider.startStateTransfer(siteName, getOrigin());
+            provider.startStateTransfer(siteName, getOrigin(), topologyId);
             break;
          case START_RECEIVE:
             consumer.startStateTransfer(siteName);
@@ -68,7 +69,7 @@ public class XSiteStateTransferControlCommand extends XSiteReplicateCommand {
             break;
          case RESTART_SEND:
             provider.cancelStateTransfer(siteName);
-            provider.startStateTransfer(siteName, getOrigin());
+            provider.startStateTransfer(siteName, getOrigin(), topologyId);
             break;
          case STATUS_REQUEST:
             return stateTransferManager.getStatus();
@@ -88,7 +89,7 @@ public class XSiteStateTransferControlCommand extends XSiteReplicateCommand {
 
    @Override
    public Object[] getParameters() {
-      return new Object[]{control, siteName, statusOk};
+      return new Object[]{control, siteName, statusOk, topologyId};
    }
 
    @Override
@@ -99,7 +100,7 @@ public class XSiteStateTransferControlCommand extends XSiteReplicateCommand {
       this.control = (StateTransferControl) parameters[0];
       this.siteName = (String) parameters[1];
       this.statusOk = (Boolean) parameters[2];
-
+      this.topologyId = (Integer) parameters[3];
    }
 
    @Override
@@ -117,6 +118,10 @@ public class XSiteStateTransferControlCommand extends XSiteReplicateCommand {
 
    public String getSiteName() {
       return siteName;
+   }
+
+   public void setTopologyId(int topologyId) {
+      this.topologyId = topologyId;
    }
 
    public static enum StateTransferControl {

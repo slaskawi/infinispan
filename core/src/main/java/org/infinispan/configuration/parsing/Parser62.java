@@ -383,7 +383,7 @@ public class Parser62 implements ConfigurationParser {
                backup.stateTransfer().maxRetries(Integer.parseInt(value));
                break;
             case WAIT_TIME:
-               backup.stateTransfer().waitingTimeBetweenRetries(Long.parseLong(value));
+               backup.stateTransfer().waitTime(Long.parseLong(value));
                break;
             default:
                throw ParseUtils.unexpectedAttribute(reader, i);

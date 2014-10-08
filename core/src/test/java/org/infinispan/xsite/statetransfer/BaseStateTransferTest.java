@@ -766,7 +766,7 @@ public abstract class BaseStateTransferTest extends AbstractTwoSitesTest {
       }
 
       @Override
-      public void startStateTransfer(String siteName, Address requestor) {
+      public void startStateTransfer(String siteName, Address requestor, int minTopologyId) {
          checkPoint.trigger("before-start");
          try {
             checkPoint.awaitStrict("await-start", 30, TimeUnit.SECONDS);
@@ -776,7 +776,7 @@ public abstract class BaseStateTransferTest extends AbstractTwoSitesTest {
          } catch (TimeoutException e) {
             throw new RuntimeException(e);
          }
-         super.startStateTransfer(siteName, requestor);
+         super.startStateTransfer(siteName, requestor, minTopologyId);
       }
 
       public final void await() throws TimeoutException, InterruptedException {

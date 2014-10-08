@@ -2,6 +2,7 @@ package org.infinispan.configuration.cache;
 
 import org.infinispan.commons.CacheConfigurationException;
 import org.infinispan.commons.configuration.Builder;
+import org.infinispan.configuration.global.GlobalConfiguration;
 
 import java.util.concurrent.TimeUnit;
 
@@ -21,7 +22,7 @@ public class XSiteStateTransferConfigurationBuilder extends AbstractConfiguratio
    public static final int DEFAULT_MAX_RETRIES = 30;
    private int maxRetries = DEFAULT_MAX_RETRIES;
    public static final long DEFAULT_WAIT_TIME = TimeUnit.SECONDS.toMillis(2);
-   private long waitingTimeBetweenRetries = DEFAULT_WAIT_TIME;
+   private long waitTime = DEFAULT_WAIT_TIME;
    private final BackupConfigurationBuilder backupConfigurationBuilder;
 
    public XSiteStateTransferConfigurationBuilder(ConfigurationBuilder builder,
@@ -35,7 +36,7 @@ public class XSiteStateTransferConfigurationBuilder extends AbstractConfiguratio
       if (timeout <= 0) {
          throw new CacheConfigurationException("Timeout must be higher or equals than 1 (one).");
       }
-      if (waitingTimeBetweenRetries <= 0) {
+      if (waitTime <= 0) {
          throw new CacheConfigurationException("Waiting time between retries must be higher or equals than 1 (one).");
       }
    }
@@ -60,7 +61,7 @@ public class XSiteStateTransferConfigurationBuilder extends AbstractConfiguratio
 
    /**
     * The maximum number of retries when a push state command fails. A value <= 0 (zero) mean that the command will not
-    * retry. Default values is 30.
+    * retry. Default value is 30.
     */
    public final XSiteStateTransferConfigurationBuilder maxRetries(int maxRetries) {
       this.maxRetries = maxRetries;
@@ -70,8 +71,8 @@ public class XSiteStateTransferConfigurationBuilder extends AbstractConfiguratio
    /**
     * The waiting time (in milliseconds) between each retry. The value should be > 0 (zero). Default value is 2 seconds.
     */
-   public final XSiteStateTransferConfigurationBuilder waitingTimeBetweenRetries(long waitingTimeBetweenRetries) {
-      this.waitingTimeBetweenRetries = waitingTimeBetweenRetries;
+   public final XSiteStateTransferConfigurationBuilder waitTime(long waitingTimeBetweenRetries) {
+      this.waitTime = waitingTimeBetweenRetries;
       return this;
    }
 
@@ -81,7 +82,7 @@ public class XSiteStateTransferConfigurationBuilder extends AbstractConfiguratio
 
    @Override
    public XSiteStateTransferConfiguration create() {
-      return new XSiteStateTransferConfiguration(chunkSize, timeout, maxRetries, waitingTimeBetweenRetries);
+      return new XSiteStateTransferConfiguration(chunkSize, timeout, maxRetries, waitTime);
    }
 
    @Override
@@ -89,7 +90,7 @@ public class XSiteStateTransferConfigurationBuilder extends AbstractConfiguratio
       this.chunkSize = template.chunkSize();
       this.timeout = template.timeout();
       this.maxRetries = template.maxRetries();
-      this.waitingTimeBetweenRetries = template.waitingTimeBetweenRetries();
+      this.waitTime = template.waitTime();
       return this;
    }
 
@@ -99,7 +100,7 @@ public class XSiteStateTransferConfigurationBuilder extends AbstractConfiguratio
             "chunkSize=" + chunkSize +
             ", timeout=" + timeout +
             ", maxRetries=" + maxRetries +
-            ", waitingTimeBetweenRetries=" + waitingTimeBetweenRetries +
+            ", waitTime=" + waitTime +
             '}';
    }
 
@@ -113,7 +114,7 @@ public class XSiteStateTransferConfigurationBuilder extends AbstractConfiguratio
       if (chunkSize != that.chunkSize) return false;
       if (maxRetries != that.maxRetries) return false;
       if (timeout != that.timeout) return false;
-      if (waitingTimeBetweenRetries != that.waitingTimeBetweenRetries) return false;
+      if (waitTime != that.waitTime) return false;
 
       return true;
    }
@@ -123,7 +124,7 @@ public class XSiteStateTransferConfigurationBuilder extends AbstractConfiguratio
       int result = chunkSize;
       result = 31 * result + (int) (timeout ^ (timeout >>> 32));
       result = 31 * result + maxRetries;
-      result = 31 * result + (int) (waitingTimeBetweenRetries ^ (waitingTimeBetweenRetries >>> 32));
+      result = 31 * result + (int) (waitTime ^ (waitTime >>> 32));
       return result;
    }
 }

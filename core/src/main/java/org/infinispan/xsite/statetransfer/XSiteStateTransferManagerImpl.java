@@ -320,11 +320,16 @@ public class XSiteStateTransferManagerImpl implements XSiteStateTransferManager 
 
    private void controlStateTransferOnLocalSite(StateTransferControl control, String siteName) throws Exception {
       XSiteStateTransferControlCommand command = commandsFactory.buildXSiteStateTransferControlCommand(control, siteName);
+      command.setTopologyId(currentTopologyId());
       for (Map.Entry<Address, Response> entry : invokeRemotelyInLocalSite(command).entrySet()) {
          if (entry.getValue() instanceof ExceptionResponse) {
             throw ((ExceptionResponse) entry.getValue()).getException();
          }
       }
+   }
+
+   private int currentTopologyId() {
+      return stateTransferManager.getCacheTopology().getTopologyId();
    }
 
    private XSiteBackup findSite(String siteName) {
@@ -341,7 +346,7 @@ public class XSiteStateTransferManagerImpl implements XSiteStateTransferManager 
       SitesConfiguration sites = configuration.sites();
       for (BackupConfiguration bc : sites.allBackups()) {
          if (bc.site().equals(siteName)) {
-            return new BackupRpcConfiguration(bc.stateTransfer().waitingTimeBetweenRetries(),
+            return new BackupRpcConfiguration(bc.stateTransfer().waitTime(),
                                               bc.stateTransfer().maxRetries());
          }
       }

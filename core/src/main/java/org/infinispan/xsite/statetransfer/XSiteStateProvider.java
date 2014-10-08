@@ -18,8 +18,9 @@ public interface XSiteStateProvider {
     *
     * @param siteName  the remote site name.
     * @param requestor the requestor.
+    * @param minTopologyId
     */
-   public void startStateTransfer(String siteName, Address requestor);
+   public void startStateTransfer(String siteName, Address requestor, int minTopologyId);
 
    /**
     * It cancels the state transfer for the remote site. If no state transfer is available, it should do nothing.

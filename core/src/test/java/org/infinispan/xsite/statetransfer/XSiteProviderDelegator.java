@@ -20,8 +20,8 @@ public class XSiteProviderDelegator implements XSiteStateProvider {
    }
 
    @Override
-   public void startStateTransfer(String siteName, Address requestor) {
-      xSiteStateProvider.startStateTransfer(siteName, requestor);
+   public void startStateTransfer(String siteName, Address requestor, int minTopologyId) {
+      xSiteStateProvider.startStateTransfer(siteName, requestor, minTopologyId);
    }
 
    @Override

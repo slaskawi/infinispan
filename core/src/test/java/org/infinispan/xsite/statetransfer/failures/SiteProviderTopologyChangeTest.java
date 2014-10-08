@@ -79,7 +79,6 @@ public class SiteProviderTopologyChangeTest extends AbstractTopologyChangeTest {
       doXSiteStateTransferDuringTopologyChange(TopologyEvent.LEAVE);
    }
 
-   @Test(groups = "unstable")
    public void testXSiteSTDuringSiteMasterLeave() throws Exception {
       doXSiteStateTransferDuringTopologyChange(TopologyEvent.SITE_MASTER_LEAVE);
    }
@@ -107,7 +106,7 @@ public class SiteProviderTopologyChangeTest extends AbstractTopologyChangeTest {
                           public XSiteStateProvider wrap(Cache<?, ?> wrapOn, XSiteStateProvider current) {
                              return new XSiteProviderDelegator(current) {
                                 @Override
-                                public void startStateTransfer(String siteName, Address requestor) {
+                                public void startStateTransfer(String siteName, Address requestor, int minTopologyId) {
                                    log.debugf("Discard state transfer request to %s from %s", siteName, requestor);
                                    //no-op, i.e. discard it!
                                 }
@@ -123,9 +122,9 @@ public class SiteProviderTopologyChangeTest extends AbstractTopologyChangeTest {
                           public XSiteStateProvider wrap(Cache<?, ?> wrapOn, XSiteStateProvider current) {
                              return new XSiteProviderDelegator(current) {
                                 @Override
-                                public void startStateTransfer(String siteName, Address requestor) {
+                                public void startStateTransfer(String siteName, Address requestor, int minTopologyId) {
                                    log.debugf("Blocking state transfer request to %s from %s", siteName, requestor);
-                                   pendingRequest.set(new StateTransferRequest(siteName, requestor, xSiteStateProvider));
+                                   pendingRequest.set(new StateTransferRequest(siteName, requestor, minTopologyId, xSiteStateProvider));
                                 }
                              };
                           }
@@ -232,28 +231,6 @@ public class SiteProviderTopologyChangeTest extends AbstractTopologyChangeTest {
                  addressOf(testCaches.coordinator), testCaches.removeIndex < 0 ? "NONE" : addressOf(cache(LON, testCaches.removeIndex)));
 
       final BlockingLocalTopologyManager topologyManager = replaceTopologyManager(testCaches.controllerCache.getCacheManager());
-      final CheckPoint checkPoint = new CheckPoint();
-      wrapGlobalComponent(testCaches.controllerCache.getCacheManager(),
-                          Transport.class,
-                          new WrapFactory<Transport, Transport, CacheContainer>() {
-                             @Override
-                             public Transport wrap(CacheContainer wrapOn, Transport current) {
-                                return new AbstractDelegatingTransport(current) {
-                                   @Override
-                                   public void start() {
-                                      //no-op; avoid re-start the transport again...
-                                   }
-
-                                   @Override
-                                   public BackupResponse backupRemotely(Collection<XSiteBackup> backups, XSiteReplicateCommand rpcCommand) throws Exception {
-                                      if (rpcCommand instanceof XSiteStatePushCommand) {
-                                         checkPoint.trigger("before-second-chunk");
-                                      }
-                                      return super.backupRemotely(backups, rpcCommand);
-                                   }
-                                };
-                             }
-                          }, true);
 
       topologyManager.startBlocking(BlockingLocalTopologyManager.LatchType.CONSISTENT_HASH_UPDATE);
 
@@ -265,8 +242,6 @@ public class SiteProviderTopologyChangeTest extends AbstractTopologyChangeTest {
       startStateTransfer(testCaches.coordinator, NYC);
       assertOnline(LON, NYC);
 
-      //in the current implementation, the x-site state transfer is not triggered while the rebalance is in progress.
-      assertNull(checkPoint.peek(30, TimeUnit.SECONDS, "before-second-chunk"));
       topologyManager.stopBlockingAll();
 
       topologyEventFuture.get();
@@ -281,16 +256,18 @@ public class SiteProviderTopologyChangeTest extends AbstractTopologyChangeTest {
    private static class StateTransferRequest {
       private final String siteName;
       private final Address requestor;
+      private final int minTopologyId;
       private final XSiteStateProvider provider;
 
-      private StateTransferRequest(String siteName, Address requestor, XSiteStateProvider provider) {
+      private StateTransferRequest(String siteName, Address requestor, int minTopologyId, XSiteStateProvider provider) {
          this.siteName = siteName;
          this.requestor = requestor;
+         this.minTopologyId = minTopologyId;
          this.provider = provider;
       }
 
       public void execute() {
-         provider.startStateTransfer(siteName, requestor);
+         provider.startStateTransfer(siteName, requestor, minTopologyId);
       }
    }
 

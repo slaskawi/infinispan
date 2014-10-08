@@ -11,13 +11,13 @@ public class XSiteStateTransferConfiguration {
    private final int chunkSize;
    private final long timeout;
    private final int maxRetries;
-   private final long waitingTimeBetweenRetries;
+   private final long waitTime;
 
-   public XSiteStateTransferConfiguration(int chunkSize, long timeout, int maxRetries, long waitingTimeBetweenRetries) {
+   public XSiteStateTransferConfiguration(int chunkSize, long timeout, int maxRetries, long waitTime) {
       this.chunkSize = chunkSize;
       this.timeout = timeout;
       this.maxRetries = maxRetries;
-      this.waitingTimeBetweenRetries = waitingTimeBetweenRetries;
+      this.waitTime = waitTime;
    }
 
    public int chunkSize() {
@@ -32,8 +32,8 @@ public class XSiteStateTransferConfiguration {
       return maxRetries;
    }
 
-   public long waitingTimeBetweenRetries() {
-      return waitingTimeBetweenRetries;
+   public long waitTime() {
+      return waitTime;
    }
 
    @Override
@@ -42,7 +42,7 @@ public class XSiteStateTransferConfiguration {
             "chunkSize=" + chunkSize +
             ", timeout=" + timeout +
             ", maxRetries=" + maxRetries +
-            ", waitingTimeBetweenRetries=" + waitingTimeBetweenRetries +
+            ", waitTime=" + waitTime +
             '}';
    }
 
@@ -56,7 +56,7 @@ public class XSiteStateTransferConfiguration {
       if (chunkSize != that.chunkSize) return false;
       if (maxRetries != that.maxRetries) return false;
       if (timeout != that.timeout) return false;
-      if (waitingTimeBetweenRetries != that.waitingTimeBetweenRetries) return false;
+      if (waitTime != that.waitTime) return false;
 
       return true;
    }
@@ -66,7 +66,7 @@ public class XSiteStateTransferConfiguration {
       int result = chunkSize;
       result = 31 * result + (int) (timeout ^ (timeout >>> 32));
       result = 31 * result + maxRetries;
-      result = 31 * result + (int) (waitingTimeBetweenRetries ^ (waitingTimeBetweenRetries >>> 32));
+      result = 31 * result + (int) (waitTime ^ (waitTime >>> 32));
       return result;
    }
 }

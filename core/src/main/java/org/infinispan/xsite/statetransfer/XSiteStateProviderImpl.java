@@ -18,6 +18,7 @@ import org.infinispan.persistence.spi.AdvancedCacheLoader;
 import org.infinispan.remoting.rpc.RpcManager;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.RetryOnFailureXSiteCommand;
+import org.infinispan.statetransfer.StateTransferLock;
 import org.infinispan.util.ReadOnlyDataContainerBackedKeySet;
 import org.infinispan.util.concurrent.WithinThreadExecutor;
 import org.infinispan.util.logging.Log;
@@ -66,6 +67,7 @@ public class XSiteStateProviderImpl implements XSiteStateProvider {
    private ExecutorService executorService;
    private Configuration configuration;
    private XSiteStateTransferManager stateTransferManager;
+   private StateTransferLock stateTransferLock;
 
    public XSiteStateProviderImpl() {
       runningStateTransfer = CollectionFactory.makeConcurrentMap();
@@ -75,7 +77,8 @@ public class XSiteStateProviderImpl implements XSiteStateProvider {
    public void inject(DataContainer dataContainer, PersistenceManager persistenceManager, RpcManager rpcManager,
                       ClusteringDependentLogic clusteringDependentLogic, CommandsFactory commandsFactory,
                       @ComponentName(value = ASYNC_TRANSPORT_EXECUTOR) ExecutorService executorService,
-                      Configuration configuration, XSiteStateTransferManager xSiteStateTransferManager) {
+                      Configuration configuration, XSiteStateTransferManager xSiteStateTransferManager,
+                      StateTransferLock stateTransferLock) {
       this.dataContainer = dataContainer;
       this.persistenceManager = persistenceManager;
       this.clusteringDependentLogic = clusteringDependentLogic;
@@ -84,10 +87,11 @@ public class XSiteStateProviderImpl implements XSiteStateProvider {
       this.executorService = executorService;
       this.configuration = configuration;
       this.stateTransferManager = xSiteStateTransferManager;
+      this.stateTransferLock = stateTransferLock;
    }
 
    @Override
-   public void startStateTransfer(String siteName, Address origin) {
+   public void startStateTransfer(String siteName, Address origin, int minTopologyId) {
       XSiteStateTransferConfiguration stateTransferConfiguration = null;
       for (BackupConfiguration backupConfiguration : configuration.sites().allBackups()) {
          if (backupConfiguration.site().equals(siteName)) {
@@ -100,7 +104,7 @@ public class XSiteStateProviderImpl implements XSiteStateProvider {
          throw new CacheException("Unable to start X-Site State Transfer! Backup configuration not found for " +
                                         siteName + "!");
       }
-      StatePushTask task = new StatePushTask(siteName, origin, stateTransferConfiguration);
+      StatePushTask task = new StatePushTask(siteName, origin, stateTransferConfiguration, minTopologyId);
       if (runningStateTransfer.putIfAbsent(siteName, task) == null) {
          if (debug) {
             log.debugf("Starting state transfer to site '%s'", siteName);
@@ -188,6 +192,10 @@ public class XSiteStateProviderImpl implements XSiteStateProvider {
       remoteSite.execute(rpcManager.getTransport(), task.waitTime, TimeUnit.MILLISECONDS);
    }
 
+   private void waitForTopology(int topologyId) throws InterruptedException {
+      stateTransferLock.waitForTopology(topologyId, 1, TimeUnit.DAYS);
+   }
+
    private class StatePushTask implements Runnable {
 
       private final XSiteBackup xSiteBackup;
@@ -195,13 +203,15 @@ public class XSiteStateProviderImpl implements XSiteStateProvider {
       private final Address origin;
       private final RetryPolicy retryPolicy;
       private final long waitTime;
+      private final int minTopologyId;
       private volatile boolean finished;
       private volatile boolean canceled;
       private boolean error;
 
-      public StatePushTask(String siteName, Address origin, XSiteStateTransferConfiguration configuration) {
+      public StatePushTask(String siteName, Address origin, XSiteStateTransferConfiguration configuration, int minTopologyId) {
+         this.minTopologyId = minTopologyId;
          this.chunkSize = configuration.chunkSize();
-         this.waitTime = configuration.waitingTimeBetweenRetries();
+         this.waitTime = configuration.waitTime();
          this.retryPolicy = new MaxRetriesPolicy(configuration.maxRetries());
          this.origin = origin;
          this.xSiteBackup = new XSiteBackup(siteName, true, configuration.timeout());
@@ -213,6 +223,12 @@ public class XSiteStateProviderImpl implements XSiteStateProvider {
       @Override
       public void run() {
          try {
+            if (debug) {
+               log.debugf("[X-Site State Transfer - %s] wait for min topology %s", xSiteBackup.getSiteName(), minTopologyId);
+            }
+
+            waitForTopology(minTopologyId);
+
             final List<XSiteState> chunk = new ArrayList<XSiteState>(chunkSize <= 0 ? DEFAULT_CHUNK_SIZE : chunkSize);
 
             if (debug) {
@@ -289,6 +305,9 @@ public class XSiteStateProviderImpl implements XSiteStateProvider {
             } else if (debug) {
                log.debugf("[X-Site State Transfer - %s] skip Persistence iteration", xSiteBackup.getSiteName());
             }
+         } catch (InterruptedException e) {
+            error = true;
+            log.unableToSendXSiteState(xSiteBackup.getSiteName(), e);
          } finally {
             finished = true;
             log.debugf("[X-Site State Transfer - %s] State transfer finished!", xSiteBackup.getSiteName());
