@@ -88,8 +88,9 @@ public class InfinispanDirectory extends Directory {
     * @param lf the LockFactory to be used by IndexWriters. @see org.infinispan.lucene.locking
     * @param chunkSize segments are fragmented in chunkSize bytes; larger values are more efficient for searching but less for distribution and network replication
     * @param readLocker @see org.infinispan.lucene.readlocks for some implementations; you might be able to provide more efficient implementations by controlling the IndexReader's lifecycle.
+    * @param writeFileListAsync When set to true, the list of files of the Directory is propagated to other nodes asynchronously.
     */
-   public InfinispanDirectory(Cache<?, ?> metadataCache, Cache<?, ?> chunksCache, String indexName, LockFactory lf, int chunkSize, SegmentReadLocker readLocker) {
+   public InfinispanDirectory(Cache<?, ?> metadataCache, Cache<?, ?> chunksCache, String indexName, LockFactory lf, int chunkSize, SegmentReadLocker readLocker, boolean writeFileListAsync) {
       checkNotNull(metadataCache, "metadataCache");
       checkNotNull(chunksCache, "chunksCache");
       checkNotNull(indexName, "indexName");
@@ -103,8 +104,12 @@ public class InfinispanDirectory extends Directory {
       this.lockFactory = lf;
       this.lockFactory.setLockPrefix(this.getLockID());
       this.chunkSize = chunkSize;
-      this.fileOps = new FileListOperations(this.metadataCache, indexName);
+      this.fileOps = new FileListOperations(this.metadataCache, indexName, writeFileListAsync);
       this.readLocks = readLocker;
+   }
+
+   public InfinispanDirectory(Cache<?, ?> metadataCache, Cache<?, ?> chunksCache, String indexName, LockFactory lf, int chunkSize, SegmentReadLocker readLocker) {
+      this(metadataCache, chunksCache, indexName, lf, chunkSize, readLocker, false);
    }
 
    public InfinispanDirectory(Cache<?, ?> cache, String indexName, int chunkSize, SegmentReadLocker readLocker) {

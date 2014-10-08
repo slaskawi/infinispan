@@ -48,8 +48,8 @@ class DirectoryLuceneV3 extends Directory implements DirectoryExtensions {
    // indexName is used to be able to store multiple named indexes in the same caches
    private final String indexName;
 
-   DirectoryLuceneV3(Cache<?, ?> metadataCache, Cache<?, ?> chunksCache, String indexName, LockFactory lf, int chunkSize, SegmentReadLocker readLocker) {
-      this.impl = new DirectoryImplementor(metadataCache, chunksCache, indexName, chunkSize, readLocker);
+   DirectoryLuceneV3(Cache<?, ?> metadataCache, Cache<?, ?> chunksCache, String indexName, LockFactory lf, int chunkSize, SegmentReadLocker readLocker, boolean fileListUpdatedAsync) {
+      this.impl = new DirectoryImplementor(metadataCache, chunksCache, indexName, chunkSize, readLocker, fileListUpdatedAsync);
       this.indexName = indexName;
       this.lockFactory = lf;
       this.lockFactory.setLockPrefix(this.getLockID());

@@ -38,6 +38,7 @@ public class DirectoryBuilderImpl implements BuildContext {
    private int chunkSize = DEFAULT_BUFFER_SIZE;
    private SegmentReadLocker srl = null;
    private LockFactory lockFactory = null;
+   private boolean writeFileListAsync = false;
 
    public DirectoryBuilderImpl(Cache<?, ?> metadataCache, Cache<?, ?> chunksCache, Cache<?, ?> distLocksCache, String indexName) {
       this.metadataCache = checkValidConfiguration(checkNotNull(metadataCache, "metadataCache"), indexName);
@@ -56,7 +57,7 @@ public class DirectoryBuilderImpl implements BuildContext {
          srl = makeDefaultSegmentReadLocker(metadataCache, chunksCache, distLocksCache, indexName);
       }
       if (LuceneVersionDetector.VERSION == 3) {
-         return new DirectoryLuceneV3(metadataCache, chunksCache, indexName, lockFactory, chunkSize, srl);
+         return new DirectoryLuceneV3(metadataCache, chunksCache, indexName, lockFactory, chunkSize, srl, writeFileListAsync);
       }
       else {
          Class<?>[] ctorType = new Class[]{ Cache.class, Cache.class, String.class, LockFactory.class, int.class, SegmentReadLocker.class };
@@ -65,7 +66,7 @@ public class DirectoryBuilderImpl implements BuildContext {
             d = (Directory) DirectoryBuilderImpl.class.getClassLoader()
                .loadClass("org.infinispan.lucene.impl.DirectoryLuceneV4")
                .getConstructor(ctorType)
-               .newInstance(metadataCache, chunksCache, indexName, lockFactory, chunkSize, srl);
+               .newInstance(metadataCache, chunksCache, indexName, lockFactory, chunkSize, srl, writeFileListAsync);
          }
          catch (Exception e) {
             throw log.failedToCreateLucene4Directory(e);
@@ -86,6 +87,12 @@ public class DirectoryBuilderImpl implements BuildContext {
    public BuildContext overrideSegmentReadLocker(SegmentReadLocker srl) {
       checkNotNull(srl, "srl");
       this.srl = srl;
+      return this;
+   }
+
+   @Override
+   public BuildContext writeFileListAsynchronously(boolean writeFileListAsync) {
+      this.writeFileListAsync = writeFileListAsync;
       return this;
    }
 

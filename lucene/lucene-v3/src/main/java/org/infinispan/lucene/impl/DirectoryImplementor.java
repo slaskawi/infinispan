@@ -38,14 +38,14 @@ final class DirectoryImplementor {
     private final FileListOperations fileOps;
     private final SegmentReadLocker readLocks;
 
-    public DirectoryImplementor(Cache<?, ?> metadataCache, Cache<?, ?> chunksCache, String indexName, int chunkSize, SegmentReadLocker readLocker) {
+    public DirectoryImplementor(Cache<?, ?> metadataCache, Cache<?, ?> chunksCache, String indexName, int chunkSize, SegmentReadLocker readLocker, boolean fileListUpdatedAsync) {
         if (chunkSize <= 0)
            throw new IllegalArgumentException("chunkSize must be a positive integer");
         this.metadataCache = (AdvancedCache<FileCacheKey, FileMetadata>) metadataCache.getAdvancedCache().withFlags(Flag.SKIP_INDEXING);
         this.chunksCache = (AdvancedCache<ChunkCacheKey, Object>) chunksCache.getAdvancedCache().withFlags(Flag.SKIP_INDEXING);
         this.indexName = indexName;
         this.chunkSize = chunkSize;
-        this.fileOps = new FileListOperations(this.metadataCache, indexName);
+        this.fileOps = new FileListOperations(this.metadataCache, indexName, fileListUpdatedAsync);
         this.readLocks = readLocker;
      }
 
