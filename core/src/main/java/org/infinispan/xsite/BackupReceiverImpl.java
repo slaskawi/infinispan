@@ -80,8 +80,13 @@ public class BackupReceiverImpl implements BackupReceiver {
 
    @Override
    public void handleStateTransferControl(XSiteStateTransferControlCommand command) throws Exception {
-      command.setSiteName(command.getOriginSite());
-      invokeRemotelyInLocalSite(command);
+      XSiteStateTransferControlCommand invokeCommand = command;
+      if (!command.getCacheName().equals(cache.getName())) {
+         //copy if the cache name is different
+         invokeCommand = command.copyForCache(cache.getName());
+      }
+      invokeCommand.setSiteName(command.getOriginSite());
+      invokeRemotelyInLocalSite(invokeCommand);
    }
 
    @Override
