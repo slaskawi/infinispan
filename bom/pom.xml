@@ -200,7 +200,7 @@
          </dependency>
          <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>infinispan-spring</artifactId>
+            <artifactId>infinispan-spring-3</artifactId>
             <version>${project.version}</version>
          </dependency>
          <dependency>
