@@ -11,7 +11,6 @@ import org.infinispan.metadata.Metadata;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.transaction.xa.GlobalTransaction;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
 
@@ -24,7 +23,7 @@ import java.util.Map;
 @NotThreadSafe
 public class EventImpl<K, V> implements CacheEntryActivatedEvent, CacheEntryCreatedEvent, CacheEntriesEvictedEvent, CacheEntryLoadedEvent, CacheEntryModifiedEvent,
                                         CacheEntryPassivatedEvent, CacheEntryRemovedEvent, CacheEntryVisitedEvent, TransactionCompletedEvent, TransactionRegisteredEvent,
-                                  CacheEntryInvalidatedEvent, DataRehashedEvent, TopologyChangedEvent, CacheEntryEvictedEvent {
+                                  CacheEntryInvalidatedEvent, DataRehashedEvent, TopologyChangedEvent, CacheEntryEvictedEvent, Cloneable {
    private boolean pre = false; // by default events are after the fact
    private transient Cache<K, V> cache;
    private K key;
@@ -167,7 +166,7 @@ public class EventImpl<K, V> implements CacheEntryActivatedEvent, CacheEntryCrea
    }
 
    @Override
-   public Object getOldValue() {
+   public V getOldValue() {
       return oldValue;
    }
 
@@ -292,5 +291,14 @@ public class EventImpl<K, V> implements CacheEntryActivatedEvent, CacheEntryCrea
    @SuppressWarnings("unchecked")
    public Map<K, V> getEntries() {
       return (Map<K, V>) entries;
+   }
+   
+   @Override
+   public EventImpl<K, V> clone() {
+      try {
+         return (EventImpl<K, V>) super.clone();
+      } catch (CloneNotSupportedException e) {
+         throw new RuntimeException("Should never happen!", e);
+      }
    }
 }
