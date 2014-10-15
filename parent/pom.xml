@@ -159,7 +159,8 @@
       <version.slf4j>1.7.5</version.slf4j>
       <version.snappy>1.0.5</version.snappy>
       <version.solder>3.1.0.Final</version.solder>
-      <version.spring>3.2.9.RELEASE</version.spring>
+      <version.spring3>3.2.9.RELEASE</version.spring3>
+      <version.spring4>4.1.0.RELEASE</version.spring4>
       <version.spymemcached>2.5</version.spymemcached>
       <version.testng>6.8.8</version.testng>
       <version.testng.arquillian>6.5.2</version.testng.arquillian>
@@ -234,7 +235,11 @@
             <version>${project.version}</version>
             <type>test-jar</type>
          </dependency>
-         
+          <dependency>
+              <groupId>${project.groupId}</groupId>
+              <artifactId>infinispan-spring</artifactId>
+              <version>${project.version}</version>
+          </dependency>
          <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>infinispan-core</artifactId>
@@ -661,17 +666,17 @@
          <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
-            <version>${version.spring}</version>
+            <version>${version.spring4}</version>
          </dependency>
          <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-jdbc</artifactId>
-            <version>${version.spring}</version>
+            <version>${version.spring4}</version>
          </dependency>
          <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
-            <version>${version.spring}</version>
+            <version>${version.spring4}</version>
          </dependency>
          <dependency>
             <groupId>org.testng</groupId>
@@ -1064,6 +1069,10 @@
       <finalName>${project.artifactId}</finalName>
       <pluginManagement>
          <plugins>
+            <plugin>
+               <artifactId>maven-invoker-plugin</artifactId>
+               <version>${version.maven.invoker}</version>
+            </plugin>
             <plugin>
                <groupId>org.antlr</groupId>
                <artifactId>antlr3-maven-plugin</artifactId>

@@ -18,14 +18,13 @@ import org.springframework.util.Assert;
  */
 public class SpringRemoteCache implements Cache {
 
-   private final RemoteCache<Object, Object> nativeCache;
+   private final CacheDelegate cacheImplementation;
 
    /**
     * @param nativeCache the underlying cache
     */
    public SpringRemoteCache(final RemoteCache<Object, Object> nativeCache) {
-      Assert.notNull(nativeCache, "A non-null Infinispan cache implementation is required");
-      this.nativeCache = nativeCache;
+     this.cacheImplementation = new CacheDelegate(nativeCache);
    }
 
    /**
@@ -33,15 +32,15 @@ public class SpringRemoteCache implements Cache {
     */
    @Override
    public String getName() {
-      return this.nativeCache.getName();
+      return this.cacheImplementation.getName();
    }
 
    /**
     * @see org.springframework.cache.Cache#getNativeCache()
     */
    @Override
-   public RemoteCache<?, ?> getNativeCache() {
-      return this.nativeCache;
+   public org.infinispan.commons.api.BasicCache<?, ?> getNativeCache() {
+      return this.cacheImplementation.getNativeCache();
    }
 
    /**
@@ -49,14 +48,12 @@ public class SpringRemoteCache implements Cache {
     */
    @Override
    public ValueWrapper get(final Object key) {
-      Object v = nativeCache.get(key);
-      if (v == null) {
-         return null;
-      }
-      if (v == NullValue.NULL) {
-         return NullValue.NULL;
-      }
-      return new SimpleValueWrapper(v);
+      return cacheImplementation.get(key);
+   }
+
+   @Override
+   public <T> T get(Object key, Class<T> type) {
+      return cacheImplementation.get(key, type);
    }
 
    /**
@@ -64,7 +61,12 @@ public class SpringRemoteCache implements Cache {
     */
    @Override
    public void put(final Object key, final Object value) {
-      this.nativeCache.put(key, value != null ? value : NullValue.NULL);
+      this.cacheImplementation.put(key, value);
+   }
+
+   @Override
+   public ValueWrapper putIfAbsent(Object key, Object value) {
+      return cacheImplementation.putIfAbsent(key, value);
    }
 
    /**
@@ -72,24 +74,23 @@ public class SpringRemoteCache implements Cache {
     */
    @Override
    public void evict(final Object key) {
-      this.nativeCache.remove(key);
+      this.cacheImplementation.evict(key);
    }
-
 
    /**
     * @see org.springframework.cache.Cache#clear()
     */
    @Override
    public void clear() {
-      this.nativeCache.clear();
+      this.cacheImplementation.clear();
    }
+
 
    /**
     * @see java.lang.Object#toString()
     */
    @Override
    public String toString() {
-      return "InfinispanCache [nativeCache = " + this.nativeCache + "]";
+      return "InfinispanCache [nativeCache = " + this.cacheImplementation.getNativeCache() + "]";
    }
-
 }

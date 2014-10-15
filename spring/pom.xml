@@ -189,6 +189,38 @@
                     </instructions>
                 </configuration>
             </plugin>
+            <plugin>
+                <artifactId>maven-invoker-plugin</artifactId>
+                <configuration>
+                    <addTestClassPath>true</addTestClassPath>
+                    <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
+                    <pomIncludes>
+                        <pomInclude>pom-spring-3.xml</pomInclude>
+                    </pomIncludes>
+                    <postBuildHookScript>verify</postBuildHookScript>
+                    <streamLogs>true</streamLogs>
+                    <goals>
+                        <goal>clean</goal>
+                        <goal>package</goal>
+                    </goals>
+                    <properties>
+                        <!-- Skip tests parent's tests are skipped -->
+                        <maven.test.skip.exec>${maven.test.skip.exec}</maven.test.skip.exec>
+                        <skipTests>${skipTests}</skipTests>
+                        <!-- If logging enabled by client, pass it on -->
+                        <log4j.configuration>${log4j.configuration}</log4j.configuration>
+                    </properties>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>spring-3-compatibility-test</id>
+                        <goals>
+                            <goal>install</goal>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 

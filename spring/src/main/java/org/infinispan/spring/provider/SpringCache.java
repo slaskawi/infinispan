@@ -1,8 +1,6 @@
 package org.infinispan.spring.provider;
 
 import org.springframework.cache.Cache;
-import org.springframework.cache.support.SimpleValueWrapper;
-import org.springframework.util.Assert;
 
 /**
  * <p>
@@ -17,14 +15,13 @@ import org.springframework.util.Assert;
  */
 public class SpringCache implements Cache {
 
-   private final org.infinispan.commons.api.BasicCache<Object, Object> nativeCache;
+   private final CacheDelegate cacheImplementation;
 
    /**
     * @param nativeCache underlying cache
     */
    public SpringCache(final org.infinispan.commons.api.BasicCache<Object, Object> nativeCache) {
-      Assert.notNull(nativeCache, "A non-null Infinispan cache implementation is required");
-      this.nativeCache = nativeCache;
+      cacheImplementation = new CacheDelegate(nativeCache);
    }
 
    /**
@@ -32,7 +29,7 @@ public class SpringCache implements Cache {
     */
    @Override
    public String getName() {
-      return this.nativeCache.getName();
+      return this.cacheImplementation.getName();
    }
 
    /**
@@ -40,7 +37,7 @@ public class SpringCache implements Cache {
     */
    @Override
    public org.infinispan.commons.api.BasicCache<?, ?> getNativeCache() {
-      return this.nativeCache;
+      return this.cacheImplementation.getNativeCache();
    }
 
    /**
@@ -48,14 +45,12 @@ public class SpringCache implements Cache {
     */
    @Override
    public ValueWrapper get(final Object key) {
-      Object v = nativeCache.get(key);
-      if (v == null) {
-         return null;
-      }
-      if (v == NullValue.NULL) {
-         return NullValue.NULL;
-      }
-      return new SimpleValueWrapper(v);
+      return cacheImplementation.get(key);
+   }
+
+   @Override
+   public <T> T get(Object key, Class<T> type) {
+      return cacheImplementation.get(key, type);
    }
 
    /**
@@ -63,7 +58,12 @@ public class SpringCache implements Cache {
     */
    @Override
    public void put(final Object key, final Object value) {
-      this.nativeCache.put(key, value != null ? value : NullValue.NULL);
+      this.cacheImplementation.put(key, value);
+   }
+
+   @Override
+   public ValueWrapper putIfAbsent(Object key, Object value) {
+      return cacheImplementation.putIfAbsent(key, value);
    }
 
    /**
@@ -71,24 +71,23 @@ public class SpringCache implements Cache {
     */
    @Override
    public void evict(final Object key) {
-      this.nativeCache.remove(key);
+      this.cacheImplementation.evict(key);
    }
-
 
    /**
     * @see org.springframework.cache.Cache#clear()
     */
    @Override
    public void clear() {
-      this.nativeCache.clear();
+      this.cacheImplementation.clear();
    }
+
 
    /**
     * @see java.lang.Object#toString()
     */
    @Override
    public String toString() {
-      return "InfinispanCache [nativeCache = " + this.nativeCache + "]";
+      return "InfinispanCache [nativeCache = " + this.cacheImplementation.getNativeCache() + "]";
    }
-
 }
