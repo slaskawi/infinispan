@@ -77,19 +77,15 @@ public class CacheDiscovery extends MBeanResourceDiscoveryComponent<CacheManager
       String cacheAttributeName;
       String type;
 
-      // the query and remote-query components do not follow the same naming conventions as the core components and need special handling
-      if (componentName.equals("MassIndexer") || componentName.equals("ProtobufMetadataManager")) {
+      // the query components do not follow the same naming conventions as the core components and need special handling
+      if (componentName.equals("MassIndexer")) {
          cacheAttributeName = "cache";
          // drop the "(cacheMode)" suffix from cache name
          if (cacheName.endsWith(")\"")) {
             cacheName = cacheName.substring(0, cacheName.length() - 2);
             cacheName = cacheName.substring(0, cacheName.lastIndexOf('(')) + "\"";
          }
-         if (componentName.equals("ProtobufMetadataManager")) {
-            type = "RemoteQuery";
-         } else {
-            type = "Query";
-         }
+         type = "Query";
       } else {
          cacheAttributeName = "name";
          type = "Cache";

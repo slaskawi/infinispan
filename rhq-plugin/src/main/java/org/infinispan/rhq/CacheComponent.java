@@ -212,8 +212,7 @@ public class CacheComponent extends MBeanResourceComponent<CacheManagerComponent
    protected static boolean isCacheComponent(EmsBean bean, String componentName) {
       EmsBeanName beanName = bean.getBeanName();
       String type = beanName.getKeyProperty("type");
-      return componentName.equals(beanName.getKeyProperty("component"))
-            && ("Cache".equals(type) || "Query".equals(type) || "RemoteQuery".equals(type));
+      return ("Cache".equals(type) || "Query".equals(type)) && componentName.equals(beanName.getKeyProperty("component"));
    }
 
    @Override
