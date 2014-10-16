@@ -169,17 +169,22 @@ public class MarshalledValueInterceptor extends CommandInterceptor {
    @SuppressWarnings("unchecked")
    public Object visitKeySetCommand(InvocationContext ctx, KeySetCommand command) throws Throwable {
       Set<Object> keys = (Set<Object>) invokeNextInterceptor(ctx, command);
-      if (wrapKeys) {
-         Set<Object> copy = new HashSet<Object>(keys.size());
-         for (Object key : keys) {
-            if (key instanceof MarshalledValue) {
-               key = ((MarshalledValue) key).get();
+      String useClusterSize = SecurityActions.getSystemProperty("infinispan.accurate.bulk.ops");
+      if (useClusterSize == null || !useClusterSize.equalsIgnoreCase("true")) {
+         if (wrapKeys) {
+            Set<Object> copy = new HashSet<Object>(keys.size());
+            for (Object key : keys) {
+               if (key instanceof MarshalledValue) {
+                  key = ((MarshalledValue) key).get();
+               }
+               copy.add(key);
             }
-            copy.add(key);
+            return Immutables.immutableSetWrap(copy);
+         } else {
+            return Immutables.immutableSetWrap(keys);
          }
-         return Immutables.immutableSetWrap(copy);
       } else {
-         return Immutables.immutableSetWrap(keys);
+         return keys;
       }
    }
 
@@ -187,17 +192,22 @@ public class MarshalledValueInterceptor extends CommandInterceptor {
    @SuppressWarnings("unchecked")
    public Object visitValuesCommand(InvocationContext ctx, ValuesCommand command) throws Throwable {
       Collection<Object> values = (Collection<Object>) invokeNextInterceptor(ctx, command);
-      if (wrapValues) {
-         Collection<Object> copy = new ArrayList<Object>();
-         for (Object value : values) {
-            if (value instanceof MarshalledValue) {
-               value = ((MarshalledValue) value).get();
+      String useClusterSize = SecurityActions.getSystemProperty("infinispan.accurate.bulk.ops");
+      if (useClusterSize == null || !useClusterSize.equalsIgnoreCase("true")) {
+         if (wrapValues) {
+            Collection<Object> copy = new ArrayList<Object>();
+            for (Object value : values) {
+               if (value instanceof MarshalledValue) {
+                  value = ((MarshalledValue) value).get();
+               }
+               copy.add(value);
             }
-            copy.add(value);
+            return Immutables.immutableCollectionWrap(copy);
+         } else {
+            return Immutables.immutableCollectionWrap(values);
          }
-         return Immutables.immutableCollectionWrap(copy);
       } else {
-         return Immutables.immutableCollectionWrap(values);
+         return values;
       }
    }
 
@@ -205,20 +215,25 @@ public class MarshalledValueInterceptor extends CommandInterceptor {
    @SuppressWarnings("unchecked")
    public Object visitEntrySetCommand(InvocationContext ctx, EntrySetCommand command) throws Throwable {
       Set<InternalCacheEntry> entries = (Set<InternalCacheEntry>) invokeNextInterceptor(ctx, command);
-      Set<InternalCacheEntry> copy = new HashSet<InternalCacheEntry>(entries.size());
-      for (InternalCacheEntry entry : entries) {
-         Object key = entry.getKey();
-         Object value = entry.getValue();
-         if (key instanceof MarshalledValue) {
-            key = ((MarshalledValue) key).get();
+      String useClusterSize = SecurityActions.getSystemProperty("infinispan.accurate.bulk.ops");
+      if (useClusterSize == null || !useClusterSize.equalsIgnoreCase("true")) {
+         Set<InternalCacheEntry> copy = new HashSet<InternalCacheEntry>(entries.size());
+         for (InternalCacheEntry entry : entries) {
+            Object key = entry.getKey();
+            Object value = entry.getValue();
+            if (key instanceof MarshalledValue) {
+               key = ((MarshalledValue) key).get();
+            }
+            if (value instanceof MarshalledValue) {
+               value = ((MarshalledValue) value).get();
+            }
+            InternalCacheEntry newEntry = CoreImmutables.immutableInternalCacheEntry(entryFactory.create(key, value, entry));
+            copy.add(newEntry);
          }
-         if (value instanceof MarshalledValue) {
-            value = ((MarshalledValue) value).get();
-         }
-         InternalCacheEntry newEntry = CoreImmutables.immutableInternalCacheEntry(entryFactory.create(key, value, entry));
-         copy.add(newEntry);
+         return Immutables.immutableSetWrap(copy);
+      } else {
+         return entries;
       }
-      return Immutables.immutableSetWrap(copy);
    }
 
    @Override

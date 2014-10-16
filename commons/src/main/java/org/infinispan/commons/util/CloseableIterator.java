@@ -15,4 +15,6 @@ import java.util.Iterator;
  * @since 7.0
  */
 public interface CloseableIterator<E> extends Closeable, Iterator<E> {
+   @Override
+   public void close();
 }

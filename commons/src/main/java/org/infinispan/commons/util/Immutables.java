@@ -236,7 +236,7 @@ public class Immutables {
     * simple to detect them (the class names are JDK dependent).
     */
 
-   private static class ImmutableIteratorWrapper<E> implements Iterator<E> {
+   private static class ImmutableIteratorWrapper<E> implements CloseableIterator<E> {
       private Iterator<? extends E> iterator;
 
       public ImmutableIteratorWrapper(Iterator<? extends E> iterator) {
@@ -257,9 +257,13 @@ public class Immutables {
       public void remove() {
          throw new UnsupportedOperationException();
       }
+
+      @Override
+      public void close() {
+      }
    }
 
-   private static class ImmutableCollectionWrapper<E> implements Collection<E>, Serializable, Immutable {
+   private static class ImmutableCollectionWrapper<E> implements CloseableIteratorCollection<E>, Serializable, Immutable {
       private static final long serialVersionUID = 6777564328198393535L;
 
       Collection<? extends E> collection;
@@ -309,7 +313,7 @@ public class Immutables {
       }
 
       @Override
-      public Iterator<E> iterator() {
+      public CloseableIterator<E> iterator() {
          return new ImmutableIteratorWrapper<E>(collection.iterator());
       }
 
@@ -404,7 +408,7 @@ public class Immutables {
    }
 
 
-   private static class ImmutableSetWrapper<E> extends ImmutableCollectionWrapper<E> implements Set<E>, Serializable, Immutable {
+   private static class ImmutableSetWrapper<E> extends ImmutableCollectionWrapper<E> implements CloseableIteratorSet<E>, Serializable, Immutable {
       private static final long serialVersionUID = 7991492805176142615L;
 
       public ImmutableSetWrapper(Set<? extends E> set) {
@@ -458,7 +462,7 @@ public class Immutables {
       }
 
       @Override
-      public Iterator<Entry<K, V>> iterator() {
+      public CloseableIterator<Entry<K, V>> iterator() {
          return new ImmutableIteratorWrapper<Entry<K, V>>(collection.iterator()) {
             @Override
             public Entry<K, V> next() {

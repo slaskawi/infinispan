@@ -1,16 +1,5 @@
 package org.infinispan.commands.read;
 
-import org.infinispan.commands.VisitableCommand;
-import org.infinispan.commands.Visitor;
-import org.infinispan.container.DataContainer;
-import org.infinispan.container.InternalEntryFactory;
-import org.infinispan.container.entries.CacheEntry;
-import org.infinispan.container.entries.InternalCacheEntry;
-import org.infinispan.context.Flag;
-import org.infinispan.context.InvocationContext;
-import org.infinispan.util.TimeService;
-import static org.infinispan.util.CoreImmutables.immutableInternalCacheEntry;
-
 import java.util.AbstractSet;
 import java.util.Collection;
 import java.util.HashSet;
@@ -19,23 +8,47 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import org.infinispan.Cache;
+import org.infinispan.commands.VisitableCommand;
+import org.infinispan.commands.Visitor;
+import org.infinispan.commons.util.CloseableIterator;
+import org.infinispan.commons.util.CloseableIteratorSet;
+import org.infinispan.container.DataContainer;
+import org.infinispan.container.InternalEntryFactory;
+import org.infinispan.container.entries.CacheEntry;
+import org.infinispan.container.entries.ForwardingCacheEntry;
+import org.infinispan.container.entries.InternalCacheEntry;
+import org.infinispan.context.Flag;
+import org.infinispan.context.InvocationContext;
+import org.infinispan.filter.AcceptAllKeyValueFilter;
+import org.infinispan.util.TimeService;
+import static org.infinispan.util.CoreImmutables.immutableInternalCacheEntry;
+
 /**
  * Command implementation for {@link java.util.Map#entrySet()} functionality.
  *
  * @author Galder Zamarreño
  * @author <a href="http://gleamynode.net/">Trustin Lee</a>
+ * @author William Burns
  * @since 4.0
  */
-public class EntrySetCommand extends AbstractLocalCommand implements VisitableCommand {
+public class EntrySetCommand<K, V> extends AbstractLocalCommand implements VisitableCommand {
    private final DataContainer container;
    private final InternalEntryFactory entryFactory;
    private final TimeService timeService;
+   private final Cache<K, V> cache;
 
-   public EntrySetCommand(DataContainer container, InternalEntryFactory internalEntryFactory, TimeService timeService, Set<Flag> flags) {
+   public EntrySetCommand(DataContainer container, InternalEntryFactory internalEntryFactory, TimeService timeService,
+         Cache<K, V> cache, Set<Flag> flags) {
       setFlags(flags);
       this.container = container;
       this.entryFactory = internalEntryFactory;
       this.timeService = timeService;
+      if (flags != null) {
+         this.cache = cache.getAdvancedCache().withFlags(flags.toArray(new Flag[flags.size()]));
+      } else {
+         this.cache = cache;
+      }
    }
 
    @Override
@@ -44,12 +57,17 @@ public class EntrySetCommand extends AbstractLocalCommand implements VisitableCo
    }
 
    @Override
-   public Set<InternalCacheEntry> perform(InvocationContext ctx) throws Throwable {
-      Set<InternalCacheEntry> entries = container.entrySet();
-      return createFilteredEntrySet(entries, ctx, timeService, entryFactory);
+   public CloseableIteratorSet<? extends CacheEntry> perform(InvocationContext ctx) throws Throwable {
+      String useClusterSize = SecurityActions.getSystemProperty("infinispan.accurate.bulk.ops");
+      if (useClusterSize == null || !useClusterSize.equalsIgnoreCase("true")) {
+         Set<InternalCacheEntry> entries = container.entrySet();
+         return createFilteredEntrySet(entries, ctx, timeService, entryFactory);
+      } else {
+         return new BackingEntrySet<K, V>(cache);
+      }
    }
 
-   public static Set<InternalCacheEntry> createFilteredEntrySet(
+   public static CloseableIteratorSet<InternalCacheEntry> createFilteredEntrySet(
          Set<InternalCacheEntry> entries, InvocationContext ctx,
          TimeService timeService, InternalEntryFactory entryFactory) {
       if (ctx.getLookedUpEntries().isEmpty()) {
@@ -66,7 +84,8 @@ public class EntrySetCommand extends AbstractLocalCommand implements VisitableCo
             '}';
    }
 
-   private static class FilteredEntrySet extends AbstractSet<InternalCacheEntry> {
+   private static class FilteredEntrySet extends AbstractSet<InternalCacheEntry> 
+         implements CloseableIteratorSet<InternalCacheEntry> {
       final Set<InternalCacheEntry> entrySet;
       final Map<Object, CacheEntry> lookedUpEntries;
       final TimeService timeService;
@@ -128,7 +147,7 @@ public class EntrySetCommand extends AbstractLocalCommand implements VisitableCo
       }
 
       @Override
-      public Iterator<InternalCacheEntry> iterator() {
+      public CloseableIterator<InternalCacheEntry> iterator() {
          return new Itr();
       }
 
@@ -162,7 +181,7 @@ public class EntrySetCommand extends AbstractLocalCommand implements VisitableCo
          throw new UnsupportedOperationException();
       }
 
-      private class Itr implements Iterator<InternalCacheEntry> {
+      private class Itr implements CloseableIterator<InternalCacheEntry> {
 
          private final Iterator<CacheEntry> it1 = lookedUpEntries.values().iterator();
          private final Iterator<InternalCacheEntry> it2 = entrySet.iterator();
@@ -235,6 +254,10 @@ public class EntrySetCommand extends AbstractLocalCommand implements VisitableCo
          public void remove() {
             throw new UnsupportedOperationException();
          }
+
+         @Override
+         public void close() {
+         }
       }
    }
 
@@ -243,7 +266,8 @@ public class EntrySetCommand extends AbstractLocalCommand implements VisitableCo
     * making it immutable is to avoid having to do further wrapping with an
     * immutable delegate.
     */
-   private static class ExpiredFilteredEntrySet extends AbstractSet<InternalCacheEntry> {
+   private static class ExpiredFilteredEntrySet extends AbstractSet<InternalCacheEntry> 
+         implements CloseableIteratorSet<InternalCacheEntry> {
 
       final Set<InternalCacheEntry> entrySet;
       final TimeService timeService;
@@ -254,7 +278,7 @@ public class EntrySetCommand extends AbstractLocalCommand implements VisitableCo
       }
 
       @Override
-      public Iterator<InternalCacheEntry> iterator() {
+      public CloseableIterator<InternalCacheEntry> iterator() {
          return new Itr();
       }
 
@@ -305,7 +329,7 @@ public class EntrySetCommand extends AbstractLocalCommand implements VisitableCo
          throw new UnsupportedOperationException();
       }
 
-      private class Itr implements Iterator<InternalCacheEntry> {
+      private class Itr implements CloseableIterator<InternalCacheEntry> {
 
          private final Iterator<InternalCacheEntry> it = entrySet.iterator();
          private InternalCacheEntry next;
@@ -358,7 +382,124 @@ public class EntrySetCommand extends AbstractLocalCommand implements VisitableCo
             throw new UnsupportedOperationException();
          }
 
+         @Override
+         public void close() {
+         }
+
       }
    }
 
+   private static class BackingEntrySet<K, V> extends AbstractCloseableIteratorCollection<CacheEntry, K, V>
+         implements CloseableIteratorSet<CacheEntry> {
+
+      private BackingEntrySet(Cache cache) {
+         super(cache);
+      }
+
+      @Override
+      public CloseableIterator<CacheEntry> iterator() {
+         return new EntryWrapperIterator(cache, cache.getAdvancedCache().filterEntries(
+               AcceptAllKeyValueFilter.getInstance()).iterator());
+      }
+
+      @Override
+      public boolean contains(Object o) {
+         Map.Entry entry = toEntry(o);
+         if (entry != null) {
+            V value = cache.get(entry.getKey());
+            return value != null && value.equals(entry.getValue());
+         }
+         return false;
+      }
+
+      @Override
+      public boolean remove(Object o) {
+         Map.Entry entry = toEntry(o);
+         if (entry != null) {
+            return cache.remove(entry.getKey(), entry.getValue());
+         }
+         return false;
+      }
+
+      @Override
+      public boolean add(CacheEntry internalCacheEntry) {
+         V value = cache.put((K) internalCacheEntry.getKey(), (V) internalCacheEntry.getValue());
+         // If the value was already there we can treat as if it wasn't added
+         if (value != null && value.equals(internalCacheEntry.getValue())) {
+            return false;
+         }
+         return true;
+      }
+
+      private Map.Entry<K, V> toEntry(Object obj) {
+         if (obj instanceof Map.Entry) {
+            return (Map.Entry) obj;
+         } else {
+            return null;
+         }
+      }
+   }
+
+   /**
+    * Wrapper for iterator that produces CacheEntry instances that allow for updating the cache when
+    * the cache entry's value is updated
+    * @param <K> The key type
+    * @param <V> The value type
+    */
+   private static class EntryWrapperIterator<K, V> implements CloseableIterator<CacheEntry> {
+      private final Cache<K, V> cache;
+      private final CloseableIterator<CacheEntry> iterator;
+
+      public EntryWrapperIterator(Cache<K, V> cache, CloseableIterator<CacheEntry> iterator) {
+         this.cache = cache;
+         this.iterator = iterator;
+      }
+
+      @Override
+      public void close() {
+         iterator.close();
+      }
+
+      @Override
+      public boolean hasNext() {
+         return iterator.hasNext();
+      }
+
+      @Override
+      public CacheEntry next() {
+         CacheEntry entry = iterator.next();
+         return new EntryWrapper<K, V>(cache, entry);
+      }
+
+      @Override
+      public void remove() {
+         iterator.remove();
+      }
+   }
+
+   /**
+    * Wrapper for CacheEntry(s) that can be used to update the cache when it's value is set.
+    * @param <K> The key type
+    * @param <V> The value type
+    */
+   private static class EntryWrapper<K, V> extends ForwardingCacheEntry {
+      private final Cache<K, V> cache;
+      private final CacheEntry entry;
+
+      public EntryWrapper(Cache<K, V> cache, CacheEntry entry) {
+         this.cache = cache;
+         this.entry = entry;
+      }
+
+      @Override
+      protected CacheEntry delegate() {
+         return entry;
+      }
+
+      @Override
+      public Object setValue(Object value) {
+         cache.put((K) entry.getKey(), (V) value);
+         return super.setValue(value);
+      }
+   }
 }

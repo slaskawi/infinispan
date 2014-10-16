@@ -1,5 +1,7 @@
 package org.infinispan;
 
+import org.infinispan.commons.util.CloseableIteratorCollection;
+import org.infinispan.commons.util.CloseableIteratorSet;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.notifications.KeyFilter;
@@ -7,7 +9,6 @@ import org.infinispan.notifications.cachelistener.filter.CacheEventConverter;
 import org.infinispan.notifications.cachelistener.filter.CacheEventFilter;
 import org.infinispan.util.concurrent.NotifyingFuture;
 
-import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -295,17 +296,17 @@ public abstract class AbstractDelegatingCache<K, V> implements Cache<K, V> {
    }
 
    @Override
-   public Set<K> keySet() {
+   public CloseableIteratorSet<K> keySet() {
       return cache.keySet();
    }
 
    @Override
-   public Set<Entry<K, V>> entrySet() {
+   public CloseableIteratorSet<Entry<K, V>> entrySet() {
       return cache.entrySet();
    }
 
    @Override
-   public Collection<V> values() {
+   public CloseableIteratorCollection<V> values() {
       return cache.values();
    }
 

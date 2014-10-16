@@ -1,38 +1,11 @@
 package org.infinispan;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.infinispan.context.Flag.FAIL_SILENTLY;
-import static org.infinispan.context.Flag.FORCE_ASYNCHRONOUS;
-import static org.infinispan.context.Flag.PUT_FOR_EXTERNAL_READ;
-import static org.infinispan.context.Flag.ZERO_LOCK_ACQUISITION_TIMEOUT;
-import static org.infinispan.context.InvocationContextFactory.UNBOUNDED;
-import static org.infinispan.factories.KnownComponentNames.ASYNC_TRANSPORT_EXECUTOR;
-import static org.infinispan.factories.KnownComponentNames.CACHE_MARSHALLER;
-
-import javax.transaction.InvalidTransactionException;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
-import javax.transaction.xa.XAResource;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-
 import org.infinispan.atomic.Delta;
 import org.infinispan.batch.BatchContainer;
 import org.infinispan.commands.CommandsFactory;
 import org.infinispan.commands.VisitableCommand;
 import org.infinispan.commands.control.LockControlCommand;
+import org.infinispan.commands.read.EntryRetrievalCommand;
 import org.infinispan.commands.read.EntrySetCommand;
 import org.infinispan.commands.read.GetKeyValueCommand;
 import org.infinispan.commands.read.KeySetCommand;
@@ -49,6 +22,9 @@ import org.infinispan.commands.write.ValueMatcher;
 import org.infinispan.commons.CacheConfigurationException;
 import org.infinispan.commons.CacheException;
 import org.infinispan.commons.marshall.StreamingMarshaller;
+import org.infinispan.commons.util.CloseableIterable;
+import org.infinispan.commons.util.CloseableIteratorCollection;
+import org.infinispan.commons.util.CloseableIteratorSet;
 import org.infinispan.commons.util.Util;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.format.PropertyFormatter;
@@ -66,12 +42,13 @@ import org.infinispan.factories.ComponentRegistry;
 import org.infinispan.factories.annotations.ComponentName;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.annotations.SurvivesRestarts;
+import org.infinispan.filter.AcceptAllKeyValueFilter;
 import org.infinispan.filter.Converter;
 import org.infinispan.filter.KeyValueFilter;
+import org.infinispan.filter.NullValueConverter;
 import org.infinispan.interceptors.InterceptorChain;
 import org.infinispan.interceptors.base.CommandInterceptor;
 import org.infinispan.iteration.EntryIterable;
-import org.infinispan.iteration.EntryIterableImpl;
 import org.infinispan.iteration.EntryRetriever;
 import org.infinispan.jmx.annotations.DataType;
 import org.infinispan.jmx.annotations.DisplayType;
@@ -104,6 +81,32 @@ import org.infinispan.util.concurrent.NotifyingFuture;
 import org.infinispan.util.concurrent.locks.LockManager;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
+
+import javax.transaction.InvalidTransactionException;
+import javax.transaction.SystemException;
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
+import javax.transaction.xa.XAResource;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.infinispan.context.Flag.*;
+import static org.infinispan.context.InvocationContextFactory.UNBOUNDED;
+import static org.infinispan.factories.KnownComponentNames.ASYNC_TRANSPORT_EXECUTOR;
+import static org.infinispan.factories.KnownComponentNames.CACHE_MARSHALLER;
 
 /**
  * @author Mircea.Markus@jboss.com
@@ -366,11 +369,22 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
 
    @Override
    public final boolean isEmpty() {
-      return size() == 0;
+      return isEmpty(null, null);
    }
 
    final boolean isEmpty(EnumSet<Flag> explicitFlags, ClassLoader explicitClassLoader) {
-      return size(explicitFlags, explicitClassLoader) == 0;
+      String useClusterSize = SecurityActions.getSystemProperty("infinispan.accurate.bulk.ops");
+      if (useClusterSize == null || !useClusterSize.equalsIgnoreCase("true")) {
+         return size(explicitFlags, explicitClassLoader) == 0;
+      } else {
+         CloseableIterable<CacheEntry> iterable = filterEntries(AcceptAllKeyValueFilter.getInstance(),
+               explicitFlags, explicitClassLoader).converter(NullValueConverter.getInstance());
+         try {
+            return !iterable.iterator().hasNext();
+         } finally {
+            iterable.close();
+         }
+      }
    }
 
    @Override
@@ -388,7 +402,28 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
 
    @Override
    public final boolean containsValue(Object value) {
-      throw new UnsupportedOperationException("Not supported");
+      return containsValue(value, null, null);
+   }
+
+   final boolean containsValue(Object value, EnumSet<Flag> explicitFlags, ClassLoader explicitClassLoader) {
+      String useClusterSize = SecurityActions.getSystemProperty("infinispan.accurate.bulk.ops");
+      if (useClusterSize == null || !useClusterSize.equalsIgnoreCase("true")) {
+         throw new UnsupportedOperationException("Not supported");
+      } else {
+         assertValueNotNull(value);
+         CloseableIterable<CacheEntry> iterable = filterEntries(AcceptAllKeyValueFilter.getInstance(),
+               explicitFlags, explicitClassLoader).converter(NullValueConverter.getInstance());
+         try {
+            for (CacheEntry entry : iterable) {
+               if (value.equals(entry.getValue())) {
+                  return true;
+               }
+            }
+         } finally {
+            iterable.close();
+         }
+         return false;
+      }
    }
 
    @Override
@@ -419,15 +454,15 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
 
    @Override
    public EntryIterable<K, V> filterEntries(KeyValueFilter<? super K, ? super V> filter) {
-      return filterEntries(filter, null);
+      return filterEntries(filter, null, null);
    }
 
-   protected EntryIterable<K, V> filterEntries(KeyValueFilter<? super K, ? super V> filter, EnumSet<Flag> explicitFlags) {
-      // We need to copy the flag set since it is possible to modify the flags after retrieving the
-      // EntryIterable and we don't want it to effect that.
-
-      return new EntryIterableImpl<K, V>(entryRetriever, filter, explicitFlags != null ? EnumSet.copyOf(explicitFlags) :
-            EnumSet.noneOf(Flag.class));
+   protected EntryIterable<K, V> filterEntries(KeyValueFilter<? super K, ? super V> filter, EnumSet<Flag> explicitFlags,
+                                               ClassLoader explicitClassLoader) {
+      // We need a read invocation context as the remove is done with its own context
+      InvocationContext ctx = getInvocationContextForRead(null, explicitClassLoader, UNBOUNDED);
+      EntryRetrievalCommand<K, V> command = commandsFactory.buildEntryRetrievalCommand(explicitFlags, filter);
+      return (EntryIterable<K, V>) invoker.invoke(ctx, command);
    }
 
    @Override
@@ -484,39 +519,39 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
    }
 
    @Override
-   public Set<K> keySet() {
+   public CloseableIteratorSet<K> keySet() {
       return keySet(null, null);
    }
 
    @SuppressWarnings("unchecked")
-   Set<K> keySet(EnumSet<Flag> explicitFlags, ClassLoader explicitClassLoader) {
+   CloseableIteratorSet<K> keySet(EnumSet<Flag> explicitFlags, ClassLoader explicitClassLoader) {
       InvocationContext ctx = getInvocationContextForRead(null, explicitClassLoader, UNBOUNDED);
       KeySetCommand command = commandsFactory.buildKeySetCommand(explicitFlags);
-      return (Set<K>) invoker.invoke(ctx, command);
+      return (CloseableIteratorSet<K>) invoker.invoke(ctx, command);
    }
 
    @Override
-   public Collection<V> values() {
+   public CloseableIteratorCollection<V> values() {
       return values(null, null);
    }
 
    @SuppressWarnings("unchecked")
-   Collection<V> values(EnumSet<Flag> explicitFlags, ClassLoader explicitClassLoader) {
+   CloseableIteratorCollection<V> values(EnumSet<Flag> explicitFlags, ClassLoader explicitClassLoader) {
       InvocationContext ctx = getInvocationContextForRead(null, explicitClassLoader, UNBOUNDED);
       ValuesCommand command = commandsFactory.buildValuesCommand(explicitFlags);
-      return (Collection<V>) invoker.invoke(ctx, command);
+      return (CloseableIteratorCollection<V>) invoker.invoke(ctx, command);
    }
 
    @Override
-   public Set<Map.Entry<K, V>> entrySet() {
+   public CloseableIteratorSet<Map.Entry<K, V>> entrySet() {
       return entrySet(null, null);
    }
 
    @SuppressWarnings("unchecked")
-   Set<Map.Entry<K, V>> entrySet(EnumSet<Flag> explicitFlags, ClassLoader explicitClassLoader) {
+   CloseableIteratorSet<Map.Entry<K, V>> entrySet(EnumSet<Flag> explicitFlags, ClassLoader explicitClassLoader) {
       InvocationContext ctx = getInvocationContextForRead(null, explicitClassLoader, UNBOUNDED);
       EntrySetCommand command = commandsFactory.buildEntrySetCommand(explicitFlags);
-      return (Set<Map.Entry<K, V>>) invoker.invoke(ctx, command);
+      return (CloseableIteratorSet<Map.Entry<K, V>>) invoker.invoke(ctx, command);
    }
 
    @Override

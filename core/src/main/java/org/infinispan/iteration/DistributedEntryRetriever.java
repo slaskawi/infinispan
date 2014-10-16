@@ -501,6 +501,14 @@ public class DistributedEntryRetriever<K, V> extends LocalEntryRetriever<K, V> {
          log.trace("Skipping distributed entry retrieval and processing local only as CACHE_MODE_LOCAL flag was set");
          return super.retrieveEntries(filter, converter, flags, listener);
       }
+
+      ConsistentHash hash = getCurrentHash();
+      // If we aren't in the hash then just run the command locally
+      if (!hash.getMembers().contains(localAddress)) {
+         log.trace("Skipping distributed entry retrieval and processing local since we are not part of the consistent hash");
+         return super.retrieveEntries(filter, converter, flags, listener);
+      }
+
       UUID identifier = UUID.randomUUID();
       final Converter<? super K, ? super V, ? extends C> usedConverter = checkForKeyValueFilterConverter(filter,
                                                                                                          converter);
@@ -508,8 +516,8 @@ public class DistributedEntryRetriever<K, V> extends LocalEntryRetriever<K, V> {
          log.tracef("Processing entry retrieval request with identifier %s with filter %s and converter %s", identifier,
                     filter, usedConverter);
       }
-      ConsistentHash hash = getCurrentHash();
-      DistributedItr<K, C> itr = new DistributedItr<K, C>(batchSize, identifier, hash);
+
+      DistributedItr<K, C> itr = new DistributedItr<K, C>(batchSize, identifier, listener, hash);
       Set<Integer> remoteSegments = new HashSet<Integer>();
       AtomicReferenceArray<Set<K>> processedKeys = new AtomicReferenceArray<Set<K>>(hash.getNumSegments());
       for (int i = 0; i < processedKeys.length(); ++i) {
@@ -812,6 +820,7 @@ public class DistributedEntryRetriever<K, V> extends LocalEntryRetriever<K, V> {
    private <C> void processData(final UUID identifier, Address origin, Set<Integer> completedSegments, Set<Integer> inDoubtSegments,
                             Collection<CacheEntry> entries) {
       final IterationStatus<K, V, C> status = (IterationStatus<K, V, C>) iteratorDetails.get(identifier);
+      // This is possible if the iterator was closed early or we had duplicate requests due to a rehash.
       if (status != null) {
          final AtomicReferenceArray<Set<K>> processedKeys = status.processedKeys;
 
@@ -984,11 +993,13 @@ public class DistributedEntryRetriever<K, V> extends LocalEntryRetriever<K, V> {
       private final UUID identifier;
       private final ConsistentHash hash;
       private final ConcurrentMap<Integer, Set<K>> keysNeededToComplete = new ConcurrentHashMap<Integer, Set<K>>();
+      private final SegmentListener segmentListener;
 
-      public DistributedItr(int batchSize, UUID identifier, ConsistentHash hash) {
+      public DistributedItr(int batchSize, UUID identifier, SegmentListener segmentListener, ConsistentHash hash) {
          super(batchSize);
          this.identifier = identifier;
          this.hash = hash;
+         this.segmentListener = segmentListener;
       }
 
       @Override
@@ -1007,15 +1018,11 @@ public class DistributedEntryRetriever<K, V> extends LocalEntryRetriever<K, V> {
       }
 
       private void notifyListenerCompletedSegment(int segment, boolean fromIterator) {
-         IterationStatus status = iteratorDetails.get(identifier);
-         if (status != null) {
-            SegmentListener listener = status.segmentListener;
-            if (listener != null) {
-               if (log.isTraceEnabled()) {
-                  log.tracef("Notifying listener of segment %s being completed for %s", segment, identifier);
-               }
-               listener.segmentTransferred(segment, fromIterator);
+         if (segmentListener != null) {
+            if (log.isTraceEnabled()) {
+               log.tracef("Notifying listener of segment %s being completed for %s", segment, identifier);
             }
+            segmentListener.segmentTransferred(segment, fromIterator);
          }
       }
 
@@ -1046,6 +1053,19 @@ public class DistributedEntryRetriever<K, V> extends LocalEntryRetriever<K, V> {
                }
             }
          }
+      }
+
+      @Override
+      public void close() {
+         // When the iterator is closed we have to stop all other processing and remove any references to our identifier
+         iteratorDetails.remove(identifier);
+         super.close();
+      }
+
+      @Override
+      protected void finalize() throws Throwable {
+         super.finalize();
+         close();
       }
    }
 

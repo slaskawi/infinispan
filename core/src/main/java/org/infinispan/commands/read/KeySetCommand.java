@@ -1,12 +1,5 @@
 package org.infinispan.commands.read;
 
-import org.infinispan.commands.VisitableCommand;
-import org.infinispan.commands.Visitor;
-import org.infinispan.container.DataContainer;
-import org.infinispan.container.entries.CacheEntry;
-import org.infinispan.context.Flag;
-import org.infinispan.context.InvocationContext;
-
 import java.util.AbstractSet;
 import java.util.Collection;
 import java.util.Iterator;
@@ -14,20 +7,39 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import org.infinispan.Cache;
+import org.infinispan.commands.VisitableCommand;
+import org.infinispan.commands.Visitor;
+import org.infinispan.commons.util.CloseableIterator;
+import org.infinispan.commons.util.CloseableIteratorSet;
+import org.infinispan.container.DataContainer;
+import org.infinispan.container.entries.CacheEntry;
+import org.infinispan.context.Flag;
+import org.infinispan.context.InvocationContext;
+import org.infinispan.filter.AcceptAllKeyValueFilter;
+import org.infinispan.filter.NullValueConverter;
+
 /**
  * Command implementation for {@link java.util.Map#keySet()} functionality.
  *
  * @author Galder Zamarreño
  * @author Mircea.Markus@jboss.com
  * @author <a href="http://gleamynode.net/">Trustin Lee</a>
+ * @author William Burns
  * @since 4.0
  */
-public class KeySetCommand extends AbstractLocalCommand implements VisitableCommand {
+public class KeySetCommand<K, V> extends AbstractLocalCommand implements VisitableCommand {
    private final DataContainer container;
+   private final Cache<K, V> cache;
 
-   public KeySetCommand(DataContainer container, Set<Flag> flags) {
+   public KeySetCommand(DataContainer container, Cache<K, V> cache, Set<Flag> flags) {
       setFlags(flags);
       this.container = container;
+      if (flags != null) {
+         this.cache = cache.getAdvancedCache().withFlags(flags.toArray(new Flag[flags.size()]));
+      } else {
+         this.cache = cache;
+      }
    }
 
    @Override
@@ -36,23 +48,51 @@ public class KeySetCommand extends AbstractLocalCommand implements VisitableComm
    }
 
    @Override
-   public Set<Object> perform(InvocationContext ctx) throws Throwable {
-      Set<Object> objects = container.keySet();
-      if (ctx.getLookedUpEntries().isEmpty()) {
-         return new ExpiredFilteredKeySet(objects, container);
-      }
+   public CloseableIteratorSet<? extends Object> perform(InvocationContext ctx) throws Throwable {
+      String useClusterSize = SecurityActions.getSystemProperty("infinispan.accurate.bulk.ops");
+      if (useClusterSize == null || !useClusterSize.equalsIgnoreCase("true")) {
+         Set<Object> objects = container.keySet();
+         if (ctx.getLookedUpEntries().isEmpty()) {
+            return new ExpiredFilteredKeySet(objects, container);
+         }
 
-      return new FilteredKeySet(objects, ctx.getLookedUpEntries(), container);
+         return new FilteredKeySet(objects, ctx.getLookedUpEntries(), container);
+      } else {
+         return new BackingKeySet<K, V>(cache);
+      }
    }
 
    @Override
    public String toString() {
       return "KeySetCommand{" +
-            "set=" + container.size() + " elements" +
+            "cache=" + cache.getName() +
             '}';
    }
 
-   private static class FilteredKeySet extends AbstractSet<Object> {
+   private static class BackingKeySet<K, V> extends AbstractCloseableIteratorCollection<K, K, V> implements CloseableIteratorSet<K> {
+
+      public BackingKeySet(Cache<K, V> cache) {
+         super(cache);
+      }
+
+      @Override
+      public CloseableIterator<K> iterator() {
+         return new EntryToKeyIterator(cache.getAdvancedCache().filterEntries(AcceptAllKeyValueFilter.getInstance())
+                                             .converter(NullValueConverter.getInstance()).iterator());
+      }
+
+      @Override
+      public boolean contains(Object o) {
+         return cache.containsKey(o);
+      }
+
+      @Override
+      public boolean remove(Object o) {
+         return cache.remove(o) != null;
+      }
+   }
+
+   private static class FilteredKeySet extends AbstractSet<Object> implements CloseableIteratorSet<Object> {
       final Set<Object> keySet;
       final Map<Object, CacheEntry> lookedUpEntries;
       final DataContainer container;
@@ -95,7 +135,7 @@ public class KeySetCommand extends AbstractLocalCommand implements VisitableComm
       }
 
       @Override
-      public Iterator<Object> iterator() {
+      public CloseableIterator<Object> iterator() {
          return new Itr();
       }
 
@@ -129,7 +169,7 @@ public class KeySetCommand extends AbstractLocalCommand implements VisitableComm
          throw new UnsupportedOperationException();
       }
 
-      private class Itr implements Iterator<Object> {
+      private class Itr implements CloseableIterator<Object> {
 
          private final Iterator<CacheEntry> it1 = lookedUpEntries.values().iterator();
          private final Iterator<Object> it2 = keySet.iterator();
@@ -201,10 +241,14 @@ public class KeySetCommand extends AbstractLocalCommand implements VisitableComm
          public void remove() {
             throw new UnsupportedOperationException();
          }
+
+         @Override
+         public void close() {
+         }
       }
    }
 
-   public static class ExpiredFilteredKeySet extends AbstractSet<Object> {
+   public static class ExpiredFilteredKeySet extends AbstractSet<Object> implements CloseableIteratorSet<Object> {
       final Set<Object> keySet;
       final DataContainer container;
 
@@ -244,7 +288,7 @@ public class KeySetCommand extends AbstractLocalCommand implements VisitableComm
       }
 
       @Override
-      public Iterator<Object> iterator() {
+      public CloseableIterator<Object> iterator() {
          return new Itr();
       }
 
@@ -261,7 +305,7 @@ public class KeySetCommand extends AbstractLocalCommand implements VisitableComm
          return s;
       }
 
-      private class Itr implements Iterator<Object> {
+      private class Itr implements CloseableIterator<Object> {
 
          private final Iterator<Object> it = keySet.iterator();
          private Object next;
@@ -305,6 +349,39 @@ public class KeySetCommand extends AbstractLocalCommand implements VisitableComm
          public void remove() {
             throw new UnsupportedOperationException();
          }
+
+         @Override
+         public void close() {
+         }
+      }
+   }
+
+   private static class EntryToKeyIterator<K> implements CloseableIterator<K> {
+
+      private final CloseableIterator<CacheEntry> iterator;
+
+      public EntryToKeyIterator(CloseableIterator<CacheEntry> iterator) {
+         this.iterator = iterator;
+      }
+
+      @Override
+      public boolean hasNext() {
+         return iterator.hasNext();
+      }
+
+      @Override
+      public K next() {
+         return (K) iterator.next().getKey();
+      }
+
+      @Override
+      public void remove() {
+         iterator.remove();
+      }
+
+      @Override
+      public void close() {
+         iterator.close();
       }
    }
 }

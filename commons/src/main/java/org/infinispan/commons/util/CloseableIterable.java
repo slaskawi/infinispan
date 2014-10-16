@@ -12,4 +12,9 @@ import java.io.Closeable;
  * @since 7.0
  */
 public interface CloseableIterable<E> extends Closeable, Iterable<E> {
+   @Override
+   void close();
+
+   @Override
+   CloseableIterator<E> iterator();
 }

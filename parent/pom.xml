@@ -891,11 +891,6 @@
             <version>${version.pax.url}</version>
             <scope>test</scope>
          </dependency>
-          <dependency>
-              <groupId>com.google.guava</groupId>
-              <artifactId>guava</artifactId>
-              <version>${version.guava}</version>
-          </dependency>
       </dependencies>
    </dependencyManagement>
    <dependencies>

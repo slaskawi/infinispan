@@ -20,6 +20,7 @@
       <module>parent</module>
       <module>commons</module>
       <module>core</module>
+      <module>bulk</module>
       <module>tools</module>
       <module>query</module>
       <module>query-dsl</module>

@@ -2,6 +2,7 @@ package org.infinispan.commands;
 
 import org.infinispan.commands.control.LockControlCommand;
 import org.infinispan.commands.read.DistributedExecuteCommand;
+import org.infinispan.commands.read.EntryRetrievalCommand;
 import org.infinispan.commands.read.EntrySetCommand;
 import org.infinispan.commands.read.GetKeyValueCommand;
 import org.infinispan.commands.read.KeySetCommand;
@@ -13,6 +14,7 @@ import org.infinispan.commands.tx.RollbackCommand;
 import org.infinispan.commands.write.*;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.context.impl.TxInvocationContext;
+import org.infinispan.iteration.EntryIterable;
 
 import java.util.Collection;
 
@@ -86,6 +88,11 @@ public abstract class AbstractVisitor implements Visitor {
 
    @Override
    public Object visitEntrySetCommand(InvocationContext ctx, EntrySetCommand command) throws Throwable {
+      return handleDefault(ctx, command);
+   }
+
+   @Override
+   public Object visitEntryRetrievalCommand(InvocationContext ctx, EntryRetrievalCommand command) throws Throwable {
       return handleDefault(ctx, command);
    }
 

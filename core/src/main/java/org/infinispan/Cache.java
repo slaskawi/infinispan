@@ -2,11 +2,13 @@ package org.infinispan;
 
 import org.infinispan.api.BasicCache;
 import org.infinispan.commons.api.BatchingCache;
+import org.infinispan.commons.util.CloseableIteratorCollection;
+import org.infinispan.commons.util.CloseableIteratorSet;
+import org.infinispan.commons.util.concurrent.NotifyingFuture;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.notifications.FilteringListenable;
-import org.infinispan.util.concurrent.NotifyingFuture;
 
 import java.util.Collection;
 import java.util.Map;
@@ -27,17 +29,9 @@ import java.util.concurrent.ConcurrentMap;
  * {@link ConcurrentMap#keySet()}, {@link ConcurrentMap#values()} and {@link ConcurrentMap#entrySet()} are expensive
  * (prohibitively so when using a distributed cache) and frequent use of these methods is not recommended.
  * <p />
- * {@link #size()} provides the size of the local, internal data container only.  This does not take into account
- * in-fly transactions, entries stored in a cache store, or remote entries.  It may also take into consideration
- * entries that have expired but haven't yet been removed from the internal container, as well as entries in the L1
- * cache if L1 is enabled along with distribution as a clustering mode.  See the Infinispan User Guide section on
- * <a href="https://docs.jboss.org/author/display/ISPN51/Clustering+modes#Clusteringmodes-L1Caching">L1 caching</a> for more details.
- * <p/>
  * Also, like many {@link ConcurrentMap} implementations, Cache does not support the use of <tt>null</tt> keys or
  * values.
  * <p/>
- * <h3>Unsupported operations</h3>
- * <p>{@link #containsValue(Object)}</p>
  * <h3>Asynchronous operations</h3> Cache also supports the use of "async" remote operations.  Note that these methods
  * only really make sense if you are using a clustered cache.  I.e., when used in LOCAL mode, these "async" operations
  * offer no benefit whatsoever.  These methods, such as {@link #putAsync(Object, Object)} offer the best of both worlds
@@ -180,11 +174,52 @@ public interface Cache<K, V> extends BasicCache<K, V>, BatchingCache, FilteringL
     * This method should only be used for debugging purposes such as to verify that the cache contains all the keys
     * entered. Any other use involving execution of this method on a production system is not recommended.
     * <p/>
-    * 
-    * @return a set view of the keys contained in this cache and cache loader.
+    * If the <b>infinispan.accurate.bulk.ops</b> system property is set to <b>true</b> this command will instead retrieve the 
+    * keySet taking into account the
+    * entire cluster, when using a distributed cache.  All additional documentation on this method refer to when this is
+    * enabled.
+    * <p/>
+    * Returns a set view of the keys contained in this cache and cache loader across the entire cluster.
+    * Modifications and changes to the cache will be reflected in the set and vice versa. When this method is called
+    * nothing is actually queried as the backing set is just returned.  Invocation on the set itself is when the
+    * various operations are ran.
+    * <p/>
+    * <h3>Unsupported Operations</h3>
+    * Care should be taken when invoking {@link java.util.Set#toArray()}, {@link Set#toArray(Object[])},
+    * {@link java.util.Set#size()}, {@link Set#retainAll(Collection)} and {@link java.util.Set#iterator()}
+    * methods as they will traverse the entire contents of the cluster including a configured
+    * {@link org.infinispan.persistence.spi.CacheLoader} and remote entries.  The former 2 methods especially have a
+    * very high likely hood of causing a {@link java.lang.OutOfMemoryError} due to storing all the keys in the entire
+    * cluster in the array.
+    * Use involving execution of this method on a production system is not recommended as they can be quite expensive
+    * operations
+    * <p/>
+    * <h3>Supported Flags</h3>
+    * Note any flag configured for the cache will also be passed along to the backing set when it was created.  If
+    * additional flags are configured on the cache they will not affect any existing backings sets.
+    * <p/>
+    * If there are performance concerns then the {@link org.infinispan.context.Flag#SKIP_CACHE_LOAD} flag should be used to
+    * avoid hitting the cache store as this will cause all entries there to be read in (albeit in a batched form to
+    * prevent {@link java.lang.OutOfMemoryError})
+    * <p/>
+    * Also if you want the local contents only you can use the {@link org.infinispan.context.Flag#CACHE_MODE_LOCAL} flag so
+    * that other remote nodes are not queried for data.  However the loader will still be used unless the previously
+    * mentioned {@link org.infinispan.context.Flag#SKIP_CACHE_LOAD} is also configured.
+    * <p/>
+    * <h3>Iterator Use</h3>
+    * This class implements the {@link CloseableIteratorSet} interface which creates a
+    * {@link org.infinispan.commons.util.CloseableIterator} instead of a regular one.  This means this iterator must be
+    * explicitly closed either through try with resource or calling the close method directly.  Technically this iterator
+    * will also close itself if you iterate fully over it, but it is safest to always make sure you close it explicitly.
+    * <h3>Unsupported Operations</h3>
+    * Due to not being able to add null values the following methods are not supported and will throw
+    * {@link java.lang.UnsupportedOperationException} if invoked.
+    * {@link Set#add(Object)}
+    * {@link Set#addAll(java.util.Collection)}
+    * @return a set view of the keys contained in this cache and cache loader across the entire cluster.
     */
    @Override
-   Set<K> keySet();
+   CloseableIteratorSet<K> keySet();
 
    /**
     * Returns a collection view of the values contained in this cache. This collection is immutable, so it cannot be modified 
@@ -198,11 +233,51 @@ public interface Cache<K, V> extends BasicCache<K, V>, BatchingCache, FilteringL
     * This method should only be used for testing or debugging purposes such as to verify that the cache contains all the
     * values entered. Any other use involving execution of this method on a production system is not recommended.
     * <p/>
-    * 
+    * If the <b>infinispan.accurate.bulk.ops</b> system property is set to <b>true</b> this command will instead retrieve the 
+    * values taking into account the
+    * entire cluster, when using a distributed cache.  All additional documentation on this method refer to when this is
+    * enabled.
+    * <p/>
+    * Returns a collection view of the values contained in this cache across the entire cluster. Modifications and
+    * changes to the cache will be reflected in the set and vice versa. When this method is called nothing is actually
+    * queried as the backing collection is just returned.  Invocation on the collection itself is when the various
+    * operations are ran.
+    * <p/>
+    * Care should be taken when invoking {@link Collection#toArray()}, {@link Collection#toArray(Object[])},
+    * {@link Collection#size()}, {@link Collection#retainAll(Collection)} and {@link Collection#iterator()}
+    * methods as they will traverse the entire contents of the cluster including a configured
+    * {@link org.infinispan.persistence.spi.CacheLoader} and remote entries.  The former 2 methods especially have a
+    * very high likely hood of causing a {@link java.lang.OutOfMemoryError} due to storing all the keys in the entire
+    * cluster in the array.
+    * Use involving execution of this method on a production system is not recommended as they can be quite expensive
+    * operations
+    * <p/>
+    * * <h3>Supported Flags</h3>
+    * Note any flag configured for the cache will also be passed along to the backing set when it was created.  If
+    * additional flags are configured on the cache they will not affect any existing backings sets.
+    * <p/>
+    * If there are performance concerns then the {@link org.infinispan.context.Flag#SKIP_CACHE_LOAD} flag should be used to
+    * avoid hitting the cache store as this will cause all entries there to be read in (albeit in a batched form to
+    * prevent {@link java.lang.OutOfMemoryError})
+    * <p/>
+    * Also if you want the local contents only you can use the {@link org.infinispan.context.Flag#CACHE_MODE_LOCAL} flag so
+    * that other remote nodes are not queried for data.  However the loader will still be used unless the previously
+    * mentioned {@link org.infinispan.context.Flag#SKIP_CACHE_LOAD} is also configured.
+    * <p/>
+    * <h3>Iterator Use</h3>
+    * This class implements the {@link CloseableIteratorCollection} interface which creates a
+    * {@link org.infinispan.commons.util.CloseableIterator} instead of a regular one.  This means this iterator must be
+    * explicitly closed either through try with resource or calling the close method directly.  Technically this iterator
+    * will also close itself if you iterate fully over it, but it is safest to always make sure you close it explicitly.
+    * <h3>Unsupported Operations</h3>
+    * Due to not being able to add null values the following methods are not supported and will throw
+    * {@link java.lang.UnsupportedOperationException} if invoked.
+    * {@link Set#add(Object)}
+    * {@link Set#addAll(java.util.Collection)}
     * @return a collection view of the values contained in this cache and cache loader.
     */
    @Override
-   Collection<V> values();
+   CloseableIteratorCollection<V> values();
 
    /**
     * Returns a set view of the mappings contained in this cache and cache loader. This set is immutable, so it cannot
@@ -217,9 +292,48 @@ public interface Cache<K, V> extends BasicCache<K, V>, BatchingCache, FilteringL
     * This method should only be used for debugging purposes such as to verify that the cache contains all the mappings
     * entered. Any other use involving execution of this method on a production system is not recommended.
     * <p/>
-    * 
+    * If the <b>infinispan.accurate.bulk.ops</b> system property is set to <b>true</b> this command will instead retrieve the 
+    * entrySet taking into account the
+    * entire cluster, when using a distributed cache.  All additional documentation on this method refer to when this is
+    * enabled.
+    * <p/>
+    * Returns a set view of the mappings contained in this cache and cache loader across the entire cluster.
+    * Modifications and changes to the cache will be reflected in the set and vice versa. When this method is called
+    * nothing is actually queried as the backing set is just returned.  Invocation on the set itself is when the
+    * various operations are ran.
+    * <p/>
+    * Care should be taken when invoking {@link java.util.Set#toArray()}, {@link Set#toArray(Object[])},
+    * {@link java.util.Set#size()}, {@link Set#retainAll(Collection)} and {@link java.util.Set#iterator()}
+    * methods as they will traverse the entire contents of the cluster including a configured
+    * {@link org.infinispan.persistence.spi.CacheLoader} and remote entries.  The former 2 methods especially have a
+    * very high likely hood of causing a {@link java.lang.OutOfMemoryError} due to storing all the keys in the entire
+    * cluster in the array.
+    * Use involving execution of this method on a production system is not recommended as they can be quite expensive
+    * operations
+    * <p/>
+    * * <h3>Supported Flags</h3>
+    * Note any flag configured for the cache will also be passed along to the backing set when it was created.  If
+    * additional flags are configured on the cache they will not affect any existing backings sets.
+    * <p/>
+    * If there are performance concerns then the {@link org.infinispan.context.Flag#SKIP_CACHE_LOAD} flag should be used to
+    * avoid hitting the cache store as this will cause all entries there to be read in (albeit in a batched form to
+    * prevent {@link java.lang.OutOfMemoryError})
+    * <p/>
+    * Also if you want the local contents only you can use the {@link org.infinispan.context.Flag#CACHE_MODE_LOCAL} flag so
+    * that other remote nodes are not queried for data.  However the loader will still be used unless the previously
+    * mentioned {@link org.infinispan.context.Flag#SKIP_CACHE_LOAD} is also configured.
+    * <p/>
+    * <h3>Modifying or Adding Entries</h3>
+    * An entry's value is supported to be modified by using the {@link Map.Entry#setValue(Object)} and it will update
+    * the cache as well.  Also this backing set does allow addition of a new Map.Entry(s) via the
+    * {@link Set#add(Object)} or {@link Set#addAll(java.util.Collection)} methods.
+    * <h3>Iterator Use</h3>
+    * This class implements the {@link CloseableIteratorSet} interface which creates a
+    * {@link org.infinispan.commons.util.CloseableIterator} instead of a regular one.  This means this iterator must be
+    * explicitly closed either through try with resource or calling the close method directly.  Technically this iterator
+    * will also close itself if you iterate fully over it, but it is safest to always make sure you close it explicitly.
     * @return a set view of the mappings contained in this cache and cache loader
     */
    @Override
-   Set<Map.Entry<K, V>> entrySet();
+   CloseableIteratorSet<Entry<K, V>> entrySet();
 }

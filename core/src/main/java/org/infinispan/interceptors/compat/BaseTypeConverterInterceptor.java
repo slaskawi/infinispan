@@ -1,12 +1,18 @@
 package org.infinispan.interceptors.compat;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.infinispan.commands.MetadataAwareCommand;
+import org.infinispan.commands.read.EntryRetrievalCommand;
 import org.infinispan.commands.read.EntrySetCommand;
 import org.infinispan.commands.read.GetKeyValueCommand;
 import org.infinispan.commands.read.KeySetCommand;
 import org.infinispan.commands.write.PutKeyValueCommand;
 import org.infinispan.commands.write.RemoveCommand;
 import org.infinispan.commands.write.ReplaceCommand;
+import org.infinispan.commons.util.CloseableIterable;
+import org.infinispan.commons.util.CloseableIterator;
 import org.infinispan.commons.util.Immutables;
 import org.infinispan.compat.TypeConverter;
 import org.infinispan.container.InternalEntryFactory;
@@ -16,12 +22,11 @@ import org.infinispan.container.versioning.VersionGenerator;
 import org.infinispan.context.Flag;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.factories.annotations.Inject;
+import org.infinispan.filter.Converter;
 import org.infinispan.interceptors.base.CommandInterceptor;
+import org.infinispan.iteration.EntryIterable;
 import org.infinispan.metadata.Metadata;
 import org.infinispan.util.TimeService;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Base implementation for an interceptor that applies type conversion to the data stored in the cache. Subclasses need
@@ -36,11 +41,12 @@ public abstract class BaseTypeConverterInterceptor extends CommandInterceptor {
    private VersionGenerator versionGenerator;
    private TimeService timerService;
 
+
    @Inject
-   protected void init(InternalEntryFactory entryFactory, VersionGenerator versionGenerator, TimeService timeService) {
+   protected void init(InternalEntryFactory entryFactory, VersionGenerator versionGenerator, TimeService timerService) {
       this.entryFactory = entryFactory;
       this.versionGenerator = versionGenerator;
-      this.timerService = timeService;
+      this.timerService = timerService;
    }
 
    /**
@@ -148,38 +154,132 @@ public abstract class BaseTypeConverterInterceptor extends CommandInterceptor {
 
       return ctx.isOriginLocal() ? converter.unboxValue(ret) : ret;
    }
-
+   
    @Override
    public Object visitEntrySetCommand(InvocationContext ctx, EntrySetCommand command) throws Throwable {
       Set<CacheEntry> set = (Set<CacheEntry>) super.visitEntrySetCommand(ctx, command);
-      TypeConverter<Object, Object, Object, Object> converter =
-            determineTypeConverter(command.getFlags());
-      Set<InternalCacheEntry> backingSet = new HashSet<InternalCacheEntry>(set.size());
-      for (CacheEntry entry : set) {
-         Object key = converter.unboxKey(entry.getKey());
-         Object value = converter.unboxValue(entry.getValue());
-         InternalCacheEntry newEntry = entryFactory.create(
-               key, value, entry.getMetadata(),
-               entry.getLifespan(), entry.getMaxIdle());
-         backingSet.add(newEntry);
+      String useClusterSize = SecurityActions.getSystemProperty("infinispan.accurate.bulk.ops");
+      if (useClusterSize == null || !useClusterSize.equalsIgnoreCase("true")) {
+         TypeConverter<Object, Object, Object, Object> converter = determineTypeConverter(command.getFlags());
+         Set<InternalCacheEntry> backingSet = new HashSet<InternalCacheEntry>(set.size());
+         for (CacheEntry entry : set) {
+            Object key = converter.unboxKey(entry.getKey());
+            Object value = converter.unboxValue(entry.getValue());
+            InternalCacheEntry newEntry = entryFactory.create(key, value, entry.getMetadata(), entry.getLifespan(),
+                  entry.getMaxIdle());
+            backingSet.add(newEntry);
+         }
+         return EntrySetCommand.createFilteredEntrySet(backingSet, ctx, timerService, entryFactory);
+      } else {
+        return set;
       }
-
-      return EntrySetCommand.createFilteredEntrySet(backingSet, ctx, timerService, entryFactory);
    }
 
    @Override
    public Object visitKeySetCommand(InvocationContext ctx, KeySetCommand command) throws Throwable {
       Set<Object> keySet = (Set<Object>) super.visitKeySetCommand(ctx, command);
+      String useClusterSize = SecurityActions.getSystemProperty("infinispan.accurate.bulk.ops");
+      if (useClusterSize == null || !useClusterSize.equalsIgnoreCase("true")) {
+         TypeConverter<Object, Object, Object, Object> converter = determineTypeConverter(command.getFlags());
+         Set<Object> backingSet = new HashSet<Object>(keySet.size());
+         for (Object key : keySet)
+            backingSet.add(converter.unboxKey(key));
+         // Returning a filtered key set here is difficult because it uses the
+         // container as a way to find out if the key is expired or not. Since
+         // the keys are unboxed here, no keys will be found in the data container.
+         return Immutables.immutableSetWrap(backingSet);
+      } else {
+         return keySet;
+      }
+   }
+
+   @Override
+   public EntryIterable visitEntryRetrievalCommand(InvocationContext ctx, EntryRetrievalCommand command) throws Throwable {
       TypeConverter<Object, Object, Object, Object> converter =
             determineTypeConverter(command.getFlags());
+      EntryIterable realIterable = (EntryIterable) super.visitEntryRetrievalCommand(ctx, command);
+      return new TypeConverterEntryIterable(realIterable, converter, entryFactory);
+   }
 
-      Set<Object> backingSet = new HashSet<Object>(keySet.size());
-      for (Object key : keySet)
-         backingSet.add(converter.unboxKey(key));
+   private static class TypeConverterCloseableIterable<K, V> implements CloseableIterable<CacheEntry> {
+      protected final CloseableIterable iterable;
+      protected final TypeConverter<Object, Object, Object, Object> converter;
+      protected final InternalEntryFactory entryFactory;
 
-      // Returning a filtered key set here is difficult because it uses the
-      // container as a way to find out if the key is expired or not. Since
-      // the keys are unboxed here, no keys will be found in the data container.
-      return Immutables.immutableSetWrap(backingSet);
+      private TypeConverterCloseableIterable(CloseableIterable iterable,
+                                             TypeConverter<Object, Object, Object, Object> converter,
+                                             InternalEntryFactory entryFactory) {
+         this.iterable = iterable;
+         this.converter = converter;
+         this.entryFactory = entryFactory;
+      }
+
+      @Override
+      public void close() {
+         iterable.close();
+      }
+
+      @Override
+      public CloseableIterator<CacheEntry> iterator() {
+         return new TypeConverterIterator(iterable.iterator(), converter, entryFactory);
+      }
+   }
+
+   private static class TypeConverterEntryIterable<K, V> extends TypeConverterCloseableIterable<K, V> implements EntryIterable<K, V> {
+      private final EntryIterable entryIterable;
+
+      private TypeConverterEntryIterable(EntryIterable iterable, TypeConverter<Object, Object, Object, Object> converter,
+                                         InternalEntryFactory entryFactory) {
+         super(iterable, converter, entryFactory);
+         this.entryIterable = iterable;
+      }
+
+
+      @Override
+      public CloseableIterable<CacheEntry> converter(Converter converter) {
+         return new TypeConverterCloseableIterable(entryIterable.converter(converter), this.converter, entryFactory);
+      }
+   }
+
+   private static class TypeConverterIterator<K, V> implements CloseableIterator<CacheEntry> {
+      private final CloseableIterator<CacheEntry> iterator;
+      private final TypeConverter<Object, Object, Object, Object> converter;
+      private final InternalEntryFactory entryFactory;
+
+      private TypeConverterIterator(CloseableIterator<CacheEntry> iterator,
+                                    TypeConverter<Object, Object, Object, Object> converter,
+                                    InternalEntryFactory entryFactory) {
+         this.iterator = iterator;
+         this.converter = converter;
+         this.entryFactory = entryFactory;
+      }
+
+      @Override
+      public void close() {
+         iterator.close();
+      }
+
+      @Override
+      public boolean hasNext() {
+         return iterator.hasNext();
+      }
+
+      @Override
+      public CacheEntry next() {
+         CacheEntry entry = iterator.next();
+         Object newKey = converter.unboxKey(entry.getKey());
+         Object newValue = converter.unboxValue(entry.getValue());
+         if (newKey != entry.getKey()) {
+            return entryFactory.create(newKey, newValue, entry.getMetadata());
+         } else {
+            entry.setValue(newValue);
+         }
+         return entry;
+      }
+
+      @Override
+      public void remove() {
+         iterator.remove();
+      }
    }
 }

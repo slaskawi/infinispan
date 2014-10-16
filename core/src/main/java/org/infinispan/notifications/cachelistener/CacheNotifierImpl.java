@@ -717,11 +717,7 @@ public final class CacheNotifierImpl<K, V> extends AbstractListenerImpl<Event<K,
                handler.notifiedKey(entry.getKey());
             }
          } finally {
-            try {
-               iterator.close();
-            } catch (IOException e) {
-               log.ignoringException("addListener", "IOException", e);
-            }
+            iterator.close();
          }
 
          Set<CacheEntry> entries = handler.findCreatedEntries();

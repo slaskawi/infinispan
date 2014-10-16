@@ -18,7 +18,7 @@ public class IteratorAsCloseableIterator<E> implements CloseableIterator<E> {
    }
 
    @Override
-   public void close() throws IOException {
+   public void close() {
       // This does nothing
    }
 

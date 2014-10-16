@@ -1,14 +1,5 @@
 package org.infinispan.commands.read;
 
-import org.infinispan.commands.VisitableCommand;
-import org.infinispan.commands.Visitor;
-import org.infinispan.container.DataContainer;
-import org.infinispan.container.entries.CacheEntry;
-import org.infinispan.container.entries.InternalCacheEntry;
-import org.infinispan.context.Flag;
-import org.infinispan.context.InvocationContext;
-import org.infinispan.util.TimeService;
-
 import java.util.AbstractCollection;
 import java.util.Collection;
 import java.util.HashSet;
@@ -17,22 +8,42 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import org.infinispan.Cache;
+import org.infinispan.commands.VisitableCommand;
+import org.infinispan.commands.Visitor;
+import org.infinispan.commons.util.CloseableIterator;
+import org.infinispan.commons.util.CloseableIteratorCollection;
+import org.infinispan.container.DataContainer;
+import org.infinispan.container.entries.CacheEntry;
+import org.infinispan.container.entries.InternalCacheEntry;
+import org.infinispan.context.Flag;
+import org.infinispan.context.InvocationContext;
+import org.infinispan.filter.AcceptAllKeyValueFilter;
+import org.infinispan.util.TimeService;
+
 /**
  * Command implementation for {@link java.util.Map#values()} functionality.
  *
  * @author Galder Zamarreño
  * @author Mircea.Markus@jboss.com
  * @author <a href="http://gleamynode.net/">Trustin Lee</a>
+ * @author William Burns
  * @since 4.0
  */
-public class ValuesCommand extends AbstractLocalCommand implements VisitableCommand {
+public class ValuesCommand<K, V> extends AbstractLocalCommand implements VisitableCommand {
    private final DataContainer container;
    private final TimeService timeService;
+   private final Cache<K, V> cache;
 
-   public ValuesCommand(DataContainer container, TimeService timeService, Set<Flag> flags) {
+   public ValuesCommand(DataContainer container, TimeService timeService, Cache<K, V> cache, Set<Flag> flags) {
       setFlags(flags);
       this.container = container;
       this.timeService = timeService;
+      if (flags != null) {
+         this.cache = cache.getAdvancedCache().withFlags(flags.toArray(new Flag[flags.size()]));
+      } else {
+         this.cache = cache;
+      }
    }
 
    @Override
@@ -41,12 +52,17 @@ public class ValuesCommand extends AbstractLocalCommand implements VisitableComm
    }
 
    @Override
-   public Collection<Object> perform(InvocationContext ctx) throws Throwable {
-      if (ctx.getLookedUpEntries().isEmpty()) {
-         return new ExpiredFilteredValues(container.entrySet(), timeService);
-      }
+   public CloseableIteratorCollection<? extends Object> perform(InvocationContext ctx) throws Throwable {
+      String useClusterSize = SecurityActions.getSystemProperty("infinispan.accurate.bulk.ops");
+      if (useClusterSize == null || !useClusterSize.equalsIgnoreCase("true")) {
+         if (ctx.getLookedUpEntries().isEmpty()) {
+            return new ExpiredFilteredValues(container.entrySet(), timeService);
+         }
 
-      return new FilteredValues(container, ctx.getLookedUpEntries(), timeService);
+         return new FilteredValues(container, ctx.getLookedUpEntries(), timeService);
+      } else {
+         return new BackingValuesCollection<K, V>(cache);
+      }
    }
 
    @Override
@@ -56,7 +72,7 @@ public class ValuesCommand extends AbstractLocalCommand implements VisitableComm
             '}';
    }
 
-   private static class FilteredValues extends AbstractCollection<Object> {
+   private static class FilteredValues extends AbstractCollection<Object> implements CloseableIteratorCollection<Object> {
       final DataContainer container;
       final Collection<Object> values;
       final Set<InternalCacheEntry> entrySet;
@@ -123,7 +139,7 @@ public class ValuesCommand extends AbstractLocalCommand implements VisitableComm
       }
 
       @Override
-      public Iterator<Object> iterator() {
+      public CloseableIterator<Object> iterator() {
          return new Itr();
       }
 
@@ -157,7 +173,7 @@ public class ValuesCommand extends AbstractLocalCommand implements VisitableComm
          throw new UnsupportedOperationException();
       }
 
-      private class Itr implements Iterator<Object> {
+      private class Itr implements CloseableIterator<Object> {
 
          private final Iterator<CacheEntry> it1 = lookedUpEntries.values().iterator();
          private final Iterator<InternalCacheEntry> it2 = entrySet.iterator();
@@ -238,10 +254,14 @@ public class ValuesCommand extends AbstractLocalCommand implements VisitableComm
          public void remove() {
             throw new UnsupportedOperationException();
          }
+
+         @Override
+         public void close() {
+         }
       }
    }
 
-   public static class ExpiredFilteredValues extends AbstractCollection<Object> {
+   public static class ExpiredFilteredValues extends AbstractCollection<Object> implements CloseableIteratorCollection<Object> {
       final Set<InternalCacheEntry> entrySet;
       final TimeService timeService;
 
@@ -251,7 +271,7 @@ public class ValuesCommand extends AbstractLocalCommand implements VisitableComm
       }
 
       @Override
-      public Iterator<Object> iterator() {
+      public CloseableIterator<Object> iterator() {
          return new Itr();
       }
 
@@ -301,7 +321,7 @@ public class ValuesCommand extends AbstractLocalCommand implements VisitableComm
          return s;
       }
 
-      private class Itr implements Iterator<Object> {
+      private class Itr implements CloseableIterator<Object> {
 
          private final Iterator<InternalCacheEntry> it = entrySet.iterator();
          private Object next;
@@ -353,7 +373,103 @@ public class ValuesCommand extends AbstractLocalCommand implements VisitableComm
          public void remove() {
             throw new UnsupportedOperationException();
          }
+
+         @Override
+         public void close() {
+         }
       }
    }
 
+   private static class BackingValuesCollection<K, V> extends AbstractCloseableIteratorCollection<V, K, V> {
+
+      public BackingValuesCollection(Cache<K, V> cache) {
+         super(cache);
+      }
+
+      @Override
+      public CloseableIterator<V> iterator() {
+         return new EntryToValueIterator(cache.getAdvancedCache().filterEntries(AcceptAllKeyValueFilter.getInstance()).iterator());
+      }
+
+      @Override
+      public boolean contains(Object o) {
+         // We don't support null values
+         if (o == null) {
+            throw new NullPointerException();
+         }
+         CloseableIterator<V> it = iterator();
+         try {
+            while (it.hasNext())
+               if (o.equals(it.next()))
+                  return true;
+            return false;
+         } finally {
+            it.close();
+         }
+      }
+
+      @Override
+      public boolean containsAll(Collection<?> c) {
+         // The AbstractCollection implementation calls contains for each element.  Instead we want to call the iterator
+         // only once so we have a special implementation.
+         if (c.size() > 0) {
+            Set<?> set = new HashSet<Object>(c);
+            CloseableIterator<V> it = iterator();
+            try {
+               while (!set.isEmpty() && it.hasNext()) {
+                  set.remove(it.next());
+               }
+            } finally {
+               it.close();
+            }
+            return set.isEmpty();
+         }
+         return true;
+      }
+
+      @Override
+      public boolean remove(Object o) {
+         CloseableIterator<V> it = iterator();
+         try {
+            while (it.hasNext()) {
+               if (o.equals(it.next())) {
+                  it.remove();
+                  return true;
+               }
+            }
+            return false;
+         } finally {
+            it.close();
+         }
+      }
+   }
+
+   private static class EntryToValueIterator<V> implements CloseableIterator<V> {
+
+      private final CloseableIterator<CacheEntry> iterator;
+
+      public EntryToValueIterator(CloseableIterator<CacheEntry> iterator) {
+         this.iterator = iterator;
+      }
+
+      @Override
+      public boolean hasNext() {
+         return iterator.hasNext();
+      }
+
+      @Override
+      public V next() {
+         return (V) iterator.next().getValue();
+      }
+
+      @Override
+      public void remove() {
+         iterator.remove();
+      }
+
+      @Override
+      public void close() {
+         iterator.close();
+      }
+   }
 }
