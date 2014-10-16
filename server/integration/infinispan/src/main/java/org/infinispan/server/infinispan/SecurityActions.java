@@ -16,6 +16,7 @@ import org.infinispan.interceptors.base.CommandInterceptor;
 import org.infinispan.jmx.JmxStatisticsExposer;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.query.SearchManager;
 import org.infinispan.remoting.rpc.RpcManager;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.security.Security;
@@ -240,5 +241,8 @@ public final class SecurityActions {
         return doPrivileged(action);
     }
 
-
+    public static SearchManager getSearchManager(AdvancedCache<?, ?> cache) {
+        GetSearchManagerAction action = new GetSearchManagerAction(cache);
+        return doPrivileged(action);
+    }
 }

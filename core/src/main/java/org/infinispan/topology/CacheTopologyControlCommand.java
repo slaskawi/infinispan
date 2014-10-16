@@ -5,7 +5,7 @@ import org.infinispan.commons.CacheException;
 import org.infinispan.context.InvocationContext;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.factories.annotations.Inject;
-import org.infinispan.partionhandling.impl.AvailabilityMode;
+import org.infinispan.partionhandling.AvailabilityMode;
 import org.infinispan.remoting.responses.ExceptionResponse;
 import org.infinispan.remoting.responses.SuccessfulResponse;
 import org.infinispan.remoting.responses.UnsuccessfulResponse;
@@ -48,6 +48,8 @@ public class CacheTopologyControlCommand implements ReplicableCommand {
       POLICY_DISABLE,
       POLICY_ENABLE,
       POLICY_GET_STATUS,
+      // Change the availability
+      AVAILABILITY_MODE_CHANGE,
    }
 
    private static final Log log = LogFactory.getLog(CacheTopologyControlCommand.class);
@@ -97,7 +99,17 @@ public class CacheTopologyControlCommand implements ReplicableCommand {
       this.type = type;
       this.sender = sender;
       this.topologyId = topologyId;
+      this.rebalanceId = rebalanceId;
       this.throwable = throwable;
+      this.viewId = viewId;
+   }
+
+   public CacheTopologyControlCommand(String cacheName, Type type, Address sender, AvailabilityMode availabilityMode,
+         int viewId) {
+      this.cacheName = cacheName;
+      this.type = type;
+      this.sender = sender;
+      this.availabilityMode = availabilityMode;
       this.viewId = viewId;
    }
 
@@ -173,6 +185,12 @@ public class CacheTopologyControlCommand implements ReplicableCommand {
          case POLICY_DISABLE:
             clusterTopologyManager.setRebalancingEnabled(false);
             return true;
+
+         // availability mode
+         case AVAILABILITY_MODE_CHANGE:
+            clusterTopologyManager.forceAvailabilityMode(cacheName, availabilityMode);
+            return true;
+
          default:
             throw new CacheException("Unknown cache topology control command type " + type);
       }

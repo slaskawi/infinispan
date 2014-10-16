@@ -17,7 +17,7 @@ import org.infinispan.notifications.cachemanagerlistener.CacheManagerNotifier;
 import org.infinispan.notifications.cachemanagerlistener.annotation.Merged;
 import org.infinispan.notifications.cachemanagerlistener.annotation.ViewChanged;
 import org.infinispan.notifications.cachemanagerlistener.event.ViewChangedEvent;
-import org.infinispan.partionhandling.impl.AvailabilityMode;
+import org.infinispan.partionhandling.AvailabilityMode;
 import org.infinispan.partionhandling.impl.AvailabilityStrategy;
 import org.infinispan.partionhandling.impl.PreferAvailabilityStrategy;
 import org.infinispan.partionhandling.impl.PreferConsistencyStrategy;
@@ -410,6 +410,14 @@ public class ClusterTopologyManagerImpl implements ClusterTopologyManager {
       ClusterCacheStatus cacheStatus = cacheStatusMap.get(cacheName);
       if (cacheStatus != null) {
          cacheStatus.forceRebalance();
+      }
+   }
+
+   @Override
+   public void forceAvailabilityMode(String cacheName, AvailabilityMode availabilityMode) {
+      ClusterCacheStatus cacheStatus = cacheStatusMap.get(cacheName);
+      if (cacheStatus != null) {
+         cacheStatus.forceAvailabilityMode(availabilityMode);
       }
    }
 

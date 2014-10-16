@@ -7,6 +7,8 @@ import org.infinispan.interceptors.CacheMgmtInterceptor;
 import org.infinispan.interceptors.CacheWriterInterceptor;
 import org.infinispan.interceptors.InvalidationInterceptor;
 import org.infinispan.interceptors.TxInterceptor;
+import org.infinispan.query.SearchManager;
+import org.infinispan.remoting.rpc.RpcManager;
 import org.infinispan.remoting.rpc.RpcManagerImpl;
 import org.infinispan.server.infinispan.SecurityActions;
 import org.infinispan.transaction.xa.recovery.RecoveryAdminOperations;
@@ -459,6 +461,23 @@ public abstract class CacheCommands implements OperationStepHandler {
             return null;
         }
     }
+
+    public static class MassReindexCommand extends CacheCommands {
+       public static final MassReindexCommand INSTANCE = new MassReindexCommand();
+
+       public MassReindexCommand() {
+           super(0);
+       }
+
+       @Override
+       protected ModelNode invokeCommand(Cache<?, ?> cache, ModelNode operation) throws Exception {
+           SearchManager searchManager = SecurityActions.getSearchManager(cache.getAdvancedCache());
+           if (searchManager != null) {
+               searchManager.getMassIndexer().start();
+           }
+           return null;
+       }
+   }
 
     private static ModelNode toOperationResult(String s) {
         ModelNode result = new ModelNode();

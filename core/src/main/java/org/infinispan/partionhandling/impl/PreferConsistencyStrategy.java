@@ -2,6 +2,7 @@ package org.infinispan.partionhandling.impl;
 
 import org.infinispan.commons.util.InfinispanCollections;
 import org.infinispan.distribution.ch.ConsistentHash;
+import org.infinispan.partionhandling.AvailabilityMode;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.topology.CacheStatusResponse;
 import org.infinispan.topology.CacheTopology;
@@ -228,8 +229,16 @@ public class PreferConsistencyStrategy implements AvailabilityStrategy {
    }
 
    @Override
-   public void onManualAvailabilityChange(AvailabilityStrategyContext context) {
-      updateMembersAndRebalance(context, context.getExpectedMembers());
+   public void onManualAvailabilityChange(AvailabilityStrategyContext context, AvailabilityMode newAvailabilityMode) {
+      if (newAvailabilityMode == AvailabilityMode.AVAILABLE) {
+         List<Address> newMembers = context.getExpectedMembers();
+         // Update the topology to remove leavers - the current topology may not have been updated for a while
+         context.updateCurrentTopology(newMembers);
+         // Then queue a rebalance to include the joiners as well
+         context.queueRebalance(newMembers);
+      }
+
+      context.updateAvailabilityMode(newAvailabilityMode);
    }
 
    private void updateMembersAndRebalance(AvailabilityStrategyContext context, List<Address> newMembers) {

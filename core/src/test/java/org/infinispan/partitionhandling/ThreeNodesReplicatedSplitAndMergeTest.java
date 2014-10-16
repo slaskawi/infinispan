@@ -2,7 +2,7 @@ package org.infinispan.partitionhandling;
 
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.distribution.MagicKey;
-import org.infinispan.partionhandling.impl.AvailabilityMode;
+import org.infinispan.partionhandling.AvailabilityMode;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.test.TestingUtil;
 import org.infinispan.test.fwk.CleanupAfterMethod;

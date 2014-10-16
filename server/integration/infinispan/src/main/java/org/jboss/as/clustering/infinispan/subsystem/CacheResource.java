@@ -22,9 +22,6 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
@@ -44,6 +41,9 @@ import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 /**
  * Base class for cache resources which require common cache attributes only.
@@ -206,6 +206,12 @@ public class CacheResource extends SimpleResourceDefinition {
                   InfinispanExtension.getResourceDescriptionResolver("cache")
            ).build();
 
+    static final OperationDefinition MASS_REINDEX =
+          new SimpleOperationDefinitionBuilder(
+                  "mass-reindex",
+                  InfinispanExtension.getResourceDescriptionResolver("cache")
+          ).build();
+
 
     protected final ResolvePathHandler resolvePathHandler;
     protected final boolean runtimeRegistration;
@@ -224,10 +230,6 @@ public class CacheResource extends SimpleResourceDefinition {
         for (AttributeDefinition attr : CACHE_ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attr, CacheReadAttributeHandler.INSTANCE, writeHandler);
         }
-
-        if (runtimeRegistration) {
-            CacheMetricsHandler.INSTANCE.registerCommonMetrics(resourceRegistration);
-        }
     }
 
     @Override
@@ -245,6 +247,7 @@ public class CacheResource extends SimpleResourceDefinition {
             resourceRegistration.registerOperationHandler(CacheResource.DISCONNECT_SOURCE, CacheCommands.DisconnectSourceCommand.INSTANCE);
             resourceRegistration.registerOperationHandler(CacheResource.RECORD_KNOWN_GLOBAL_KEYSET, CacheCommands.RecordGlobalKeySetCommand.INSTANCE);
             resourceRegistration.registerOperationHandler(CacheResource.SYNCHRONIZE_DATA, CacheCommands.SynchronizeDataCommand.INSTANCE);
+            resourceRegistration.registerOperationHandler(CacheResource.MASS_REINDEX, CacheCommands.MassReindexCommand.INSTANCE);
         }
     }
 

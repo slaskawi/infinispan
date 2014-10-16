@@ -21,7 +21,7 @@ import org.infinispan.factories.annotations.Stop;
 import org.infinispan.jmx.annotations.DataType;
 import org.infinispan.jmx.annotations.MBean;
 import org.infinispan.jmx.annotations.ManagedAttribute;
-import org.infinispan.partionhandling.impl.AvailabilityMode;
+import org.infinispan.partionhandling.AvailabilityMode;
 import org.infinispan.partionhandling.impl.PartitionHandlingManager;
 import org.infinispan.remoting.responses.ExceptionResponse;
 import org.infinispan.remoting.responses.Response;
@@ -249,6 +249,7 @@ public class LocalTopologyManagerImpl implements LocalTopologyManager {
          synchronized (cacheStatus) {
             CacheTopology stableTopology = cacheStatus.getStableTopology();
             if (stableTopology == null || stableTopology.getTopologyId() < newStableTopology.getTopologyId()) {
+               log.tracef("Updating stable topology for cache %s: %s", cacheName, newStableTopology);
                cacheStatus.setStableTopology(newStableTopology);
             }
          }
@@ -333,6 +334,34 @@ public class LocalTopologyManagerImpl implements LocalTopologyManager {
       ReplicableCommand command = new CacheTopologyControlCommand(null, type, transport.getAddress(),
             transport.getViewId());
       executeOnClusterSync(command, getGlobalTimeout(), false, false);
+   }
+
+   @ManagedAttribute(description = "Cluster availability", displayName = "Cluster availability",
+         dataType = DataType.TRAIT, writable = false)
+   public String getClusterAvailability() {
+      AvailabilityMode clusterAvailability = AvailabilityMode.AVAILABLE;
+      for (LocalCacheStatus cacheStatus : runningCaches.values()) {
+         AvailabilityMode availabilityMode = cacheStatus.getPartitionHandlingManager() != null ?
+               cacheStatus.getPartitionHandlingManager().getAvailabilityMode() : null;
+         clusterAvailability = availabilityMode != null  ? clusterAvailability.min(availabilityMode) : clusterAvailability;
+      }
+      return clusterAvailability.toString();
+   }
+
+   @Override
+   public AvailabilityMode getCacheAvailability(String cacheName) {
+      LocalCacheStatus cacheStatus = runningCaches.get(cacheName);
+      AvailabilityMode availabilityMode = cacheStatus.getPartitionHandlingManager() != null ?
+            cacheStatus.getPartitionHandlingManager().getAvailabilityMode() : AvailabilityMode.AVAILABLE;
+      return availabilityMode;
+   }
+
+   @Override
+   public void setCacheAvailability(String cacheName, AvailabilityMode availabilityMode) throws Exception {
+      CacheTopologyControlCommand.Type type = CacheTopologyControlCommand.Type.AVAILABILITY_MODE_CHANGE;
+      ReplicableCommand command = new CacheTopologyControlCommand(cacheName, type, transport.getAddress(),
+            availabilityMode, transport.getViewId());
+      executeOnCoordinator(command, getGlobalTimeout());
    }
 
    private Object executeOnCoordinator(ReplicableCommand command, long timeout) throws Exception {

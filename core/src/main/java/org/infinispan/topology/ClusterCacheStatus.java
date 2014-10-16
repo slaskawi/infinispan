@@ -5,7 +5,7 @@ import org.infinispan.commons.util.Immutables;
 import org.infinispan.commons.util.InfinispanCollections;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.distribution.ch.ConsistentHashFactory;
-import org.infinispan.partionhandling.impl.AvailabilityMode;
+import org.infinispan.partionhandling.AvailabilityMode;
 import org.infinispan.partionhandling.impl.AvailabilityStrategy;
 import org.infinispan.partionhandling.impl.AvailabilityStrategyContext;
 import org.infinispan.registry.ClusterRegistryImpl;
@@ -144,7 +144,8 @@ public class ClusterCacheStatus implements AvailabilityStrategyContext {
             clusterTopologyManager.broadcastTopologyUpdate(cacheName, currentTopology, availabilityMode, isTotalOrder(), isDistributed());
          }
          if (stableTopology != null) {
-            clusterTopologyManager.broadcastStableTopologyUpdate(cacheName, stableTopology, isTotalOrder(), isDistributed());
+            clusterTopologyManager.broadcastStableTopologyUpdate(cacheName, stableTopology, isTotalOrder(),
+                  isDistributed());
          }
       }
    }
@@ -394,7 +395,7 @@ public class ClusterCacheStatus implements AvailabilityStrategyContext {
       if (newAvailabilityMode == availabilityMode)
          return false;
 
-      log.tracef("Cache %s availability changed: %s -> %s", availabilityMode, newAvailabilityMode);
+      log.tracef("Cache %s availability changed: %s -> %s", cacheName, availabilityMode, newAvailabilityMode);
       availabilityMode = newAvailabilityMode;
       return true;
    }
@@ -502,6 +503,7 @@ public class ClusterCacheStatus implements AvailabilityStrategyContext {
       }
    }
 
+   @Override
    public String getCacheName() {
       return cacheName;
    }
@@ -645,5 +647,9 @@ public class ClusterCacheStatus implements AvailabilityStrategyContext {
    public void forceRebalance() {
       queueRebalance(getCurrentTopology().getMembers());
       startQueuedRebalance();
+   }
+
+   public void forceAvailabilityMode(AvailabilityMode newAvailabilityMode) {
+      availabilityStrategy.onManualAvailabilityChange(this, newAvailabilityMode);
    }
 }

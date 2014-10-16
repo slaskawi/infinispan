@@ -3,7 +3,7 @@ package org.infinispan.partitionhandling;
 import org.infinispan.Cache;
 import org.infinispan.distribution.MagicKey;
 import org.infinispan.partionhandling.AvailabilityException;
-import org.infinispan.partionhandling.impl.AvailabilityMode;
+import org.infinispan.partionhandling.AvailabilityMode;
 import org.infinispan.test.concurrent.StateSequencer;
 import org.infinispan.test.fwk.CleanupAfterMethod;
 import org.infinispan.topology.LocalTopologyManager;

@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.infinispan.factories.scopes.Scope;
 import org.infinispan.factories.scopes.Scopes;
-import org.infinispan.partionhandling.impl.AvailabilityMode;
+import org.infinispan.partionhandling.AvailabilityMode;
 import org.infinispan.partionhandling.impl.PartitionHandlingManager;
 
 /**
@@ -78,4 +78,14 @@ public interface LocalTopologyManager {
     * Enable or disable rebalancing in the entire cluster.
     */
    void setRebalancingEnabled(boolean enabled) throws Exception;
+
+   /**
+    * Retrieves the availability state of a cache.
+    */
+   AvailabilityMode getCacheAvailability(String cacheName);
+
+   /**
+    * Updates the availability state of a cache (for the entire cluster).
+    */
+   void setCacheAvailability(String cacheName, AvailabilityMode availabilityMode) throws Exception;
 }
