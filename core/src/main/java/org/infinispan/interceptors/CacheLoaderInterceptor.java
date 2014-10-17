@@ -153,17 +153,22 @@ public class CacheLoaderInterceptor extends JmxStatsCommandInterceptor {
 
    @Override
    public Object visitSizeCommand(InvocationContext ctx, SizeCommand command) throws Throwable {
-      int totalSize = 0;
-      if (enabled && !hasSkipLoadFlag(command)) {
-         totalSize = persistenceManager.size();
+      String useClusterSize = System.getProperty("infinispan.accurate.bulk.ops");
+      if (useClusterSize == null || !useClusterSize.equalsIgnoreCase("true")) {
+         int totalSize = 0;
+         if (enabled && !hasSkipLoadFlag(command)) {
+            totalSize = persistenceManager.size();
+         }
+         // Passivation stores evicted entries so we want to add those or if the loader didn't have anything or was skipped
+         // we should at least return the in memory size
+         // This assumes that when passivation is not enabled that the cache store holds a superset of the data container
+         if (cacheConfiguration.persistence().passivation() || totalSize == 0) {
+            totalSize += (Integer)super.visitSizeCommand(ctx, command);
+         }
+         return totalSize;
+      } else {
+         return super.visitSizeCommand(ctx, command);
       }
-      // Passivation stores evicted entries so we want to add those or if the loader didn't have anything or was skipped
-      // we should at least return the in memory size
-      // This assumes that when passivation is not enabled that the cache store holds a superset of the data container
-      if (cacheConfiguration.persistence().passivation() || totalSize == 0) {
-         totalSize += (Integer)super.visitSizeCommand(ctx, command);
-      }
-      return totalSize;
    }
 
    @Override

@@ -218,7 +218,7 @@ public class CommandsFactoryImpl implements CommandsFactory {
 
    @Override
    public SizeCommand buildSizeCommand(Set<Flag> flags) {
-      return new SizeCommand(dataContainer, flags);
+      return new SizeCommand(dataContainer, cache, flags);
    }
 
    @Override

@@ -142,12 +142,26 @@ public interface Cache<K, V> extends BasicCache<K, V>, BatchingCache, FilteringL
     * Returns a count of all elements in this cache and cache loader.  To avoid performance issues, there will be no
     * attempt to count keys from other nodes.
     * <p/>
-    * If there are memory concerns then the {@link org.infinispan.context.Flag.SKIP_CACHE_LOAD} flag should be used to
+    * If there are memory concerns then the {@link org.infinispan.context.Flag#SKIP_CACHE_LOAD} flag should be used to
     * avoid hitting the cache store as all local keys will be loaded into memory at once.
     * <p/>
     * This method should only be used for debugging purposes such as to verify that the cache contains all the keys
     * entered. Any other use involving execution of this method on a production system is not recommended.
     * <p/>
+    * If the <b>infinispan.accurate.bulk.ops</b> system property is set to <b>true</b> this command will instead retrieve the size taking into account the
+    * entire cluster, when using a distributed cache.  All additional documentation on this method refer to when this is
+    * enabled.
+    * <p/>
+    * If this method is used in a transactional context, note this method will not bring additional values into the
+    * transaction context and thus objects that haven't yet been read will act in a
+    * {@link org.infinispan.util.concurrent.IsolationLevel#READ_COMMITTED} behavior irrespective of the configured
+    * isolation level.  However values that have been previously modified or read that are in the context will be
+    * adhered to. e.g. any write modification or any previous read when using
+    * {@link org.infinispan.util.concurrent.IsolationLevel#REPEATABLE_READ}
+    * </p>
+    * Also if you want the local contents you can use the {@link org.infinispan.context.Flag#CACHE_MODE_LOCAL} flag so
+    * that other remote nodes are not queried for data.  However the loader will still be used unless the previously
+    * mentioned {@link org.infinispan.context.Flag#SKIP_CACHE_LOAD} is also configured.
     *
     * @return the number of key-value mappings in this cache and cache loader
     */

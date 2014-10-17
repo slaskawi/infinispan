@@ -17,6 +17,8 @@ import org.testng.annotations.Test;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
+import static org.testng.AssertJUnit.assertEquals;
+
 /**
  * Data inconsistency can happen in non-transactional caches. the tests replicates this scenario: assuming N1 and N2 are
  * owners of key K. N2 is the primary owner
@@ -55,13 +57,27 @@ public class ReplicatedNonTxCacheTest extends MultipleCacheManagersTest {
       performTestOn(Operation.REMOVE);
    }
 
+   public void testClusterSize() {
+      for (int i = 0; i < 3; ++i) {
+         MagicKey key = new MagicKey(cache(i), cache((i + 1) % 3));
+         cache(0).put(key, key);
+      }
+
+      System.setProperty("infinispan.accurate.bulk.ops", "true");
+      try {
+         assertEquals(3, cache(0).size());
+      } finally {
+         System.clearProperty("infinispan.accurate.bulk.ops");
+      }
+   }
+
    @Override
    protected void createCacheManagers() throws Throwable {
       ConfigurationBuilder builder = getDefaultClusteredCacheConfig(cacheMode(), false);
       builder.clustering().hash()
             .numSegments(60)
             .numOwners(2);
-      createClusteredCaches(2, builder);
+      createClusteredCaches(3, builder);
    }
 
    protected CacheMode cacheMode() {
@@ -99,7 +115,7 @@ public class ReplicatedNonTxCacheTest extends MultipleCacheManagersTest {
 
    private void assertKeyValue(Object key, Object expected) {
       for (Cache cache : caches()) {
-         AssertJUnit.assertEquals("Wrong value for key " + key + " on " + address(cache), expected, cache.get(key));
+         assertEquals("Wrong value for key " + key + " on " + address(cache), expected, cache.get(key));
       }
    }
 
