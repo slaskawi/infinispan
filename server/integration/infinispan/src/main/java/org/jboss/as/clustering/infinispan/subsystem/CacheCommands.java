@@ -421,7 +421,7 @@ public abstract class CacheCommands implements OperationStepHandler {
         public static final BackupPushStateStatusCommand INSTANCE = new BackupPushStateStatusCommand();
 
         public BackupPushStateStatusCommand() {
-         super(0);
+         super(1);
       }
 
         @Override
@@ -435,7 +435,7 @@ public abstract class CacheCommands implements OperationStepHandler {
         public static final BackupGetSendingSiteCommand INSTANCE = new BackupGetSendingSiteCommand();
 
         public BackupGetSendingSiteCommand() {
-         super(0);
+         super(1);
       }
 
         @Override
@@ -449,7 +449,7 @@ public abstract class CacheCommands implements OperationStepHandler {
         public static final BackupClearPushStatusCommand INSTANCE = new BackupClearPushStatusCommand();
 
         public BackupClearPushStatusCommand() {
-         super(0);
+         super(1);
       }
 
         @Override
