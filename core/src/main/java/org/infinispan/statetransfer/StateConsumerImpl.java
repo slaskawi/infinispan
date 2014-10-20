@@ -7,7 +7,6 @@ import org.infinispan.commands.write.InvalidateCommand;
 import org.infinispan.commands.write.PutKeyValueCommand;
 import org.infinispan.commons.CacheException;
 import org.infinispan.commons.util.InfinispanCollections;
-import org.infinispan.commons.util.concurrent.jdk8backported.EquivalentConcurrentHashMapV8;
 import org.infinispan.commons.util.concurrent.ParallelIterableMap;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.container.DataContainer;
@@ -48,6 +47,8 @@ import org.infinispan.util.concurrent.ConcurrentHashSet;
 import org.infinispan.util.logging.Log;
 import org.infinispan.util.logging.LogFactory;
 
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -63,11 +64,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.infinispan.context.Flag.*;
+import static org.infinispan.context.Flag.CACHE_MODE_LOCAL;
+import static org.infinispan.context.Flag.IGNORE_RETURN_VALUES;
+import static org.infinispan.context.Flag.PUT_FOR_STATE_TRANSFER;
+import static org.infinispan.context.Flag.SKIP_LOCKING;
+import static org.infinispan.context.Flag.SKIP_OWNERSHIP_CHECK;
+import static org.infinispan.context.Flag.SKIP_REMOTE_LOOKUP;
+import static org.infinispan.context.Flag.SKIP_SHARED_CACHE_STORE;
+import static org.infinispan.context.Flag.SKIP_XSITE_BACKUP;
 import static org.infinispan.factories.KnownComponentNames.ASYNC_TRANSPORT_EXECUTOR;
 
 /**
@@ -254,6 +260,9 @@ public class StateConsumerImpl implements StateConsumer {
 
       if (!ownsData && isMember) {
          ownsData = true;
+      } else if (ownsData && !isMember) {
+         // This can happen after a merge, if the local node was in a minority partition.
+         ownsData = false;
       }
 
       if (isRebalance) {
@@ -402,20 +411,22 @@ public class StateConsumerImpl implements StateConsumer {
             transactionTable.cleanupLeaverTransactions(cacheTopology);
          }
 
-         // Any data for segments we no longer own should be removed from data container and cache store
-         // If L1 is enabled, we need to discard the keys that we might have had in L1 as well
-         if (isMember) {
-            Set<Integer> removedSegments;
+         // Any data for segments we do not own should be removed from data container and cache store
+         // We need to discard data from all segments we don't own, not just those we previously owned,
+         // when we lose membership (e.g. because there was a merge, the local partition was in degraded mode
+         // and the other partition was available) or when L1 is enabled.
+         Set<Integer> removedSegments;
+         boolean wasMember = previousWriteCh != null ? previousWriteCh.getMembers().contains(rpcManager.getAddress()) : false;
+         if (isMember || (!isMember && wasMember)) {
             removedSegments = new HashSet<Integer>(newWriteCh.getNumSegments());
             for (int i = 0; i < newWriteCh.getNumSegments(); i++) {
                removedSegments.add(i);
             }
-            Set<Integer> newSegments = newWriteCh.getSegmentsForOwner(rpcManager.getAddress());
+            Set<Integer> newSegments = getOwnedSegments(newWriteCh);
             removedSegments.removeAll(newSegments);
 
-            Set<Integer> staleL1Segments = computeStaleL1Segments(newSegments, newWriteCh, previousWriteCh);
             try {
-               removeStaleData(removedSegments, staleL1Segments);
+               removeStaleData(removedSegments);
             } catch (InterruptedException e) {
                Thread.currentThread().interrupt();
                throw new CacheException(e);
@@ -882,37 +893,12 @@ public class StateConsumerImpl implements StateConsumer {
       }
    }
 
-   private Set<Integer> computeStaleL1Segments(Set<Integer> newSegments, ConsistentHash newWriteCh, ConsistentHash previousWriteCh) {
-      // The actual owners keep track of the nodes that hold a key in L1 ("requestors") and
-      // they invalidate the key on every requestor after a change.
-      // But this information is only present on the owners where the ClusteredGetKeyValueCommand
-      // got executed - if the requestor only contacted one owner, and that node is no longer an owner
-      // (perhaps because it left the cluster), the other owners will not know to invalidate the key
-      // on that requestor. Furthermore, the requestors list is not copied to the new owners during
-      // state transfers.
-      // To compensate for this, we delete all L1 entries in segments that changed ownership during
-      // this topology update. We can't actually differentiate between L1 entries and regular entries,
-      // so we delete all entries that don't belong to this node in the current OR previous topology.
-      Set<Integer> segmentsToInvalidate = new HashSet<Integer>();
-      if (configuration.clustering().l1().enabled() && previousWriteCh != null) {
-         for (int i = 0; i < previousWriteCh.getNumSegments(); i++) {
-            if (newSegments.contains(i))
-               continue;
-
-            if (!previousWriteCh.locateOwnersForSegment(i).containsAll(newWriteCh.locateOwnersForSegment(i))) {
-               segmentsToInvalidate.add(i);
-            }
-         }
-      }
-      return segmentsToInvalidate;
-   }
-
-   private void removeStaleData(final Set<Integer> removedSegments, final Set<Integer> staleL1Segments) throws InterruptedException {
+   private void removeStaleData(final Set<Integer> removedSegments) throws InterruptedException {
       if (keyInvalidationListener != null) {
-         keyInvalidationListener.beforeInvalidation(removedSegments, staleL1Segments);
+         keyInvalidationListener.beforeInvalidation(removedSegments, InfinispanCollections.<Integer>emptySet());
       }
 
-      if (removedSegments.isEmpty() && staleL1Segments.isEmpty())
+      if (removedSegments.isEmpty())
          return;
 
       // Keys that might have been in L1, and need to be removed from the data container
@@ -927,8 +913,6 @@ public class StateConsumerImpl implements StateConsumer {
             int keySegment = getSegment(key);
             if (removedSegments.contains(keySegment)) {
                keysToRemove.add(key);
-            } else if (staleL1Segments.contains(keySegment)) {
-               keysToInvalidate.add(key);
             }
          }
       });
@@ -953,20 +937,6 @@ public class StateConsumerImpl implements StateConsumer {
             }, false, false, true);
          } catch (CacheException e) {
             log.failedLoadingKeysFromCacheStore(e);
-         }
-      }
-
-      log.debugf("Removing %d stale L1 entries for segments %s of cache %s", keysToInvalidate.size(), staleL1Segments, cacheName);
-      if (!keysToInvalidate.isEmpty()) {
-         try {
-            InvalidateCommand invalidateCmd = commandsFactory.buildInvalidateFromL1Command(EnumSet.of(CACHE_MODE_LOCAL, SKIP_LOCKING), keysToInvalidate);
-            InvocationContext ctx = icf.createNonTxInvocationContext();
-            interceptorChain.invoke(ctx, invalidateCmd);
-
-            log.debugf("Removed %d stale L1 entries, data container now has %d keys", keysToInvalidate.size(), dataContainer.size());
-            if (trace) log.tracef("Removed stale L1 entries: %s", keysToInvalidate);
-         } catch (CacheException e) {
-            log.failedToInvalidateKeys(e);
          }
       }
 

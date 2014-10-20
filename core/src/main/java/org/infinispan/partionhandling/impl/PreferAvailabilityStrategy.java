@@ -24,8 +24,10 @@ public class PreferAvailabilityStrategy implements AvailabilityStrategy {
    public void onGracefulLeave(AvailabilityStrategyContext context, Address leaver) {
       CacheTopology currentTopology = context.getCurrentTopology();
       List<Address> newMembers = new ArrayList<Address>(currentTopology.getMembers());
-      if (!newMembers.remove(leaver)) {
-         log.debugf("Cache %s does not have member %s, ignoring leave request", context.getCacheName(), leaver);
+      newMembers.remove(leaver);
+      if (newMembers.isEmpty()) {
+         log.debugf("The last node of cache %s left", context.getCacheName());
+         context.updateCurrentTopology(newMembers);
          return;
       }
       if (context.getStableTopology() != null && isDataLost(context.getStableTopology().getCurrentCH(), newMembers)) {
@@ -122,7 +124,7 @@ public class PreferAvailabilityStrategy implements AvailabilityStrategy {
 
       // First update the CHs to remove any nodes that left from the current topology
       List<Address> newMembers = context.getExpectedMembers();
-      List<Address> survivingMembers = new ArrayList<Address>(newMembers);
+      List<Address> survivingMembers = new ArrayList<Address>(mergedTopology.getMembers());
       if (survivingMembers.retainAll(newMembers)) {
          checkForLostData(context, survivingMembers);
       }

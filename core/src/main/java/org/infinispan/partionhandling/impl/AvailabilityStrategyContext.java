@@ -66,6 +66,7 @@ public interface AvailabilityStrategyContext {
    /**
     * Use the configured {@link ConsistentHashFactory} to create a new CH
     * with the given {@code members}, but do not start a rebalance.
+    * Members missing from the current topology are ignored.
     */
    void updateCurrentTopology(List<Address> newMembers);
 

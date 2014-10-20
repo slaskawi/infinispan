@@ -2,7 +2,7 @@ package org.infinispan.partitionhandling;
 
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.distribution.MagicKey;
-import org.infinispan.partionhandling.AvailabilityMode;
+import org.infinispan.partionhandling.impl.AvailabilityMode;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.test.TestingUtil;
 import org.infinispan.test.fwk.CleanupAfterMethod;
@@ -48,15 +48,17 @@ public class ThreeNodesReplicatedSplitAndMergeTest extends BasePartitionHandling
 
       List<Address> allMembers = advancedCache(0).getRpcManager().getMembers();
       //use set comparison as the merge view will reshuffle the order of nodes
-      assertEquals(new HashSet<>(partitionHandlingManager(0).getLastStableTopology().getMembers()), new HashSet<>(allMembers));
-      assertEquals(new HashSet<>(partitionHandlingManager(1).getLastStableTopology().getMembers()), new HashSet<>(allMembers));
-      assertEquals(new HashSet<>(partitionHandlingManager(2).getLastStableTopology().getMembers()), new HashSet<>(allMembers));
+      assertEquals(new HashSet<Address>(partitionHandlingManager(0).getLastStableTopology().getMembers()), new HashSet<Address>(allMembers));
+      assertEquals(new HashSet<Address>(partitionHandlingManager(1).getLastStableTopology().getMembers()), new HashSet<Address>(allMembers));
+      assertEquals(new HashSet<Address>(partitionHandlingManager(2).getLastStableTopology().getMembers()), new HashSet<Address>(allMembers));
       eventually(new Condition() {
          @Override
          public boolean isSatisfied() throws Exception {
-            for (int i = 0; i < caches().size(); i++)
-               if (partitionHandlingManager(i).getAvailabilityMode() != AvailabilityMode.AVAILABLE)
+            for (int i = 0; i < numMembersInCluster; i++) {
+               if (partitionHandlingManager(i).getAvailabilityMode() != AvailabilityMode.AVAILABLE) {
                   return false;
+               }
+            }
             return true;
          }
       });
@@ -102,9 +104,9 @@ public class ThreeNodesReplicatedSplitAndMergeTest extends BasePartitionHandling
       partition(0).merge(partition(1));
 
       //use set comparison as the merge view will reshuffle the order of nodes
-      assertEquals(new HashSet<>(partitionHandlingManager(0).getLastStableTopology().getMembers()), new HashSet<>(allMembers));
-      assertEquals(new HashSet<>(partitionHandlingManager(1).getLastStableTopology().getMembers()), new HashSet<>(allMembers));
-      assertEquals(new HashSet<>(partitionHandlingManager(2).getLastStableTopology().getMembers()), new HashSet<>(allMembers));
+      assertEquals(new HashSet<Address>(partitionHandlingManager(0).getLastStableTopology().getMembers()), new HashSet<Address>(allMembers));
+      assertEquals(new HashSet<Address>(partitionHandlingManager(1).getLastStableTopology().getMembers()), new HashSet<Address>(allMembers));
+      assertEquals(new HashSet<Address>(partitionHandlingManager(2).getLastStableTopology().getMembers()), new HashSet<Address>(allMembers));
       partition(0).assertAvailabilityMode(AvailabilityMode.AVAILABLE);
 
       // 4. check data seen correctly
