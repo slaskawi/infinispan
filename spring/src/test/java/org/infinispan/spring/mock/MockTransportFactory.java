@@ -1,18 +1,18 @@
 package org.infinispan.spring.mock;
 
-import java.net.SocketAddress;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-import javax.net.ssl.SSLContext;
-
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.event.ClientListenerNotifier;
 import org.infinispan.client.hotrod.impl.consistenthash.ConsistentHashFactory;
 import org.infinispan.client.hotrod.impl.protocol.Codec;
 import org.infinispan.client.hotrod.impl.transport.Transport;
 import org.infinispan.client.hotrod.impl.transport.TransportFactory;
+
+import javax.net.ssl.SSLContext;
+import java.net.SocketAddress;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public final class MockTransportFactory implements TransportFactory {
 
