@@ -130,4 +130,6 @@ public interface CacheTransaction {
    Flag getStateTransferFlag();
 
    void setStateTransferFlag(Flag stateTransferFlag);
+
+   long getCreationTime();
 }

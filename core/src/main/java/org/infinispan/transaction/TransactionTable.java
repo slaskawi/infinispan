@@ -14,7 +14,6 @@ import org.infinispan.commons.util.concurrent.jdk8backported.EquivalentConcurren
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.Configurations;
 import org.infinispan.context.InvocationContextFactory;
-import org.infinispan.context.impl.TxInvocationContext;
 import org.infinispan.factories.annotations.Inject;
 import org.infinispan.factories.annotations.Start;
 import org.infinispan.factories.annotations.Stop;
@@ -92,11 +91,11 @@ public class TransactionTable {
 
    @Inject
    public void initialize(RpcManager rpcManager, Configuration configuration,
-                          InvocationContextFactory icf, InterceptorChain invoker, CacheNotifier notifier,
-                          TransactionFactory gtf, TransactionCoordinator txCoordinator,
-                          TransactionSynchronizationRegistry transactionSynchronizationRegistry,
-                          CommandsFactory commandsFactory, ClusteringDependentLogic clusteringDependentLogic, Cache cache,
-                          TimeService timeService) {
+         InvocationContextFactory icf, InterceptorChain invoker, CacheNotifier notifier,
+         TransactionFactory gtf, TransactionCoordinator txCoordinator,
+         TransactionSynchronizationRegistry transactionSynchronizationRegistry,
+         CommandsFactory commandsFactory, ClusteringDependentLogic clusteringDependentLogic, Cache cache,
+         TimeService timeService) {
       this.rpcManager = rpcManager;
       this.configuration = configuration;
       this.icf = icf;
@@ -150,16 +149,23 @@ public class TransactionTable {
                completedTransactionsInfo.cleanupCompletedTransactions();
             }
          }, interval, interval, TimeUnit.MILLISECONDS);
+
+         executorService.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+               cleanupOrphanedTransactions();
+            }
+         }, interval, interval, TimeUnit.MILLISECONDS);
       }
    }
 
    @Stop
    @SuppressWarnings("unused")
    private void stop() {
-      
+
       if (executorService != null)
          executorService.shutdownNow();
-      
+
       if (clustered) {
          notifier.removeListener(this);
          currentTopologyId = CACHE_STOPPED_TOPOLOGY_ID; // indicate that the cache has stopped
@@ -255,8 +261,40 @@ public class TransactionTable {
          log.tracef("%s global transactions pertain to leavers and need to be killed", toKill.size());
       }
 
+      rollbackStaleTransactions(toKill);
+      log.tracef("Completed cleaning transactions originating on leavers. Remote transactions remaining: %d",
+            remoteTransactions.size());
+   }
+
+   public void cleanupOrphanedTransactions() {
+      log.tracef("About to cleanup orphaned transactions older than %ld ms", configuration.transaction().completedTxTimeout());
+      long beginning = timeService.time();
+      long orphanedTxTimestamp = beginning - TimeUnit.MILLISECONDS.toNanos(configuration.transaction().completedTxTimeout());
+      Set<GlobalTransaction> toKill = new HashSet<GlobalTransaction>();
+
+      // Check remote transactions.
+      for(Map.Entry<GlobalTransaction, RemoteTransaction> e : remoteTransactions.entrySet()) {
+         GlobalTransaction gt = e.getKey();
+         RemoteTransaction remoteTx = e.getValue();
+         if(remoteTx != null) {
+            log.tracef("Checking transaction %s", gt);
+            // Check the time.
+            if (remoteTx.getCreationTime() < orphanedTxTimestamp) {
+               long duration = timeService.timeDuration(remoteTx.getCreationTime(), beginning, TimeUnit.MILLISECONDS);
+               log.warnf("Found and rolling back orphaned transaction: %s. Age %d millis", gt, duration);
+               toKill.add(gt);
+            }
+         }
+      }
+
+      // Rollback the orphaned transactions and release any held locks.
+      rollbackStaleTransactions(toKill);
+   }
+
+   private void rollbackStaleTransactions(Set<GlobalTransaction> toKill) {
+
       for (GlobalTransaction gtx : toKill) {
-         log.tracef("Killing remote transaction originating on leaver %s", gtx);
+         log.tracef("Killing stale transaction originating on leaver %s", gtx);
          RollbackCommand rc = new RollbackCommand(cacheName, gtx);
          rc.init(invoker, icf, TransactionTable.this);
          try {
@@ -266,9 +304,6 @@ public class TransactionTable {
             log.unableToRollbackGlobalTx(gtx, e);
          }
       }
-
-      log.tracef("Completed cleaning transactions originating on leavers. Remote transactions remaining: %d",
-            remoteTransactions.size());
    }
 
    /**
@@ -317,16 +352,16 @@ public class TransactionTable {
     * Returns the {@link org.infinispan.transaction.xa.TransactionXaAdapter} corresponding to the supplied transaction.
     * If none exists, will be created first.
     */
-   public LocalTransaction getOrCreateLocalTransaction(Transaction transaction, TxInvocationContext ctx) {
+   public LocalTransaction getOrCreateLocalTransaction(Transaction transaction, boolean implicitTransaction) {
       LocalTransaction current = localTransactions.get(transaction);
       if (current == null) {
          Address localAddress = rpcManager != null ? rpcManager.getTransport().getAddress() : null;
          GlobalTransaction tx = txFactory.newGlobalTransaction(localAddress, false);
-         current = txFactory.newLocalTransaction(transaction, tx, ctx.isImplicitTransaction(), currentTopologyId);
+         current = txFactory.newLocalTransaction(transaction, tx, implicitTransaction, currentTopologyId);
          log.tracef("Created a new local transaction: %s", current);
          localTransactions.put(transaction, current);
          globalToLocalTransactions.put(current.getGlobalTransaction(), current);
-         notifier.notifyTransactionRegistered(tx, ctx.isOriginLocal());
+         notifier.notifyTransactionRegistered(tx, true);
       }
       return current;
    }
@@ -510,7 +545,7 @@ public class TransactionTable {
 
       if (txsOnGoing) {
          log.unfinishedTransactionsRemain(localTransactions == null ? 0 : localTransactions.size(),
-                                          remoteTransactions == null ? 0 : remoteTransactions.size());
+               remoteTransactions == null ? 0 : remoteTransactions.size());
       } else {
          log.debug("All transactions terminated");
       }
@@ -543,8 +578,8 @@ public class TransactionTable {
       volatile long globalMaxPrunedTxId;
 
       public CompletedTransactionsInfo() {
-         nodeMaxPrunedTxIds = new EquivalentConcurrentHashMapV8<Address, Long>(AnyEquivalence.<Address>getInstance(), AnyEquivalence.<Long>getInstance());
-         completedTransactions = new EquivalentConcurrentHashMapV8<GlobalTransaction, Long>(AnyEquivalence.<GlobalTransaction>getInstance(), AnyEquivalence.<Long>getInstance());
+         nodeMaxPrunedTxIds = new EquivalentConcurrentHashMapV8<Address, Long>(AnyEquivalence.getInstance(), AnyEquivalence.getInstance());
+         completedTransactions = new EquivalentConcurrentHashMapV8<GlobalTransaction, Long>(AnyEquivalence.getInstance(), AnyEquivalence.getInstance());
          globalMaxPrunedTxId = -1;
       }
 
@@ -601,7 +636,7 @@ public class TransactionTable {
             while (txIterator.hasNext()) {
                Map.Entry<GlobalTransaction, Long> e = txIterator.next();
                long completedTime = e.getValue();
-               if (completedTime < minCompleteTimestamp) {
+               if (minCompleteTimestamp - completedTime > 0) {
                   // Need to update lastPrunedTxId *before* removing the tx from the map
                   // Don't need atomic operations, there can't be more than one thread updating lastPrunedTxId.
                   final long txId = e.getKey().getId();

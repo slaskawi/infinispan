@@ -68,6 +68,11 @@ public abstract class AbstractCacheTransaction implements CacheTransaction {
    private volatile boolean isMarkedForRollback;
 
    /**
+    * Mark the time this tx object was created
+    */
+   private final long txCreationTime;
+
+   /**
     * Used internally by the {@link #waitForLockRelease} method in order to notify other transactions that wait on this
     * one to complete.
     */
@@ -90,10 +95,11 @@ public abstract class AbstractCacheTransaction implements CacheTransaction {
       isMarkedForRollback = markForRollback;
    }
 
-   public AbstractCacheTransaction(GlobalTransaction tx, int topologyId, Equivalence<Object> keyEquivalence) {
+   public AbstractCacheTransaction(GlobalTransaction tx, int topologyId, Equivalence<Object> keyEquivalence, long txCreationTime) {
       this.tx = tx;
       this.topologyId = topologyId;
       this.keyEquivalence = keyEquivalence;
+      this.txCreationTime = txCreationTime;
    }
 
    @Override
@@ -297,7 +303,7 @@ public abstract class AbstractCacheTransaction implements CacheTransaction {
    public void addReadKey(Object key) {
       // No-op
    }
-   
+
    @Override
    public boolean keyRead(Object key) {
       return false;
@@ -330,7 +336,7 @@ public abstract class AbstractCacheTransaction implements CacheTransaction {
       EntryVersion oldVersion = versionsSeenMap.put(key, (IncrementableEntryVersion) version);
       if (log.isTraceEnabled()) {
          log.tracef("Transaction %s replaced version for key %s. old=%s, new=%s", getGlobalTransaction().globalId(), key,
-                    oldVersion, version);
+               oldVersion, version);
       }
    }
 
@@ -351,5 +357,10 @@ public abstract class AbstractCacheTransaction implements CacheTransaction {
 
    protected final void internalSetStateTransferFlag(Flag stateTransferFlag) {
       this.stateTransferFlag = stateTransferFlag;
+   }
+
+   @Override
+   public long getCreationTime() {
+      return txCreationTime;
    }
 }

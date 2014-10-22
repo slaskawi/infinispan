@@ -47,8 +47,8 @@ public abstract class LocalTransaction extends AbstractCacheTransaction {
    private boolean commitOrRollbackSent;
 
    public LocalTransaction(Transaction transaction, GlobalTransaction tx,
-         boolean implicitTransaction, int topologyId, Equivalence<Object> keyEquivalence) {
-      super(tx, topologyId, keyEquivalence);
+         boolean implicitTransaction, int topologyId, Equivalence<Object> keyEquivalence, long txCreationTime) {
+      super(tx, topologyId, keyEquivalence, txCreationTime);
       this.transaction = transaction;
       this.implicitTransaction = implicitTransaction;
    }
@@ -74,8 +74,8 @@ public abstract class LocalTransaction extends AbstractCacheTransaction {
    }
 
    public Collection<Address> getRemoteLocksAcquired(){
-	   if (remoteLockedNodes == null) return InfinispanCollections.emptySet();
-	   return remoteLockedNodes;
+      if (remoteLockedNodes == null) return InfinispanCollections.emptySet();
+      return remoteLockedNodes;
    }
 
    public void clearRemoteLocksAcquired() {
@@ -166,7 +166,7 @@ public abstract class LocalTransaction extends AbstractCacheTransaction {
    public void setStateTransferFlag(Flag stateTransferFlag) {
       if (this.getStateTransferFlag() == null &&
             (stateTransferFlag == Flag.PUT_FOR_STATE_TRANSFER ||
-                   stateTransferFlag == Flag.PUT_FOR_X_SITE_STATE_TRANSFER)) {
+                  stateTransferFlag == Flag.PUT_FOR_X_SITE_STATE_TRANSFER)) {
          internalSetStateTransferFlag(stateTransferFlag);
       }
    }
@@ -195,7 +195,7 @@ public abstract class LocalTransaction extends AbstractCacheTransaction {
     */
    public Collection<Address> getCommitNodes(Collection<Address> recipients, int currentTopologyId, Collection<Address> members) {
       if (trace) log.tracef("getCommitNodes recipients=%s, currentTopologyId=%s, members=%s, txTopologyId=%s",
-                            recipients, currentTopologyId, members, getTopologyId());
+            recipients, currentTopologyId, members, getTopologyId());
       if (hasModification(ClearCommand.class)) {
          return members;
       }
