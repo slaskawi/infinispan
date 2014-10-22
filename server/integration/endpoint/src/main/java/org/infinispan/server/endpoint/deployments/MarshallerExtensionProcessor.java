@@ -45,7 +45,7 @@ public class MarshallerExtensionProcessor extends AbstractServerExtensionProcess
 
     static class MarshallerService implements Service<Marshaller> {
         private final Marshaller marshaller;
-        private final InjectedValue<ExtensionManagerService> extensionManager = new InjectedValue<>();
+        private final InjectedValue<ExtensionManagerService> extensionManager = new InjectedValue<ExtensionManagerService>();
 
         MarshallerService(Marshaller marshaller) {
             assert marshaller != null : ROOT_LOGGER.nullVar(getServiceTypeName());

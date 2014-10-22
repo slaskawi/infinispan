@@ -66,7 +66,7 @@ class ProtocolServerService implements Service<ProtocolServer> {
    // The security realm for encryption that will be injected by the container
    private final InjectedValue<SecurityRealm> encryptionSecurityRealm = new InjectedValue<SecurityRealm>();
    // Te extension manager
-   private final InjectedValue<ExtensionManagerService> extensionManager = new InjectedValue<>();
+   private final InjectedValue<ExtensionManagerService> extensionManager = new InjectedValue<ExtensionManagerService>();
    // The configuration for this service
    private final ProtocolServerConfigurationBuilder<?, ?> configurationBuilder;
    // The class which determines the type of server

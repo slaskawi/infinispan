@@ -26,10 +26,7 @@ import org.infinispan.test.TestingUtil
 import org.testng.Assert.{assertNull, assertTrue, _}
 import org.testng.AssertJUnit.assertEquals
 import org.infinispan.container.entries.InternalCacheEntry
-import org.infinispan.Cache
 import io.netty.channel.ChannelFuture
-import org.infinispan.distribution.ch.DefaultConsistentHash
-import scala.Some
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ListBuffer
@@ -388,7 +385,7 @@ object HotRodTestingUtil extends Log {
             if (entry == null) cache.get(key)
             else entry.getValue
 
-         assertEquals(expectedValue, value)
+         assertByteArrayEquals(expectedValue, value.asInstanceOf[Bytes])
       }
 
       entry

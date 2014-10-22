@@ -26,8 +26,6 @@ trait Log extends org.infinispan.server.core.logging.Log {
 
    def warnForceReturnPreviousNonTransactional(op: String) = log.warnForceReturnPreviousNonTransactional(op)
 
-   def unexpectedEvent(e: Event[Bytes, Bytes]) = log.unexpectedEvent(e)
-
    def warnMarshallerAlreadySet(existingMarshaller: Marshaller, newMarshaller: Marshaller) =
       log.warnMarshallerAlreadySet(existingMarshaller, newMarshaller)
 }

@@ -21,7 +21,7 @@ import static org.testng.AssertJUnit.assertTrue;
 public class ClientEventsTest extends SingleHotRodServerTest {
 
    public void testCreatedEvent() {
-      final EventLogListener<Integer> eventListener = new EventLogListener<>();
+      final EventLogListener<Integer> eventListener = new EventLogListener<Integer>();
       withClientListener(eventListener, new RemoteCacheManagerCallable(remoteCacheManager) {
          @Override
          public void call() {
@@ -36,7 +36,7 @@ public class ClientEventsTest extends SingleHotRodServerTest {
    }
 
    public void testModifiedEvent() {
-      final EventLogListener<Integer> eventListener = new EventLogListener<>();
+      final EventLogListener<Integer> eventListener = new EventLogListener<Integer>();
       withClientListener(eventListener, new RemoteCacheManagerCallable(remoteCacheManager) {
          @Override
          public void call() {
@@ -51,7 +51,7 @@ public class ClientEventsTest extends SingleHotRodServerTest {
    }
 
    public void testRemovedEvent() {
-      final EventLogListener<Integer> eventListener = new EventLogListener<>();
+      final EventLogListener<Integer> eventListener = new EventLogListener<Integer>();
       withClientListener(eventListener, new RemoteCacheManagerCallable(remoteCacheManager) {
          @Override
          public void call() {
@@ -66,7 +66,7 @@ public class ClientEventsTest extends SingleHotRodServerTest {
    }
 
    public void testReplaceEvents() {
-      final EventLogListener<Integer> eventListener = new EventLogListener<>();
+      final EventLogListener<Integer> eventListener = new EventLogListener<Integer>();
       withClientListener(eventListener, new RemoteCacheManagerCallable(remoteCacheManager) {
          @Override
          public void call() {
@@ -83,7 +83,7 @@ public class ClientEventsTest extends SingleHotRodServerTest {
    }
 
    public void testPutIfAbsentEvents() {
-      final EventLogListener<Integer> eventListener = new EventLogListener<>();
+      final EventLogListener<Integer> eventListener = new EventLogListener<Integer>();
       withClientListener(eventListener, new RemoteCacheManagerCallable(remoteCacheManager) {
          @Override
          public void call() {
@@ -98,7 +98,7 @@ public class ClientEventsTest extends SingleHotRodServerTest {
    }
 
    public void testReplaceIfUnmodifiedEvents() {
-      final EventLogListener<Integer> eventListener = new EventLogListener<>();
+      final EventLogListener<Integer> eventListener = new EventLogListener<Integer>();
       withClientListener(eventListener, new RemoteCacheManagerCallable(remoteCacheManager) {
          @Override
          public void call() {
@@ -118,7 +118,7 @@ public class ClientEventsTest extends SingleHotRodServerTest {
    }
 
    public void testRemoveIfUnmodifiedEvents() {
-      final EventLogListener<Integer> eventListener = new EventLogListener<>();
+      final EventLogListener<Integer> eventListener = new EventLogListener<Integer>();
       withClientListener(eventListener, new RemoteCacheManagerCallable(remoteCacheManager) {
          @Override
          public void call() {
@@ -138,7 +138,7 @@ public class ClientEventsTest extends SingleHotRodServerTest {
    }
 
    public void testClearEvents() {
-      final EventLogListener<Integer> eventListener = new EventLogListener<>();
+      final EventLogListener<Integer> eventListener = new EventLogListener<Integer>();
       withClientListener(eventListener, new RemoteCacheManagerCallable(remoteCacheManager) {
          @Override
          public void call() {
@@ -157,7 +157,7 @@ public class ClientEventsTest extends SingleHotRodServerTest {
    }
 
    public void testNoEventsBeforeAddingListener() {
-      final EventLogListener<Integer> eventListener = new EventLogListener<>();
+      final EventLogListener<Integer> eventListener = new EventLogListener<Integer>();
       RemoteCache<Integer, String> rcache = remoteCacheManager.getCache();
       rcache.put(1, "one");
       eventListener.expectNoEvents();
@@ -180,7 +180,7 @@ public class ClientEventsTest extends SingleHotRodServerTest {
    }
 
    public void testNoEventsAfterRemovingListener() {
-      final EventLogListener<Integer> eventListener = new EventLogListener<>();
+      final EventLogListener<Integer> eventListener = new EventLogListener<Integer>();
       final RemoteCache<Integer, String> rcache = remoteCacheManager.getCache();
       withClientListener(eventListener, new RemoteCacheManagerCallable(remoteCacheManager) {
          @Override
@@ -227,7 +227,7 @@ public class ClientEventsTest extends SingleHotRodServerTest {
    }
 
    public void testCustomTypeEvents() {
-      final EventLogListener<CustomKey> eventListener = new EventLogListener<>();
+      final EventLogListener<CustomKey> eventListener = new EventLogListener<CustomKey>();
       withClientListener(eventListener, new RemoteCacheManagerCallable(remoteCacheManager) {
          @Override
          public void call() {
@@ -245,7 +245,7 @@ public class ClientEventsTest extends SingleHotRodServerTest {
    }
 
    public void testEventReplayAfterAddingListener() {
-      final WithStateEventLogListener<Integer> eventListener = new WithStateEventLogListener<>();
+      final WithStateEventLogListener<Integer> eventListener = new WithStateEventLogListener<Integer>();
       RemoteCache<Integer, String> cache = remoteCacheManager.getCache();
       cache.put(1, "one");
       cache.put(2, "two");
@@ -259,7 +259,7 @@ public class ClientEventsTest extends SingleHotRodServerTest {
    }
 
    public void testNoEventReplayAfterAddingListener() {
-      final EventLogListener<Integer> eventListener = new EventLogListener<>();
+      final EventLogListener<Integer> eventListener = new EventLogListener<Integer>();
       RemoteCache<Integer, String> cache = remoteCacheManager.getCache();
       cache.put(1, "one");
       cache.put(2, "two");

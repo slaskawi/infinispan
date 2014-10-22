@@ -181,7 +181,7 @@ public class EmbeddedHotRodTest extends AbstractInfinispanTest {
    }
 
    public void testEventReceiveBasic() {
-      EventLogListener<Integer> eventListener = new EventLogListener<>(true);
+      EventLogListener<Integer> eventListener = new EventLogListener<Integer>(true);
       Cache<Integer, String> embedded = cacheFactory.getEmbeddedCache();
       RemoteCache<Integer, String> remote = cacheFactory.getHotRodCache();
       remote.addClientListener(eventListener);
@@ -201,7 +201,7 @@ public class EmbeddedHotRodTest extends AbstractInfinispanTest {
    }
 
    public void testEventReceiveConditional() {
-      EventLogListener<Integer> eventListener = new EventLogListener<>(true);
+      EventLogListener<Integer> eventListener = new EventLogListener<Integer>(true);
       Cache<Integer, String> embedded = cacheFactory.getEmbeddedCache();
       RemoteCache<Integer, String> remote = cacheFactory.getHotRodCache();
       remote.addClientListener(eventListener);
@@ -233,7 +233,7 @@ public class EmbeddedHotRodTest extends AbstractInfinispanTest {
    }
 
    public void testEventReplayAfterAddingListener() {
-      EventLogWithStateListener<Integer> eventListener = new EventLogWithStateListener<>(true);
+      EventLogWithStateListener<Integer> eventListener = new EventLogWithStateListener<Integer>(true);
       Cache<Integer, String> embedded = cacheFactory.getEmbeddedCache();
       RemoteCache<Integer, String> remote = cacheFactory.getHotRodCache();
       remote.put(1, "one");
@@ -258,7 +258,7 @@ public class EmbeddedHotRodTest extends AbstractInfinispanTest {
    }
 
    public void testEventNoReplayAfterAddingListener() {
-      EventLogListener<Integer> eventListener = new EventLogListener<>(true);
+      EventLogListener<Integer> eventListener = new EventLogListener<Integer>(true);
       Cache<Integer, String> embedded = cacheFactory.getEmbeddedCache();
       RemoteCache<Integer, String> remote = cacheFactory.getHotRodCache();
       remote.put(1, "one");
@@ -283,7 +283,7 @@ public class EmbeddedHotRodTest extends AbstractInfinispanTest {
    }
 
    public void testEventFilteringStatic() {
-      StaticFilteredEventLogListener<Integer> eventListener = new StaticFilteredEventLogListener<>(true);
+      StaticFilteredEventLogListener<Integer> eventListener = new StaticFilteredEventLogListener<Integer>(true);
       Cache<Integer, String> embedded = cacheFactory.getEmbeddedCache();
       RemoteCache<Integer, String> remote = cacheFactory.getHotRodCache();
       remote.addClientListener(eventListener);
@@ -307,7 +307,7 @@ public class EmbeddedHotRodTest extends AbstractInfinispanTest {
    }
 
    public void testEventFilteringDynamic() {
-      DynamicFilteredEventLogListener<Integer> eventListener = new DynamicFilteredEventLogListener<>(true);
+      DynamicFilteredEventLogListener<Integer> eventListener = new DynamicFilteredEventLogListener<Integer>(true);
       Cache<Integer, String> embedded = cacheFactory.getEmbeddedCache();
       RemoteCache<Integer, String> remote = cacheFactory.getHotRodCache();
       remote.addClientListener(eventListener, new Object[]{3}, null);

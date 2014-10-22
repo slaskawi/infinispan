@@ -18,9 +18,9 @@ import static org.infinispan.server.endpoint.EndpointLogger.ROOT_LOGGER;
 
 public class ExtensionManagerService implements Service<ExtensionManagerService> {
 
-    private final List<HotRodServer> servers = new ArrayList<>();
-    private final Map<String, CacheEventFilterFactory> filterFactories = new HashMap<>();
-    private final Map<String, CacheEventConverterFactory> converterFactories = new HashMap<>();
+    private final List<HotRodServer> servers = new ArrayList<HotRodServer>();
+    private final Map<String, CacheEventFilterFactory> filterFactories = new HashMap<String, CacheEventFilterFactory>();
+    private final Map<String, CacheEventConverterFactory> converterFactories = new HashMap<String, CacheEventConverterFactory>();
     private volatile Marshaller marshaller;
 
     @Override

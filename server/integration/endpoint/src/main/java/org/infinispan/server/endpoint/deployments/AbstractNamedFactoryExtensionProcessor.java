@@ -60,7 +60,7 @@ public abstract class AbstractNamedFactoryExtensionProcessor<T> extends Abstract
     public static abstract class AbstractExtensionManagerService<T> implements Service<T> {
         protected final String name;
         protected final T extension;
-        protected final InjectedValue<ExtensionManagerService> extensionManager = new InjectedValue<>();
+        protected final InjectedValue<ExtensionManagerService> extensionManager = new InjectedValue<ExtensionManagerService>();
 
         protected AbstractExtensionManagerService(String name, T extension) {
             assert name != null : ROOT_LOGGER.nullVar("name");

@@ -267,7 +267,7 @@ object Decoder2x extends AbstractVersionedDecoder with ServerConstants with Log 
             val entry = cache.getCacheEntry(k)
             if (entry != null) {
                // Hacky, but CacheEntry has not been generified
-               val prev = entry.getValue
+               val prev = entry.getValue.asInstanceOf[Array[Byte]]
                val streamVersion = new NumericVersion(params.streamVersion)
                if (entry.getMetadata.version() == streamVersion) {
                   val removed = cache.remove(k, prev)
@@ -357,7 +357,7 @@ object Decoder2x extends AbstractVersionedDecoder with ServerConstants with Log 
       if (ce != null) {
          val ice = ce.asInstanceOf[InternalCacheEntry]
          val entryVersion = ice.getMetadata.version().asInstanceOf[NumericVersion]
-         val v = ce.getValue
+         val v = ce.getValue.asInstanceOf[Array[Byte]]
          val lifespan = if (ice.getLifespan < 0) -1 else (ice.getLifespan / 1000).toInt
          val maxIdle = if (ice.getMaxIdle < 0) -1 else (ice.getMaxIdle / 1000).toInt
          new GetWithMetadataResponse(h.version, h.messageId, h.cacheName,

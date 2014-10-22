@@ -174,7 +174,7 @@ public interface EndpointLogger extends BasicLogger {
    String nullVar(String name);
 
    @LogMessage(level = WARN)
-   @Message(id = 10029, value = "Ignoring duplicate marshaller deployment found in %s. A marshaller has already been installed")
+   @Message(id = 10030, value = "Ignoring duplicate marshaller deployment found in %s. A marshaller has already been installed")
    void duplicateMarshallerDeployment(String deploymentName);
 
 }

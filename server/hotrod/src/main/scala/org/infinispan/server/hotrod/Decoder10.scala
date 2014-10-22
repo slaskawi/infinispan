@@ -232,7 +232,7 @@ object Decoder10 extends AbstractVersionedDecoder with ServerConstants with Log 
       if (ce != null) {
          val ice = ce.asInstanceOf[InternalCacheEntry]
          val entryVersion = ice.getMetadata.version().asInstanceOf[NumericVersion]
-         val v = ce.getValue
+         val v = ce.getValue.asInstanceOf[Array[Byte]]
          val lifespan = if (ice.getLifespan < 0) -1 else (ice.getLifespan / 1000).toInt
          val maxIdle = if (ice.getMaxIdle < 0) -1 else (ice.getMaxIdle / 1000).toInt
          new GetWithMetadataResponse(h.version, h.messageId, h.cacheName,

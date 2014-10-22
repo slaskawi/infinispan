@@ -10,7 +10,7 @@ package object hotrod {
    type Bytes = Array[Byte]
    type Cache = org.infinispan.AdvancedCache[Bytes, Bytes]
    type AddressCache = org.infinispan.Cache[Address, ServerAddress]
-   type InternalCacheEntry = org.infinispan.container.entries.InternalCacheEntry[Bytes, Bytes]
+   type InternalCacheEntry = org.infinispan.container.entries.InternalCacheEntry
    type NamedFactory = Option[(String, List[Bytes])]
 
 }

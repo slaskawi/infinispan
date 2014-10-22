@@ -8,8 +8,8 @@ public abstract class Either<A, B> {
    public abstract A left();
    public abstract B right();
 
-   public static <A, B> Either<A, B> newLeft(A a) { return new Left<>(a); }
-   public static <A, B> Either<A, B> newRight(B b) { return new Right<>(b); }
+   public static <A, B> Either<A, B> newLeft(A a) { return new Left<A, B>(a); }
+   public static <A, B> Either<A, B> newRight(B b) { return new Right<A, B>(b); }
 
    public static enum Type {
       LEFT, RIGHT

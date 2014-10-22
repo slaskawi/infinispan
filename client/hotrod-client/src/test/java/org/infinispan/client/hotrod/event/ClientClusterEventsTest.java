@@ -55,7 +55,7 @@ public class ClientClusterEventsTest extends MultiHotRodServersTest {
    }
 
    public void testEventForwarding() {
-      final EventLogListener<Integer> eventListener = new EventLogListener<>();
+      final EventLogListener<Integer> eventListener = new EventLogListener<Integer>();
       withClientListener(eventListener, new RemoteCacheManagerCallable(client(0)) {
          @Override
          public void call() {
@@ -84,7 +84,7 @@ public class ClientClusterEventsTest extends MultiHotRodServersTest {
    }
 
    public void testFilteringInCluster() {
-      final StaticFilteredEventLogListener<Integer> eventListener = new StaticFilteredEventLogListener<>();
+      final StaticFilteredEventLogListener<Integer> eventListener = new StaticFilteredEventLogListener<Integer>();
       withClientListener(eventListener, new RemoteCacheManagerCallable(client(0)) {
          @Override
          public void call() {
@@ -129,8 +129,8 @@ public class ClientClusterEventsTest extends MultiHotRodServersTest {
       builder.balancingStrategy(FirstServerAvailableBalancer.class);
       RemoteCacheManager newClient = new RemoteCacheManager(builder.build());
       try {
-         WithStateEventLogListener<Integer> withStateEventLogListener = new WithStateEventLogListener<>();
-         EventLogListener<Integer> withoutStateEventLogListener = new EventLogListener<>();
+         WithStateEventLogListener<Integer> withStateEventLogListener = new WithStateEventLogListener<Integer>();
+         EventLogListener<Integer> withoutStateEventLogListener = new EventLogListener<Integer>();
          RemoteCache<Integer, String> c = newClient.getCache();
          c.put(0, "zero");
          c.remove(0);

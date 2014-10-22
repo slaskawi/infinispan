@@ -58,12 +58,18 @@ public abstract class RetryOnFailureOperation<T> extends HotRodOperation {
             transportFactory.invalidateTransport(
                   te.getServerAddress(), transport);
             logErrorAndThrowExceptionIfNeeded(retryCount, te);
-         } catch (RemoteNodeSuspectException | RemoteIllegalLifecycleStateException e) {
+         } catch (RemoteNodeSuspectException e) {
             // Do not invalidate transport because this exception is caused
             // as a result of a server finding out that another node has
             // been suspected, so there's nothing really wrong with the server
             // from which this node was received.
             logErrorAndThrowExceptionIfNeeded(retryCount, e);
+         } catch (RemoteIllegalLifecycleStateException  e) {
+             // Do not invalidate transport because this exception is caused
+             // as a result of a server finding out that another node has
+             // been suspected, so there's nothing really wrong with the server
+             // from which this node was received.
+             logErrorAndThrowExceptionIfNeeded(retryCount, e);
          } finally {
             releaseTransport(transport);
          }

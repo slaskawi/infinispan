@@ -49,7 +49,7 @@ public class ClientListenerNotifier {
    }
 
    private final ConcurrentMap<byte[], EventDispatcher> clientListeners = CollectionFactory.makeConcurrentMap(
-         ByteArrayEquivalence.INSTANCE, AnyEquivalence.getInstance());
+         ByteArrayEquivalence.INSTANCE, AnyEquivalence.<EventDispatcher>getInstance());
 
    private final ExecutorService executor;
    private final Codec codec;
@@ -76,7 +76,7 @@ public class ClientListenerNotifier {
 
    public void failoverClientListeners(Set<SocketAddress> failedServers) {
       // Compile all listener ids that need failing over
-      List<byte[]> failoverListenerIds = new ArrayList<>();
+      List<byte[]> failoverListenerIds = new ArrayList<byte[]>();
       for (Map.Entry<byte[], EventDispatcher> entry : clientListeners.entrySet()) {
          EventDispatcher dispatcher = entry.getValue();
          if (failedServers.contains(dispatcher.transport.getRemoteSocketAddress()))
@@ -185,7 +185,7 @@ public class ClientListenerNotifier {
    }
 
    public Set<Object> getListeners(byte[] cacheName) {
-      Set<Object> ret = new HashSet<>(clientListeners.size());
+      Set<Object> ret = new HashSet<Object>(clientListeners.size());
       for (EventDispatcher dispatcher : clientListeners.values()) {
          if (Arrays.equals(dispatcher.op.cacheName, cacheName))
             ret.add(dispatcher.op.listener);

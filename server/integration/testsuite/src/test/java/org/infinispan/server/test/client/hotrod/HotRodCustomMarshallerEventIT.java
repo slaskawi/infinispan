@@ -101,7 +101,7 @@ public class HotRodCustomMarshallerEventIT {
     }
 
     private List<RemoteInfinispanServer> getServers() {
-        List<RemoteInfinispanServer> servers = new ArrayList<>();
+        List<RemoteInfinispanServer> servers = new ArrayList<RemoteInfinispanServer>();
         servers.add(server1);
         return Collections.unmodifiableList(servers);
     }
@@ -133,7 +133,7 @@ public class HotRodCustomMarshallerEventIT {
 
     @ClientListener
     public static class IdEventListener {
-        public BlockingQueue<ClientEvent> events = new ArrayBlockingQueue<>(128);
+        public BlockingQueue<ClientEvent> events = new ArrayBlockingQueue<ClientEvent>(128);
 
         @ClientCacheEntryCreated
         @ClientCacheEntryModified

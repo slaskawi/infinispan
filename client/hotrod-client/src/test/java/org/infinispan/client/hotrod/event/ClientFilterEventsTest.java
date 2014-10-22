@@ -31,7 +31,7 @@ public class ClientFilterEventsTest extends SingleHotRodServerTest {
    }
 
    public void testFilteredEvents() {
-      final StaticFilteredEventLogListener<Integer> eventListener = new StaticFilteredEventLogListener<>();
+      final StaticFilteredEventLogListener<Integer> eventListener = new StaticFilteredEventLogListener<Integer>();
       withClientListener(eventListener, new RemoteCacheManagerCallable(remoteCacheManager) {
          @Override
          public void call() {
@@ -50,7 +50,7 @@ public class ClientFilterEventsTest extends SingleHotRodServerTest {
    }
 
    public void testParameterBasedFiltering() {
-      final DynamicFilteredEventLogListener<Integer> eventListener = new DynamicFilteredEventLogListener<>();
+      final DynamicFilteredEventLogListener<Integer> eventListener = new DynamicFilteredEventLogListener<Integer>();
       withClientListener(eventListener, new Object[]{3}, null, new RemoteCacheManagerCallable(remoteCacheManager) {
          @Override
          public void call() {
@@ -68,7 +68,7 @@ public class ClientFilterEventsTest extends SingleHotRodServerTest {
 
    public void testFilteredEventsReplay() {
       final StaticFilteredEventLogWithStateListener<Integer> staticEventListener =
-            new StaticFilteredEventLogWithStateListener<>();
+            new StaticFilteredEventLogWithStateListener<Integer>();
       RemoteCache<Integer, String> cache = remoteCacheManager.getCache();
       cache.put(1, "one");
       cache.put(2, "two");
@@ -83,7 +83,7 @@ public class ClientFilterEventsTest extends SingleHotRodServerTest {
          }
       });
       final DynamicFilteredEventLogWithStateListener<Integer> dynamicEventListener =
-            new DynamicFilteredEventLogWithStateListener<>();
+            new DynamicFilteredEventLogWithStateListener<Integer>();
       cache.put(1, "one");
       cache.put(2, "two");
       cache.put(3, "three");
@@ -101,7 +101,7 @@ public class ClientFilterEventsTest extends SingleHotRodServerTest {
    }
 
    public void testFilteredNoEventsReplay() {
-      final StaticFilteredEventLogListener<Integer> staticEventListener = new StaticFilteredEventLogListener<>();
+      final StaticFilteredEventLogListener<Integer> staticEventListener = new StaticFilteredEventLogListener<Integer>();
       RemoteCache<Integer, String> cache = remoteCacheManager.getCache();
       cache.put(1, "one");
       cache.put(2, "two");
@@ -115,7 +115,7 @@ public class ClientFilterEventsTest extends SingleHotRodServerTest {
             staticEventListener.expectOnlyRemovedEvent(2, cache());
          }
       });
-      final DynamicFilteredEventLogListener<Integer> dynamicEventListener = new DynamicFilteredEventLogListener<>();
+      final DynamicFilteredEventLogListener<Integer> dynamicEventListener = new DynamicFilteredEventLogListener<Integer>();
       cache.put(1, "one");
       cache.put(2, "two");
       cache.put(3, "three");

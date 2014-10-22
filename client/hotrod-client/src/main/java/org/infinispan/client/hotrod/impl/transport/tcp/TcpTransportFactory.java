@@ -115,8 +115,8 @@ public class TcpTransportFactory implements TransportFactory {
                      connectionFactory,
                      configuration.connectionPool());
          createAndPreparePool(poolFactory);
-         balancers = CollectionFactory.makeMap(ByteArrayEquivalence.INSTANCE, AnyEquivalence.getInstance());
-         consistentHashes = CollectionFactory.makeMap(ByteArrayEquivalence.INSTANCE, AnyEquivalence.getInstance());
+         balancers = CollectionFactory.makeMap(ByteArrayEquivalence.INSTANCE, AnyEquivalence.<FailoverRequestBalancingStrategy>getInstance());
+         consistentHashes = CollectionFactory.makeMap(ByteArrayEquivalence.INSTANCE, AnyEquivalence.<ConsistentHash>getInstance());
          addBalancer(RemoteCacheManager.cacheNameBytes());
       }
 

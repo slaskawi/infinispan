@@ -159,7 +159,7 @@ public class EventLogListener<K> {
    }
 
    public void expectUnorderedEvents(ClientEvent.Type type, K... keys) {
-      List<K> assertedKeys = new ArrayList<>();
+      List<K> assertedKeys = new ArrayList<K>();
       for (int i = 0; i < keys.length; i++) {
          ClientEvent event = pollEvent(type);
          int initialSize = assertedKeys.size();
