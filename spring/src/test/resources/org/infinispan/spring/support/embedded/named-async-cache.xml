@@ -10,6 +10,7 @@
                 <property name="configurationFile" value="jgroups-tcp.xml"/>
             </properties>
         </transport>
+        <globalJmxStatistics allowDuplicateDomains="true" jmxDomain="org.infinispan" />
     </global>
     <default>
         <locking isolationLevel="READ_COMMITTED" lockAcquisitionTimeout="20000" writeSkewCheck="false"
@@ -23,6 +24,7 @@
         <clustering mode="replication">
             <async asyncMarshalling="true"/>
         </clustering>
+        <storeAsBinary enabled="true"/>
     </namedCache>
 
 </infinispan>
