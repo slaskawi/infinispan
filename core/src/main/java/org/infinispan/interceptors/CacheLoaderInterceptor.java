@@ -2,11 +2,7 @@ package org.infinispan.interceptors;
 
 import org.infinispan.commands.FlagAffectedCommand;
 import org.infinispan.commands.LocalFlagAffectedCommand;
-import org.infinispan.commands.read.EntrySetCommand;
-import org.infinispan.commands.read.GetKeyValueCommand;
-import org.infinispan.commands.read.KeySetCommand;
-import org.infinispan.commands.read.SizeCommand;
-import org.infinispan.commands.read.ValuesCommand;
+import org.infinispan.commands.read.*;
 import org.infinispan.commands.write.ApplyDeltaCommand;
 import org.infinispan.commands.write.InvalidateCommand;
 import org.infinispan.commands.write.PutKeyValueCommand;
@@ -153,7 +149,7 @@ public class CacheLoaderInterceptor extends JmxStatsCommandInterceptor {
 
    @Override
    public Object visitSizeCommand(InvocationContext ctx, SizeCommand command) throws Throwable {
-      String useClusterSize = System.getProperty("infinispan.accurate.bulk.ops");
+      String useClusterSize = SecurityActions.getSystemProperty("infinispan.accurate.bulk.ops");
       if (useClusterSize == null || !useClusterSize.equalsIgnoreCase("true")) {
          int totalSize = 0;
          if (enabled && !hasSkipLoadFlag(command)) {

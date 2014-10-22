@@ -41,7 +41,7 @@ public class SizeCommand extends AbstractLocalCommand implements VisitableComman
 
    @Override
    public Integer perform(InvocationContext ctx) throws Throwable {
-      String useClusterSize = System.getProperty("infinispan.accurate.bulk.ops");
+      String useClusterSize = SecurityActions.getSystemProperty("infinispan.accurate.bulk.ops");
       if (useClusterSize == null || !useClusterSize.equalsIgnoreCase("true")) {
          return localOnlyMethod(ctx);
       } else {
