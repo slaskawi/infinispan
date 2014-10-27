@@ -112,6 +112,10 @@
            paramTemplateFile="configuration/standalone/template.xml" 
            paramSubsystemsFile="configuration/examples/subsystems-auth.xml"
            paramOutputFile="${generated.configs.examples}/standalone-auth.xml"/>
+       <generate-server-config
+           paramTemplateFile="configuration/examples/template-vault.xml"
+           paramSubsystemsFile="configuration/examples/subsystems-node-auth.xml"
+           paramOutputFile="${generated.configs.examples}/standalone-node-auth.xml"/>
     </target>
 
 
