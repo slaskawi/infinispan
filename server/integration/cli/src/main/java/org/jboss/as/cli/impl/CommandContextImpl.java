@@ -347,6 +347,12 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         cmdRegistry.registerHandler(new ShutdownHandler(this), "shutdown");
         cmdRegistry.registerHandler(new VersionHandler(), "cli-version");
 
+        // deployment
+        cmdRegistry.registerHandler(new DeployHandler(this), "deploy");
+        cmdRegistry.registerHandler(new UndeployHandler(this), "undeploy");
+        cmdRegistry.registerHandler(new DeploymentInfoHandler(this), "deployment-info");
+        cmdRegistry.registerHandler(new DeploymentOverlayHandler(this), "deployment-overlay");
+
         // batch commands
         cmdRegistry.registerHandler(new BatchHandler(this), "batch");
         cmdRegistry.registerHandler(new BatchDiscardHandler(), "discard-batch");
