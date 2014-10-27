@@ -1,5 +1,22 @@
 package org.infinispan.persistence;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.infinispan.api.mvcc.LockAssert.assertNoLocks;
+import static org.infinispan.test.TestingUtil.k;
+import static org.infinispan.test.TestingUtil.v;
+import static org.testng.Assert.assertNull;
+import static org.testng.Assert.fail;
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertTrue;
+
+import java.lang.reflect.Method;
+import java.util.Collections;
+
+import javax.transaction.NotSupportedException;
+import javax.transaction.SystemException;
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
+
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.commons.marshall.StreamingMarshaller;
@@ -30,16 +47,14 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+<<<<<<< HEAD
 import javax.transaction.NotSupportedException;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.infinispan.api.mvcc.LockAssert.assertNoLocks;
@@ -50,6 +65,8 @@ import static org.testng.Assert.fail;
 import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertTrue;
 
+=======
+>>>>>>> 3af5a56... Made separate pom for bulk methods
 /**
  * Tests the interceptor chain and surrounding logic
  *
