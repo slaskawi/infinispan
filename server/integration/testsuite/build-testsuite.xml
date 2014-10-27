@@ -356,7 +356,7 @@
             modifyInfinispan="${infinispan.parts}/default-repl.xml"
             addJGroupsSasl="${other.parts}/jgroups-sasl-krb-1.xml"          
             addKrbOpts="${other.parts}/kerberos-properties.xml"
-            addKrbSecDomain="${other.parts}/kerberos-security-domain.xml" />
+            addKrbSecDomain="${other.parts}/kerberos-sec-domain-node1.xml" />
         <transform in="standalone.xml" out="testsuite/hotrod-authz-ldap.xml" 
     	    modifyInfinispan="${infinispan.parts}/local-secured-ldap-roles.xml"
     	    hotrodAuth="${infinispan.parts}/hotrod-auth-krb-authz-ldap.xml"
