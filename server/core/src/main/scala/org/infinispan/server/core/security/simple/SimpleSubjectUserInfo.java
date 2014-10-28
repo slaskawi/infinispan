@@ -46,13 +46,13 @@ public class SimpleSubjectUserInfo implements SubjectUserInfo {
 
       @Override
       public void writeObject(ObjectOutput output, SimpleSubjectUserInfo object) throws IOException {
-         output.writeObject(object.userName);
+         output.writeUTF(object.userName);
          output.writeObject(object.subject);
       }
 
       @Override
       public SimpleSubjectUserInfo readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-         return new SimpleSubjectUserInfo((String)input.readObject(), (Subject)input.readObject());
+         return new SimpleSubjectUserInfo(input.readUTF(), (Subject)input.readObject());
       }
 
    }

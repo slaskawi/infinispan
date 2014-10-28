@@ -53,12 +53,12 @@ public final class SimpleUserPrincipal implements UserPrincipal {
 
       @Override
       public void writeObject(ObjectOutput output, SimpleUserPrincipal object) throws IOException {
-         output.writeObject(object.name);
+         output.writeUTF(object.name);
       }
 
       @Override
       public SimpleUserPrincipal readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-         return new SimpleUserPrincipal((String) input.readObject());
+         return new SimpleUserPrincipal(input.readUTF());
       }
 
    }

@@ -93,7 +93,12 @@ abstract class AbstractProtocolDecoder[K, V](secure: Boolean, transport: NettyTr
          if (isTrace) // To aid debugging
             trace("Decode using instance @%x", System.identityHashCode(this))
          state match {
-            case DECODE_HEADER => decodeHeader(ctx, in, state, out)
+            case DECODE_HEADER =>
+               Security.doAs(subject, new PrivilegedExceptionAction[Unit] {
+                  def run: Unit = {
+                     decodeHeader(ctx, in, state, out)
+                  }
+               })
             case DECODE_KEY =>
                Security.doAs(subject, new PrivilegedExceptionAction[Unit] {
                   def run: Unit = {

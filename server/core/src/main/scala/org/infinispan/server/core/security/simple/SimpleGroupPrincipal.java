@@ -58,12 +58,12 @@ public class SimpleGroupPrincipal implements Group {
 
       @Override
       public void writeObject(ObjectOutput output, SimpleGroupPrincipal object) throws IOException {
-         output.writeObject(object.name);
+         output.writeUTF(object.name);
       }
 
       @Override
       public SimpleGroupPrincipal readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-         return new SimpleGroupPrincipal((String)input.readObject());
+         return new SimpleGroupPrincipal(input.readUTF());
       }
 
    }
