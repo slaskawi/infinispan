@@ -8,6 +8,7 @@ import org.infinispan.commons.util.Util;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.marshall.core.MarshalledValue;
 import org.infinispan.metadata.Metadata;
+import org.infinispan.partionhandling.AvailabilityMode;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.transaction.xa.GlobalTransaction;
 
@@ -23,7 +24,7 @@ import java.util.Map;
 @NotThreadSafe
 public class EventImpl<K, V> implements CacheEntryActivatedEvent, CacheEntryCreatedEvent, CacheEntriesEvictedEvent, CacheEntryLoadedEvent, CacheEntryModifiedEvent,
                                         CacheEntryPassivatedEvent, CacheEntryRemovedEvent, CacheEntryVisitedEvent, TransactionCompletedEvent, TransactionRegisteredEvent,
-                                  CacheEntryInvalidatedEvent, DataRehashedEvent, TopologyChangedEvent, CacheEntryEvictedEvent, Cloneable {
+                                  CacheEntryInvalidatedEvent, DataRehashedEvent, TopologyChangedEvent, CacheEntryEvictedEvent, PartitionStatusChangedEvent, Cloneable {
    private boolean pre = false; // by default events are after the fact
    private transient Cache<K, V> cache;
    private K key;
@@ -40,6 +41,7 @@ public class EventImpl<K, V> implements CacheEntryActivatedEvent, CacheEntryCrea
    private Map<Object, Object> entries;
    private boolean created;
    private boolean commandRetried;
+   private AvailabilityMode mode;
 
    public EventImpl() {
    }
@@ -291,6 +293,15 @@ public class EventImpl<K, V> implements CacheEntryActivatedEvent, CacheEntryCrea
    @SuppressWarnings("unchecked")
    public Map<K, V> getEntries() {
       return (Map<K, V>) entries;
+   }
+   
+   @Override
+   public AvailabilityMode getAvailabilityMode() {
+      return mode;
+   }
+
+   public void setAvailabilityMode(AvailabilityMode mode) {
+      this.mode = mode;
    }
    
    @Override
