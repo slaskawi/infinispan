@@ -188,7 +188,9 @@ public class TransportConfigurationBuilder extends AbstractGlobalConfigurationBu
       this.properties = template.properties();
       this.rackId = template.rackId();
       this.siteId = template.siteId();
-      this.transport = Util.getInstance(template.transport().getClass().getName(), template.transport().getClass().getClassLoader());
+      if (template.transport() != null) {
+         this.transport = Util.getInstance(template.transport().getClass().getName(), template.transport().getClass().getClassLoader());
+      }
 
       return this;
    }
