@@ -116,6 +116,7 @@ public class RemoteQueryDslConditionsTest extends SingleCacheManagerTest {
       user1.setGender(User.Gender.MALE);
       user1.setAge(22);
       user1.setAccountIds(new HashSet<Integer>(Arrays.asList(1, 2)));
+      user1.setNotes("Lorem ipsum dolor sit amet");
 
       Address address1 = new Address();
       address1.setStreet("Main Street");
@@ -620,6 +621,17 @@ public class RemoteQueryDslConditionsTest extends SingleCacheManagerTest {
 
       List<User> list = q.list();
       assertEquals(3, list.size());
+   }
+
+   @Test(expectedExceptions = HotRodClientException.class, expectedExceptionsMessageRegExp = "java.lang.IllegalArgumentException: Field notes from type sample_bank_account.User is not indexed")
+   public void testEqNonIndexed() throws Exception {
+      QueryFactory qf = Search.getQueryFactory(remoteCache);
+
+      Query q = qf.from(User.class)
+            .having("notes").eq("Lorem ipsum dolor sit amet")
+            .toBuilder().build();
+
+      q.list();
    }
 
    @Test(enabled = false, expectedExceptions = HotRodClientException.class, expectedExceptionsMessageRegExp = ".*HQLLUCN000005:.*", description = "see https://issues.jboss.org/browse/ISPN-4423")

@@ -1,11 +1,18 @@
 package org.infinispan.client.hotrod.query;
 
+import org.infinispan.client.hotrod.Search;
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.query.dsl.Query;
+import org.infinispan.query.dsl.QueryFactory;
 import org.infinispan.test.fwk.CleanupAfterMethod;
+import org.infinispan.protostream.sampledomain.User;
 import org.testng.annotations.Test;
 
+import java.util.List;
+
 import static org.infinispan.server.hotrod.test.HotRodTestingUtil.hotRodCacheConfiguration;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Test for query conditions (filtering) without an index. Exercises the whole query DSL on the sample domain model.
@@ -25,6 +32,20 @@ public class RemoteNonIndexedQueryDslConditionsTest extends RemoteQueryDslCondit
    @Override
    public void testIndexPresence() {
       org.infinispan.query.Search.getSearchManager(cache).getSearchFactory();
+   }
+
+   @Test
+   @Override
+   public void testEqNonIndexed() throws Exception {
+      QueryFactory qf = Search.getQueryFactory(remoteCache);
+
+      Query q = qf.from(User.class)
+            .having("notes").eq("Lorem ipsum dolor sit amet")
+            .toBuilder().build();
+
+      List<User> list = q.list();
+      assertEquals(1, list.size());
+      assertEquals(1, list.get(0).getId());
    }
 
    @Test(expectedExceptions = HotRodClientException.class, expectedExceptionsMessageRegExp = ".*ISPN000405:.*")

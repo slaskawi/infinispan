@@ -47,6 +47,8 @@ public class User implements Serializable {
    @IndexedEmbedded(indexNullAs = Field.DEFAULT_NULL_TOKEN)
    private List<Address> addresses;
 
+   private String notes;
+
    public int getId() {
       return id;
    }
@@ -103,6 +105,14 @@ public class User implements Serializable {
       this.addresses = addresses;
    }
 
+   public String getNotes() {
+      return notes;
+   }
+
+   public void setNotes(String notes) {
+      this.notes = notes;
+   }
+
    @Override
    public boolean equals(Object o) {
       if (this == o) return true;
@@ -117,6 +127,7 @@ public class User implements Serializable {
       if (gender != user.gender) return false;
       if (name != null ? !name.equals(user.name) : user.name != null) return false;
       if (surname != null ? !surname.equals(user.surname) : user.surname != null) return false;
+      if (notes != null ? !notes.equals(user.notes) : user.notes != null) return false;
 
       return true;
    }
@@ -130,6 +141,7 @@ public class User implements Serializable {
       result = 31 * result + (age != null ? age : 0);
       result = 31 * result + (gender != null ? gender.hashCode() : 0);
       result = 31 * result + (addresses != null ? addresses.hashCode() : 0);
+      result = 31 * result + (notes != null ? notes.hashCode() : 0);
       return result;
    }
 
@@ -143,6 +155,7 @@ public class User implements Serializable {
             ", addresses=" + addresses +
             ", age=" + age +
             ", gender=" + gender +
+            ", notes=" + notes +
             '}';
    }
 }
