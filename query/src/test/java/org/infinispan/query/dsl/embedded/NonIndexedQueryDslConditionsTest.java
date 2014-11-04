@@ -7,7 +7,7 @@ import org.infinispan.query.Search;
 import org.infinispan.query.dsl.Query;
 import org.infinispan.query.dsl.QueryFactory;
 import org.infinispan.query.dsl.embedded.impl.EmbeddedQueryFactory;
-import org.infinispan.query.dsl.embedded.sample_domain_model.User;
+import org.infinispan.query.dsl.embedded.testdomain.User;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
 import org.testng.annotations.Test;
 
@@ -48,7 +48,7 @@ public class NonIndexedQueryDslConditionsTest extends QueryDslConditionsTest {
    public void testEqNonIndexed() throws Exception {
       QueryFactory qf = getQueryFactory();
 
-      Query q = qf.from(User.class)
+      Query q = qf.from(getModelFactory().getUserImplClass())
             .having("notes").eq("Lorem ipsum dolor sit amet")
             .toBuilder().build();
 
@@ -79,7 +79,7 @@ public class NonIndexedQueryDslConditionsTest extends QueryDslConditionsTest {
    public void testAnd5() throws Exception {
       QueryFactory qf = getQueryFactory();
 
-      Query q = qf.from(User.class)
+      Query q = qf.from(getModelFactory().getUserImplClass())
             .having("id").lt(1000)
             .and().having("age").lt(1000)
             .toBuilder().build();

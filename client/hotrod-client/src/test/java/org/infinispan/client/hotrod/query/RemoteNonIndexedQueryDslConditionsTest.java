@@ -1,12 +1,10 @@
 package org.infinispan.client.hotrod.query;
 
-import org.infinispan.client.hotrod.Search;
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.query.dsl.Query;
 import org.infinispan.query.dsl.QueryFactory;
-import org.infinispan.test.fwk.CleanupAfterMethod;
-import org.infinispan.protostream.sampledomain.User;
+import org.infinispan.query.dsl.embedded.testdomain.User;
 import org.testng.annotations.Test;
 
 import java.util.List;
@@ -21,7 +19,6 @@ import static org.junit.Assert.assertEquals;
  * @since 7.0
  */
 @Test(groups = "functional", testName = "client.hotrod.query.RemoteNonIndexedQueryDslConditionsTest")
-@CleanupAfterMethod
 public class RemoteNonIndexedQueryDslConditionsTest extends RemoteQueryDslConditionsTest {
 
    protected ConfigurationBuilder getConfigurationBuilder() {
@@ -31,15 +28,15 @@ public class RemoteNonIndexedQueryDslConditionsTest extends RemoteQueryDslCondit
    @Test(expectedExceptions = IllegalArgumentException.class, expectedExceptionsMessageRegExp = "Indexing was not enabled on this cache.*")
    @Override
    public void testIndexPresence() {
-      org.infinispan.query.Search.getSearchManager(cache).getSearchFactory();
+      org.infinispan.query.Search.getSearchManager(getEmbeddedCache()).getSearchFactory();
    }
 
    @Test
    @Override
    public void testEqNonIndexed() throws Exception {
-      QueryFactory qf = Search.getQueryFactory(remoteCache);
+      QueryFactory qf = getQueryFactory();
 
-      Query q = qf.from(User.class)
+      Query q = qf.from(getModelFactory().getUserImplClass())
             .having("notes").eq("Lorem ipsum dolor sit amet")
             .toBuilder().build();
 

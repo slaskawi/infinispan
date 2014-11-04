@@ -5,6 +5,8 @@ import org.infinispan.commons.api.BasicCache;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.query.Search;
 import org.infinispan.query.dsl.QueryFactory;
+import org.infinispan.query.dsl.embedded.testdomain.ModelFactory;
+import org.infinispan.query.dsl.embedded.testdomain.hsearch.ModelFactoryHS;
 import org.infinispan.test.MultipleCacheManagersTest;
 import org.infinispan.test.fwk.CleanupAfterTest;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
@@ -55,6 +57,13 @@ public abstract class AbstractQueryDslTest extends MultipleCacheManagersTest {
     */
    protected QueryFactory getQueryFactory() {
       return Search.getQueryFactory((Cache) getCacheForQuery());
+   }
+
+   /**
+    * To be overridden by subclasses if they need to use a different model implementation.
+    */
+   protected ModelFactory getModelFactory() {
+      return ModelFactoryHS.INSTANCE;
    }
 
    @Override

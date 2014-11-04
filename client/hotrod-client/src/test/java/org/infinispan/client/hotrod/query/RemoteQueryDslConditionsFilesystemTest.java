@@ -2,21 +2,32 @@ package org.infinispan.client.hotrod.query;
 
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.test.TestingUtil;
-import org.junit.Assert;
 import org.testng.annotations.Test;
 
 import java.io.File;
 
+import static org.junit.Assert.assertTrue;
+
 /**
- * Tests verifying the functionality of Remote queries for HotRod using FileSystem as a directory provider.
+ * Verifying the functionality of Remote Queries for filesystem directory provider.
  *
  * @author Anna Manukyan
  * @author anistor@redhat.com
+ * @since 6.0
  */
-@Test(testName = "client.hotrod.query.HotRodQueryFileSystemTest", groups = "functional")
-public class HotRodQueryFileSystemTest extends HotRodQueryTest {
+@Test(testName = "client.hotrod.query.RemoteQueryDslConditionsFilestoreTest", groups = "functional")
+public class RemoteQueryDslConditionsFilesystemTest extends RemoteQueryDslConditionsTest {
 
-   private final String indexDirectory = TestingUtil.tmpDirectory(getClass());
+   protected final String indexDirectory = TestingUtil.tmpDirectory(getClass());
+
+   @Override
+   protected void createCacheManagers() throws Throwable {
+      TestingUtil.recursiveFileRemove(indexDirectory);
+      boolean created = new File(indexDirectory).mkdirs();
+      assertTrue(created);
+
+      super.createCacheManagers();
+   }
 
    @Override
    protected ConfigurationBuilder getConfigurationBuilder() {
@@ -28,18 +39,10 @@ public class HotRodQueryFileSystemTest extends HotRodQueryTest {
    }
 
    @Override
-   protected void setup() throws Exception {
-      TestingUtil.recursiveFileRemove(indexDirectory);
-      boolean created = new File(indexDirectory).mkdirs();
-      Assert.assertTrue(created);
-      super.setup();
-   }
-
-   @Override
-   protected void teardown() {
+   protected void destroy() {
       try {
          //first stop cache managers, then clear the index
-         super.teardown();
+         super.destroy();
       } finally {
          //delete the index otherwise it will mess up the index for next tests
          TestingUtil.recursiveFileRemove(indexDirectory);

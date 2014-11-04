@@ -1,9 +1,5 @@
 package org.infinispan.server.test.client.hotrod.osgi;
 
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.List;
-
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.Search;
@@ -39,6 +35,10 @@ import org.ops4j.pax.exam.spi.reactors.ExamReactorStrategy;
 import org.ops4j.pax.exam.spi.reactors.PerClass;
 import org.osgi.framework.Bundle;
 
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.List;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -66,15 +66,17 @@ public class RemoteCacheOsgiIT extends KarafTestSupport {
 
    @Configuration
    public Option[] config() throws Exception {
-      return new Option[]{
-            KarafDistributionOption.karafDistributionConfiguration()
-                  .frameworkUrl(maven().groupId("org.apache.karaf").artifactId("apache-karaf").type("zip").version(KARAF_VERSION))
-                  .karafVersion(KARAF_VERSION),
+      return new Option[] {
+            KarafDistributionOption
+                  .karafDistributionConfiguration()
+                  .frameworkUrl(
+                        maven().groupId("org.apache.karaf").artifactId("apache-karaf").type("zip")
+                              .version(KARAF_VERSION)).karafVersion(KARAF_VERSION),
             //install HotRod client feature ("feature" is a set of bundles, all the bundles are installed at once)
-            KarafDistributionOption.features(maven().groupId("org.infinispan")
-                                                   .artifactId("infinispan-client-hotrod").type("xml").classifier("features")
-                                                   .versionAsInProject(), "hotrod-client-with-query"),
-            KarafDistributionOption.features(new RawUrlReference("file:///" + RESOURCES_DIR.replace("\\", "/") + "/test-features.xml"), "query-sample-domain"),
+            KarafDistributionOption.features(maven().groupId("org.infinispan").artifactId("infinispan-client-hotrod")
+                  .type("xml").classifier("features").versionAsInProject(), "hotrod-client-with-query"),
+            KarafDistributionOption.features(new RawUrlReference("file:///" + RESOURCES_DIR.replace("\\", "/")
+                  + "/test-features.xml"), "query-sample-domain"),
             KarafDistributionOption.editConfigurationFileExtend("etc/jre.properties", "jre-1.7", "sun.misc"),
             KarafDistributionOption.editConfigurationFileExtend("etc/jre.properties", "jre-1.6", "sun.misc"),
             KarafDistributionOption.keepRuntimeFolder(),
@@ -85,9 +87,7 @@ public class RemoteCacheOsgiIT extends KarafTestSupport {
    @Before
    public void setUp() {
       builder = new ConfigurationBuilder();
-      builder.addServer()
-            .host(SERVER_HOST)
-            .port(HOTROD_PORT);
+      builder.addServer().host(SERVER_HOST).port(HOTROD_PORT);
    }
 
    @After
@@ -129,6 +129,7 @@ public class RemoteCacheOsgiIT extends KarafTestSupport {
       ctx.registerMarshaller(new AccountMarshaller());
       ctx.registerMarshaller(new LimitsMarshaller());
       ctx.registerMarshaller(new TransactionMarshaller());
+
       cache.put(1, createUser1());
       cache.put(2, createUser2());
 
@@ -138,9 +139,7 @@ public class RemoteCacheOsgiIT extends KarafTestSupport {
 
       // get user back from remote cache via query and check its attributes
       QueryFactory qf = Search.getQueryFactory(cache);
-      Query query = qf.from(User.class)
-            .having("name").eq("Tom").toBuilder()
-            .build();
+      Query query = qf.from(User.class).having("name").eq("Tom").toBuilder().build();
       List<User> list = query.list();
       assertNotNull(list);
       assertEquals(1, list.size());
@@ -204,12 +203,15 @@ public class RemoteCacheOsgiIT extends KarafTestSupport {
 
       @Override
       public boolean equals(Object o) {
-         if (this == o) return true;
-         if (o == null || getClass() != o.getClass()) return false;
+         if (this == o)
+            return true;
+         if (o == null || getClass() != o.getClass())
+            return false;
 
          Person person = (Person) o;
 
-         if (!name.equals(person.name)) return false;
+         if (!name.equals(person.name))
+            return false;
 
          return true;
       }

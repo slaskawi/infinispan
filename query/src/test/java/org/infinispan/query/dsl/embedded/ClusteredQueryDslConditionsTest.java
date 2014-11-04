@@ -6,10 +6,6 @@ import org.infinispan.Cache;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.query.Search;
-import org.infinispan.query.dsl.embedded.sample_domain_model.Account;
-import org.infinispan.query.dsl.embedded.sample_domain_model.Address;
-import org.infinispan.query.dsl.embedded.sample_domain_model.Transaction;
-import org.infinispan.query.dsl.embedded.sample_domain_model.User;
 import org.testng.annotations.Test;
 
 import static org.junit.Assert.*;
@@ -74,16 +70,16 @@ public class ClusteredQueryDslConditionsTest extends QueryDslConditionsTest {
       SearchFactoryImplementor searchFactory = (SearchFactoryImplementor) Search.getSearchManager(cache).getSearchFactory();
       IndexManagerHolder indexManagerHolder = searchFactory.getIndexManagerHolder();
 
-      assertTrue(searchFactory.getIndexedTypes().contains(User.class));
-      assertNotNull(indexManagerHolder.getIndexManager(User.class.getName()));
+      assertTrue(searchFactory.getIndexedTypes().contains(getModelFactory().getUserImplClass()));
+      assertNotNull(indexManagerHolder.getIndexManager(getModelFactory().getUserImplClass().getName()));
 
-      assertTrue(searchFactory.getIndexedTypes().contains(Account.class));
-      assertNotNull(indexManagerHolder.getIndexManager(Account.class.getName()));
+      assertTrue(searchFactory.getIndexedTypes().contains(getModelFactory().getAccountImplClass()));
+      assertNotNull(indexManagerHolder.getIndexManager(getModelFactory().getAccountImplClass().getName()));
 
-      assertTrue(searchFactory.getIndexedTypes().contains(Transaction.class));
-      assertNotNull(indexManagerHolder.getIndexManager(Transaction.class.getName()));
+      assertTrue(searchFactory.getIndexedTypes().contains(getModelFactory().getTransactionImplClass()));
+      assertNotNull(indexManagerHolder.getIndexManager(getModelFactory().getTransactionImplClass().getName()));
 
-      assertFalse(searchFactory.getIndexedTypes().contains(Address.class));
-      assertNull(indexManagerHolder.getIndexManager(Address.class.getName()));
+      assertFalse(searchFactory.getIndexedTypes().contains(getModelFactory().getAddressImplClass()));
+      assertNull(indexManagerHolder.getIndexManager(getModelFactory().getAddressImplClass().getName()));
    }
 }

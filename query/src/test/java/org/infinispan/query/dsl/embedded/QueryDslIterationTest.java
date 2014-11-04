@@ -6,7 +6,7 @@ import org.infinispan.query.dsl.Query;
 import org.infinispan.query.dsl.QueryBuilder;
 import org.infinispan.query.dsl.QueryFactory;
 import org.infinispan.query.dsl.SortOrder;
-import org.infinispan.query.dsl.embedded.sample_domain_model.User;
+import org.infinispan.query.dsl.embedded.testdomain.User;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -26,23 +26,23 @@ public class QueryDslIterationTest extends AbstractQueryDslTest {
 
    @BeforeClass(alwaysRun = true)
    protected void populateCache() throws Exception {
-      User user1 = new User();
+      User user1 = getModelFactory().makeUser();
       user1.setId(1);
       user1.setName("John");
       user1.setSurname("White");
       user1.setNotes("Lorem ipsum dolor sit amet");
 
-      User user2 = new User();
+      User user2 = getModelFactory().makeUser();
       user2.setId(2);
       user2.setName("Jack");
       user2.setSurname("Black");
 
-      User user3 = new User();
+      User user3 = getModelFactory().makeUser();
       user3.setId(3);
       user3.setName("John");
       user3.setSurname("Brown");
 
-      User user4 = new User();
+      User user4 = getModelFactory().makeUser();
       user4.setId(4);
       user4.setName("Michael");
       user4.setSurname("Black");
@@ -56,7 +56,7 @@ public class QueryDslIterationTest extends AbstractQueryDslTest {
    public void testOrderByAsc() throws Exception {
       QueryFactory qf = getQueryFactory();
 
-      Query q = qf.from(User.class)
+      Query q = qf.from(getModelFactory().getUserImplClass())
             .orderBy("name", SortOrder.ASC).build();
 
       assertEquals(4, q.getResultSize());
@@ -69,7 +69,7 @@ public class QueryDslIterationTest extends AbstractQueryDslTest {
    public void testOrderByDesc() throws Exception {
       QueryFactory qf = getQueryFactory();
 
-      Query q = qf.from(User.class)
+      Query q = qf.from(getModelFactory().getUserImplClass())
             .orderBy("surname", SortOrder.DESC).build();
 
       assertEquals(4, q.getResultSize());
@@ -82,7 +82,7 @@ public class QueryDslIterationTest extends AbstractQueryDslTest {
    public void testMaxResults() throws Exception {
       QueryFactory qf = getQueryFactory();
 
-      Query q = qf.from(User.class)
+      Query q = qf.from(getModelFactory().getUserImplClass())
             .orderBy("name", SortOrder.ASC).maxResults(2).build();
 
       assertEquals(4, q.getResultSize());
@@ -95,7 +95,7 @@ public class QueryDslIterationTest extends AbstractQueryDslTest {
    public void testStartOffset() throws Exception {
       QueryFactory qf = getQueryFactory();
 
-      Query q = qf.from(User.class)
+      Query q = qf.from(getModelFactory().getUserImplClass())
             .orderBy("name", SortOrder.ASC).startOffset(2).build();
 
       assertEquals(4, q.getResultSize());
@@ -108,7 +108,7 @@ public class QueryDslIterationTest extends AbstractQueryDslTest {
    public void testProjection1() throws Exception {
       QueryFactory qf = getQueryFactory();
 
-      Query q = qf.from(User.class)
+      Query q = qf.from(getModelFactory().getUserImplClass())
             .setProjection("id", "name").maxResults(3).build();
 
       assertEquals(4, q.getResultSize());
@@ -149,7 +149,7 @@ public class QueryDslIterationTest extends AbstractQueryDslTest {
    private LuceneQuery getIterationQuery() {
       QueryFactory qf = getQueryFactory();
 
-      QueryBuilder<LuceneQuery> queryQueryBuilder = qf.from(User.class)
+      QueryBuilder<LuceneQuery> queryQueryBuilder = qf.from(getModelFactory().getUserImplClass())
             .not().having("surname").eq("Blue").toBuilder();
       return queryQueryBuilder.build();
    }
