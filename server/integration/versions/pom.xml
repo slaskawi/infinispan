@@ -25,19 +25,19 @@
       <version.apache.ds>2.0.0-M16</version.apache.ds>
       <version.com.github.relaxng.relaxngDatatype>2011.1-redhat-6</version.com.github.relaxng.relaxngDatatype>
       <version.commons.logging>1.1.1-redhat-2</version.commons.logging>
-      <version.org.hibernate>4.2.14.SP1-redhat-5</version.org.hibernate>
+      <version.org.hibernate>4.2.14.SP4-redhat-1</version.org.hibernate>
       <version.net.jcip.annotations>1.0.redhat-6</version.net.jcip.annotations>
-      <version.org.jboss.as>7.4.0.Final-redhat-19</version.org.jboss.as>
+      <version.org.jboss.as>7.4.2.Final-redhat-2</version.org.jboss.as>
       <version.org.jboss.as.arquillian>${version.org.jboss.as}</version.org.jboss.as.arquillian>
       <version.org.jboss.jandex>1.0.3.Final-redhat-2</version.org.jboss.jandex>
-      <version.org.jboss.jbossts.jbossjts>4.17.21.Final-redhat-2</version.org.jboss.jbossts.jbossjts>
-      <version.org.jboss.spec>3.0.2.Final-redhat-8</version.org.jboss.spec>
-      <version.org.jboss.web>7.4.8.Final-redhat-4</version.org.jboss.web>
+      <version.org.jboss.jbossts.jbossjts>4.17.22.Final-redhat-2</version.org.jboss.jbossts.jbossjts>
+      <version.org.jboss.spec>3.0.2.Final-redhat-4</version.org.jboss.spec>
+      <version.org.jboss.web>7.4.9.Final-redhat-1</version.org.jboss.web>
       <version.junit>4.11</version.junit>
       <version.org.infinispan>${project.version}</version.org.infinispan>
       <version.org.infinispan.arquillian.container>1.1.0.Alpha2</version.org.infinispan.arquillian.container>
       <version.org.iq80.leveldb>0.6</version.org.iq80.leveldb>
-      <version.org.slf4j>1.7.2.redhat-2</version.org.slf4j>
+      <version.org.slf4j>1.7.2.redhat-3</version.org.slf4j>
       <version.org.xerial.snappy>1.0.5</version.org.xerial.snappy>
       <version.xml.maven.plugin>1.0</version.xml.maven.plugin>
       <version.org.infinispan.protostream>2.0.1.Final-redhat-1</version.org.infinispan.protostream>
