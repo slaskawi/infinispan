@@ -103,6 +103,7 @@
       <version.ch.qos.cal10n>0.7.3.redhat-4</version.ch.qos.cal10n>
       <version.commons.codec>1.4.redhat-3</version.commons.codec>
       <version.commons.collections>3.2.1.redhat-3</version.commons.collections>
+      <version.commons.dbcp>1.4-redhat-2</version.commons.dbcp>
       <version.commons.compress>1.5</version.commons.compress>
       <version.commons.httpclient>3.1-redhat-2</version.commons.httpclient>
       <version.commons.logging>1.1.1</version.commons.logging>
@@ -268,6 +269,11 @@
             <version>${version.ch.qos.cal10n}</version>
          </dependency>
          <dependency>
+            <groupId>commons-dbcp</groupId>
+            <artifactId>commons-dbcp</artifactId>
+            <version>${version.commons.dbcp}</version>
+         </dependency>
+         <dependency>
             <groupId>commons-httpclient</groupId>
             <artifactId>commons-httpclient</artifactId>
             <version>${version.commons.httpclient}</version>
@@ -301,6 +307,11 @@
                   <artifactId>jsr250-api</artifactId>
                </exclusion>
             </exclusions>
+         </dependency>
+         <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>${version.log4j}</version>
          </dependency>
          <dependency>
             <groupId>mc4j</groupId>
@@ -913,7 +924,6 @@
       <dependency>
          <groupId>log4j</groupId>
          <artifactId>log4j</artifactId>
-         <version>${version.log4j}</version>
          <optional>true</optional>
       </dependency>
       <dependency>
