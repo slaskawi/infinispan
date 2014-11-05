@@ -128,7 +128,11 @@ public class TxInterceptor extends CommandInterceptor implements JmxStatisticsEx
             //It is possible to receive a prepare or lock control command from a node that crashed. If that's the case rollback
             //the transaction forcefully in order to cleanup resources.
             boolean originatorMissing = !rpcManager.getTransport().getMembers().contains(command.getOrigin());
-            boolean alreadyCompleted = txTable.isTransactionCompleted(command.getGlobalTransaction());
+            // It is also possible that the LCC timed out on the originator's end and this node has processed
+            // a TxCompletionNotification.  So we need to check the presence of the remote transaction to
+            // see if we need to clean up any acquired locks on our end.
+            boolean alreadyCompleted = txTable.isTransactionCompleted(command.getGlobalTransaction()) ||
+                                       !txTable.containRemoteTx(command.getGlobalTransaction());
             if (trace) {
                log.tracef("invokeNextInterceptorAndVerifyTransaction :: originatorMissing=%s, alreadyCompleted=%s",
                           originatorMissing, alreadyCompleted);
