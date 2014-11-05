@@ -8,32 +8,27 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 /**
- *
- * HotRodPlainAuthIT tests PLAIN SASL authentication of HotRod client.
- *
+ * 
+ * HotRodDigestMd5AuthLocalIT tests DIGEST-MD5 SASL authentication of HotRod client against local cache.
+ * 
  * @author vjuranek
  * @since 7.0
  */
 @RunWith(Arquillian.class)
 @Category({ Security.class })
-public class HotRodPlainAuthClusteredIT extends HotRodSaslAuthTestBase {
+public class HotRodDigestMd5AuthLocalIT extends HotRodSaslAuthTestBase {
 
-   @InfinispanResource("hotrodAuthClustered")
+   @InfinispanResource("hotrodAuth")
    RemoteInfinispanServer server;
 
    @Override
    public String getTestedMech() {
-      return "PLAIN";
+      return "DIGEST-MD5";
    }
 
    @Override
-   public String getHRServerHostname() {
-      return server.getHotrodEndpoint().getInetAddress().getHostName();
-   }
-
-   @Override
-   public int getHRServerPort() {
-      return server.getHotrodEndpoint().getPort();
+   public RemoteInfinispanServer getRemoteServer() {
+      return server;
    }
 
    @Override
@@ -55,4 +50,5 @@ public class HotRodPlainAuthClusteredIT extends HotRodSaslAuthTestBase {
    public void initAsSupervisor() {
       initialize(SUPERVISOR_LOGIN, SUPERVISOR_PASSWD);
    }
+
 }
