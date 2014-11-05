@@ -158,7 +158,7 @@ public class MapReduceManagerImpl implements MapReduceManager {
                filter = new IntermediateKeyFilter<KOut>(taskId);
             }
             //iterate all tmp cache entries in memory, do it in parallel
-            DataContainer dc = cache.getAdvancedCache().getDataContainer();
+            DataContainer dc = SecurityActions.getDataContainer(cache.getAdvancedCache());
             dc.executeTask(filter, new DataContainerTask<KOut, List<VOut>>() {
                @Override
                public void apply(Object k, InternalCacheEntry v) {
@@ -204,7 +204,7 @@ public class MapReduceManagerImpl implements MapReduceManager {
       MapReduceTaskLifecycleService taskLifecycleService = MapReduceTaskLifecycleService.getInstance();
       final CollectableCollector<KOut, VOut> collector = new SynchronizedCollector<KOut, VOut>(
             new DefaultCollector<KIn, VIn, KOut, VOut>(mcc, maxCSize));
-      DataContainer dc = cache.getAdvancedCache().getDataContainer();
+      DataContainer dc = SecurityActions.getDataContainer(cache.getAdvancedCache());
       log.tracef("For m/r task %s invoking %s with input keys %s",  mcc.getTaskId(), mcc, keys);
       long start = log.isTraceEnabled() ? timeService.time() : 0;
       try {
@@ -256,7 +256,7 @@ public class MapReduceManagerImpl implements MapReduceManager {
       final boolean inputKeysSpecified = keys != null && !keys.isEmpty();
       // hook map function into lifecycle and execute it
       MapReduceTaskLifecycleService taskLifecycleService = MapReduceTaskLifecycleService.getInstance();
-      DataContainer dc = cache.getAdvancedCache().getDataContainer();
+      DataContainer dc = SecurityActions.getDataContainer(cache.getAdvancedCache());
       log.tracef("For m/r task %s invoking %s with input keys %s", mcc.getTaskId(), mcc, mcc.getKeys());
       long start = log.isTraceEnabled() ? timeService.time() : 0;
       final Set<KOut> intermediateKeys = new HashSet<KOut>();
@@ -346,7 +346,7 @@ public class MapReduceManagerImpl implements MapReduceManager {
       }
 
       Set<KOut> mapPhaseKeys = new HashSet<KOut>();
-      DistributionManager dm = tmpCache.getAdvancedCache().getDistributionManager();
+      DistributionManager dm = SecurityActions.getCacheDistributionManager(tmpCache.getAdvancedCache());
       boolean emitCompositeIntermediateKeys = mcc.isEmitCompositeIntermediateKeys();
       Map<Address, List<KOut>> keysToNodes = mapKeysToNodes(dm, taskId, collectedValues.keySet(),
             emitCompositeIntermediateKeys);

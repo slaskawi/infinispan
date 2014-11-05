@@ -5,10 +5,10 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.commons.util.Immutables;
-import org.infinispan.compat.TypeConverter;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.CompatibilityModeConfiguration;
 import org.infinispan.distexec.mapreduce.Collator;
@@ -16,6 +16,8 @@ import org.infinispan.distexec.mapreduce.Collector;
 import org.infinispan.distexec.mapreduce.MapReduceTask;
 import org.infinispan.distexec.mapreduce.Mapper;
 import org.infinispan.distexec.mapreduce.Reducer;
+import org.infinispan.security.AuthorizationManager;
+import org.infinispan.security.AuthorizationPermission;
 import org.infinispan.server.hotrod.HotRodTypeConverter;
 
 /**
@@ -31,16 +33,25 @@ public final class BulkUtil {
    public static final int LOCAL_SCOPE = 2;
 
    public static Set<byte[]> getAllKeys(Cache<byte[], ?> cache, int scope) {
-      CacheMode cacheMode = cache.getAdvancedCache().getCacheConfiguration().clustering().cacheMode();
+      ensureAccessPermissions(cache.getAdvancedCache());
+      CacheMode cacheMode = SecurityActions.getCacheConfiguration(cache.getAdvancedCache()).clustering().cacheMode();
       boolean keysAreLocal = !cacheMode.isClustered() || cacheMode.isReplicated();
       if (keysAreLocal || scope == LOCAL_SCOPE) {
          return cache.keySet();
       } else {
-         MapReduceTask<byte[], Object, byte[], Object> task =
-               new MapReduceTask<byte[], Object, byte[], Object>((Cache<byte[], Object>) cache)
-                     .mappedWith(new KeyMapper<byte[]>())
-                     .reducedWith(new KeyReducer<byte[]>());
-         return task.execute(createCollator(cache));
+         
+         MapReduceTask<byte[], Object, byte[], Object> task = (MapReduceTask<byte[], Object, byte[], Object>) SecurityActions.newMapReduceTask(cache.getAdvancedCache());
+         task
+            .mappedWith(new KeyMapper<byte[]>())
+            .reducedWith(new KeyReducer<byte[]>());
+         return SecurityActions.executeTask(task, createCollator(cache));
+      }
+   }
+   
+   private static void ensureAccessPermissions(final AdvancedCache<?, ?> cache) {
+      AuthorizationManager authorizationManager = SecurityActions.getCacheAuthorizationManager(cache);
+      if (authorizationManager != null) {
+         authorizationManager.checkPermission(AuthorizationPermission.BULK_READ);
       }
    }
 

@@ -5,6 +5,7 @@ import java.security.PrivilegedAction;
 
 import org.infinispan.AdvancedCache;
 import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.container.DataContainer;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.factories.ComponentRegistry;
 import org.infinispan.remoting.rpc.RpcManager;
@@ -15,6 +16,7 @@ import org.infinispan.security.actions.GetCacheComponentRegistryAction;
 import org.infinispan.security.actions.GetCacheConfigurationAction;
 import org.infinispan.security.actions.GetCacheDistributionManagerAction;
 import org.infinispan.security.actions.GetCacheRpcManagerAction;
+import org.infinispan.security.actions.GetDataContainerAction;
 
 /**
  * SecurityActions for the org.infinispan.distexec.mapreduce package.
@@ -56,6 +58,11 @@ final class SecurityActions {
 
    static Configuration getCacheConfiguration(final AdvancedCache<?, ?> cache) {
       GetCacheConfigurationAction action = new GetCacheConfigurationAction(cache);
+      return doPrivileged(action);
+   }
+
+   static DataContainer getDataContainer(final AdvancedCache<?, ?> cache) {
+      GetDataContainerAction action = new GetDataContainerAction(cache);
       return doPrivileged(action);
    }
 }
