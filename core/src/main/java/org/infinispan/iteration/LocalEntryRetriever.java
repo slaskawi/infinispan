@@ -73,7 +73,7 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
    protected final long timeout;
    protected final TimeUnit unit;
 
-   protected DataContainer dataContainer;
+   protected DataContainer<K, V> dataContainer;
    protected PersistenceManager persistenceManager;
    protected ExecutorService executorService;
    protected Cache<K, V> cache;
@@ -87,7 +87,7 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
    boolean passivationEnabled;
 
    @Inject
-   public void inject(DataContainer dataContainer, PersistenceManager persistenceManager,
+   public void inject(DataContainer<K, V> dataContainer, PersistenceManager persistenceManager,
                       @ComponentName(ASYNC_TRANSPORT_EXECUTOR) ExecutorService executorService,
                       TimeService timeService, InternalEntryFactory entryFactory, Cache<K, V> cache,
                       Configuration config) {
@@ -111,17 +111,17 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
    protected class PartitionListener {
       protected volatile AvailabilityMode currentMode = AvailabilityMode.AVAILABLE;
 
-      protected final Set<Itr<?, ?>> iterators = new ConcurrentHashSet<Itr<?, ?>>();
+      protected final Set<Itr<?>> iterators = new ConcurrentHashSet<Itr<?>>();
 
       @PartitionStatusChanged
-      public void onPartitionChange(PartitionStatusChangedEvent event) {
+      public void onPartitionChange(PartitionStatusChangedEvent<K, V> event) {
          if (!event.isPre()) {
             currentMode = event.getAvailabilityMode();
             if (currentMode != AvailabilityMode.AVAILABLE) {
-               Iterator<Itr<?, ?>> itrIterator = iterators.iterator();
+               Iterator<Itr<?>> itrIterator = iterators.iterator();
                // Now we close all the iterators but with the exception so they throw it properly
                while (itrIterator.hasNext()) {
-                  Itr<?, ?> itr = itrIterator.next();
+                  Itr<?> itr = itrIterator.next();
                   itr.close(new AvailabilityException());
                   itrIterator.remove();
                }
@@ -222,7 +222,7 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
       return usedConverter;
    }
 
-   protected <C> void registerIterator(Itr<K, C> itr, Set<Flag> flags) {
+   protected <C> void registerIterator(Itr<C> itr, Set<Flag> flags) {
       // If we are running in local mode we ignore the partition status
       if (flags == null || !flags.contains(Flag.CACHE_MODE_LOCAL)) {
          // Note we have to register the iterator before we check the mode in case if it changes concurrently
@@ -241,7 +241,7 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
                                                                  final SegmentListener listener) {
       final Converter<? super K, ? super V, ? extends C> usedConverter = checkForKeyValueFilterConverter(filter, converter);
       wireFilterAndConverterDependencies(filter, usedConverter);
-      final Itr<K, C> iterator = new Itr<K, C>(batchSize);
+      final Itr<C> iterator = new Itr<C>(batchSize);
       registerIterator(iterator, flags);
       final ItrQueuerHandler<C> handler = new ItrQueuerHandler<C>(iterator);
       executorService.submit(new Runnable() {
@@ -293,7 +293,7 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
                         }
                      }
                   }
-                  if (shouldUseLoader(flags) && persistenceManager.size() > 0) {
+                  if (shouldUseLoader(flags) && persistenceManager.getStoresAsString().size() > 0) {
                      if (passivationEnabled) {
                         listener = new PassivationListener<K, V>();
                         cache.addListener(listener);
@@ -306,7 +306,7 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
                                                                  new KeyValueFilterAsKeyFilter<K>(filter));
                      }
                      if (usedConverter == null && filter instanceof KeyValueFilterConverter) {
-                        action = new MapAction(batchSize, (KeyValueFilterConverter) filter, queue, handler);
+                        action = new MapAction<>(batchSize, (KeyValueFilterConverter<K, V, C>) filter, queue, handler);
                      }
                      persistenceManager.processOnAllStores(withinThreadExecutor, new KeyFilterBridge(loaderFilter),
                                                            new KeyValueActionForCacheLoaderTask(action), true, true);
@@ -387,9 +387,9 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
    }
 
    protected class ItrQueuerHandler<C> implements BatchHandler<K, C> {
-      final Itr<K, C> iterator;
+      final Itr<C> iterator;
 
-      public ItrQueuerHandler(Itr<K, C> iterator) {
+      public ItrQueuerHandler(Itr<C> iterator) {
          this.iterator = iterator;
       }
 
@@ -402,7 +402,7 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
       }
    }
 
-   class Itr<K, C> implements CloseableIterator<CacheEntry> {
+   protected class Itr<C> implements CloseableIterator<CacheEntry> {
 
       private final BlockingQueue<CacheEntry> queue;
       private final Lock nextLock = new ReentrantLock();

@@ -420,7 +420,7 @@ public interface CommandsFactory {
     * @param <C> The converted type after the value is applied from the converter
     * @return The EntryResponseCommand created
     */
-   <K, C> EntryResponseCommand buildEntryResponseCommand(UUID identifier, Set<Integer> completedSegments,
+   <K, C> EntryResponseCommand<K, C> buildEntryResponseCommand(UUID identifier, Set<Integer> completedSegments,
                                                          Set<Integer> inDoubtSegments, Collection<CacheEntry> values);
 
    /*
