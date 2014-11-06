@@ -1,5 +1,6 @@
 package org.infinispan.iteration;
 
+import org.infinispan.commons.CacheException;
 import org.infinispan.commons.util.CloseableIterator;
 import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.context.Flag;
@@ -45,10 +46,11 @@ public interface EntryRetriever<K, V> {
     * @param completedSegments Which segments have been completed
     * @param inDoubtSegments Which segments are now in doubt due to a rehash
     * @param entries The entries retrieved
+    * @param e If an exception handled while processing the data on the remote node
     * @param <C> The type of entries values sent back
     */
    public <C> void receiveResponse(UUID identifier, Address origin, Set<Integer> completedSegments,
-                                   Set<Integer> inDoubtSegments, Collection<CacheEntry> entries);
+                                   Set<Integer> inDoubtSegments, Collection<CacheEntry> entries, CacheException e);
 
    /**
     * This is invoked locally on the node that requested the iteration process.  This method will return immediately

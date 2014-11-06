@@ -73,7 +73,7 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
    protected final long timeout;
    protected final TimeUnit unit;
 
-   protected DataContainer<K, V> dataContainer;
+   protected DataContainer dataContainer;
    protected PersistenceManager persistenceManager;
    protected ExecutorService executorService;
    protected Cache<K, V> cache;
@@ -87,7 +87,7 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
    boolean passivationEnabled;
 
    @Inject
-   public void inject(DataContainer<K, V> dataContainer, PersistenceManager persistenceManager,
+   public void inject(DataContainer dataContainer, PersistenceManager persistenceManager,
                       @ComponentName(ASYNC_TRANSPORT_EXECUTOR) ExecutorService executorService,
                       TimeService timeService, InternalEntryFactory entryFactory, Cache<K, V> cache,
                       Configuration config) {
@@ -164,7 +164,7 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
 
    @Override
    public <C> void receiveResponse(UUID identifier, Address origin, Set<Integer> completedSegments, Set<Integer> inDoubtSegments,
-                                   Collection<CacheEntry> entries) {
+                                   Collection<CacheEntry> entries, CacheException e) {
       throw new UnsupportedOperationException();
    }
 
@@ -306,7 +306,7 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
                                                                  new KeyValueFilterAsKeyFilter<K>(filter));
                      }
                      if (usedConverter == null && filter instanceof KeyValueFilterConverter) {
-                        action = new MapAction<>(batchSize, (KeyValueFilterConverter<K, V, C>) filter, queue, handler);
+                        action = new MapAction<C>(batchSize, (KeyValueFilterConverter<K, V, C>) filter, queue, handler);
                      }
                      persistenceManager.processOnAllStores(withinThreadExecutor, new KeyFilterBridge(loaderFilter),
                                                            new KeyValueActionForCacheLoaderTask(action), true, true);
@@ -334,9 +334,9 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
 
                handler.handleBatch(true, queue);
                partitionListener.iterators.remove(iterator);
-            } catch (Throwable e) {
-               //todo [anistor] any exception happening during entry retrieval should stop the process and throw an exception to the requestor instead of timing out
-               log.exceptionProcessingEntryRetrievalValues(e);
+            } catch (Throwable t) {
+               CacheException e = log.exceptionProcessingEntryRetrievalValues(t);
+               iterator.close(e);
             }
          }
       });

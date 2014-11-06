@@ -31,6 +31,7 @@ import org.infinispan.commands.tx.RollbackCommand;
 import org.infinispan.commands.tx.VersionedCommitCommand;
 import org.infinispan.commands.tx.VersionedPrepareCommand;
 import org.infinispan.commands.write.*;
+import org.infinispan.commons.CacheException;
 import org.infinispan.context.Flag;
 import org.infinispan.distexec.mapreduce.Mapper;
 import org.infinispan.distexec.mapreduce.Reducer;
@@ -48,6 +49,7 @@ import org.infinispan.xsite.statetransfer.XSiteStatePushCommand;
 import org.infinispan.xsite.statetransfer.XSiteStateTransferControlCommand;
 
 import javax.transaction.xa.Xid;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -416,12 +418,14 @@ public interface CommandsFactory {
     * @param inDoubtSegments The segements that are now in doubt meaning they must be retrieved again from another
     *                        node due to rehash
     * @param values The entries retrieved from the remote node
+    * @param e If an exception occurred while running the processing on the remote node
     * @param <K> The key type of the stored key
     * @param <C> The converted type after the value is applied from the converter
     * @return The EntryResponseCommand created
     */
    <K, C> EntryResponseCommand<K, C> buildEntryResponseCommand(UUID identifier, Set<Integer> completedSegments,
-                                                         Set<Integer> inDoubtSegments, Collection<CacheEntry> values);
+                                                         Set<Integer> inDoubtSegments, Collection<CacheEntry> values,
+                                                         CacheException e);
 
    /*
     * Builds XSiteStateTransferControlCommand used to control the-cross site state transfer.

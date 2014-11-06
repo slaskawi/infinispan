@@ -1,6 +1,7 @@
 package org.infinispan.iteration;
 
 import org.infinispan.Cache;
+import org.infinispan.commons.CacheException;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.container.DataContainer;
 import org.infinispan.container.entries.CacheEntry;
@@ -38,14 +39,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.withSettings;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyCollection;
+import static org.mockito.Matchers.anyCollectionOf;
+import static org.mockito.Matchers.anySetOf;
+import static org.mockito.Mockito.*;
+import static org.testng.AssertJUnit.*;
 
 /**
  * Test to verify distributed entry behavior
@@ -103,7 +102,7 @@ public class DistributedEntryRetrieverTest extends BaseClusteredEntryRetrieverTe
       future.get(10, TimeUnit.SECONDS);
 
       for (Map.Entry<Object, String> entry : values.entrySet()) {
-         assertTrue(returnQueue.contains(entry), "Entry wasn't found:" + entry);
+         assertTrue("Entry wasn't found:" + entry, returnQueue.contains(entry));
       }
    }
 
@@ -157,7 +156,7 @@ public class DistributedEntryRetrieverTest extends BaseClusteredEntryRetrieverTe
       future.get(10, TimeUnit.SECONDS);
 
       for (Map.Entry<Object, String> entry : values.entrySet()) {
-         assertTrue(returnQueue.contains(entry) || entry.equals(value), "Entry wasn't found:" + entry);
+         assertTrue("Entry wasn't found:" + entry, returnQueue.contains(entry) || entry.equals(value));
       }
    }
 
@@ -210,7 +209,7 @@ public class DistributedEntryRetrieverTest extends BaseClusteredEntryRetrieverTe
       Map<Integer, Set<CacheEntry>> answer = generateEntriesPerSegment(hash, returnQueue);
 
       for (Map.Entry<Integer, Set<CacheEntry>> entry : expected.entrySet()) {
-         assertEquals(answer.get(entry.getKey()), entry.getValue(), "Segment " + entry.getKey() + " had a mismatch");
+         assertEquals("Segment " + entry.getKey() + " had a mismatch", answer.get(entry.getKey()), entry.getValue());
       }
    }
 
@@ -270,7 +269,7 @@ public class DistributedEntryRetrieverTest extends BaseClusteredEntryRetrieverTe
       Map<Integer, Set<CacheEntry>> answer = generateEntriesPerSegment(hash, returnQueue);
 
       for (Map.Entry<Integer, Set<CacheEntry>> entry : expected.entrySet()) {
-         assertEquals(answer.get(entry.getKey()), entry.getValue(), "Segment " + entry.getKey() + " had a mismatch");
+         assertEquals("Segment " + entry.getKey() + " had a mismatch", answer.get(entry.getKey()), entry.getValue());
       }
    }
 
@@ -383,7 +382,7 @@ public class DistributedEntryRetrieverTest extends BaseClusteredEntryRetrieverTe
             }
          }
       }).when(mockRetriever).receiveResponse(any(UUID.class), any(Address.class), anySetOf(Integer.class),
-                                             anySetOf(Integer.class), anyCollection());
+                                             anySetOf(Integer.class), anyCollection(), any(CacheException.class));
       TestingUtil.replaceComponent(cache, EntryRetriever.class, mockRetriever, true);
       return rpc;
    }
