@@ -62,6 +62,12 @@
                            <exclude>org.osgi:org.osgi.compendium:jar:</exclude>
                         </excludes>
                      </artifactSet>
+                     <relocations>
+                        <relocation>
+                           <pattern>org.jboss.logging</pattern>
+                           <shadedPattern>infinispanembedded.org.jboss.logging</shadedPattern>
+                        </relocation>
+                     </relocations>
                      <createSourcesJar>true</createSourcesJar>
                      <transformers>
                         <transformer implementation="org.apache.maven.plugins.shade.resource.DontIncludeResourceTransformer">

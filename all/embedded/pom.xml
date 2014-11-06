@@ -46,6 +46,24 @@
       </dependency>
 
       <dependency>
+         <groupId>org.infinispan</groupId>
+         <artifactId>infinispan-cachestore-remote</artifactId>
+         <optional>true</optional>
+      </dependency>
+
+      <dependency>
+         <groupId>org.infinispan</groupId>
+         <artifactId>infinispan-cachestore-rest</artifactId>
+         <optional>true</optional>
+      </dependency>
+
+      <dependency>
+         <groupId>org.infinispan</groupId>
+         <artifactId>infinispan-cli-server</artifactId>
+         <optional>true</optional>
+      </dependency>
+
+      <dependency>
          <groupId>org.jgroups</groupId>
          <artifactId>jgroups</artifactId>
          <optional>true</optional>
@@ -54,6 +72,12 @@
       <dependency>
          <groupId>org.jboss.marshalling</groupId>
          <artifactId>jboss-marshalling-osgi</artifactId>
+         <optional>true</optional>
+      </dependency>
+
+      <dependency>
+         <groupId>org.infinispan</groupId>
+         <artifactId>infinispan-adaptor52x</artifactId>
          <optional>true</optional>
       </dependency>
 
@@ -103,8 +127,36 @@
                      <createSourcesJar>true</createSourcesJar>
                      <relocations>
                         <relocation>
+                           <pattern>antlr</pattern>
+                           <shadedPattern>infinispanembedded.antlr</shadedPattern>
+                        </relocation>
+                        <relocation>
                            <pattern>com.google.common</pattern>
-                           <shadedPattern>infinispan.com.google.common</shadedPattern>
+                           <shadedPattern>infinispanembedded.com.google.common</shadedPattern>
+                        </relocation>
+                        <relocation>
+                           <pattern>org.antlr</pattern>
+                           <shadedPattern>infinispanembedded.org.antlr</shadedPattern>
+                        </relocation>
+                        <relocation>
+                           <pattern>org.apache.commons</pattern>
+                           <shadedPattern>infinispanembedded.org.apache.commons</shadedPattern>
+                        </relocation>
+                        <relocation>
+                           <pattern>org.apache.http</pattern>
+                           <shadedPattern>infinispanembedded.org.apache.http</shadedPattern>
+                        </relocation>
+                        <relocation>
+                           <pattern>org.codehaus.jackson</pattern>
+                           <shadedPattern>infinispanembedded.org.codehaus.jackson</shadedPattern>
+                        </relocation>
+                        <relocation>
+                           <pattern>org.infinispan.client.hotrod</pattern>
+                           <shadedPattern>infinispanembedded.org.infinispan.client.hotrod</shadedPattern>
+                        </relocation>
+                        <relocation>
+                           <pattern>org.jboss.logging</pattern>
+                           <shadedPattern>infinispanembedded.org.jboss.logging</shadedPattern>
                         </relocation>
                      </relocations>
                      <transformers>
