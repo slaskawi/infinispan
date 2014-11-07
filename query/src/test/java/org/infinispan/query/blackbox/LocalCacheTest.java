@@ -41,7 +41,6 @@ import org.infinispan.query.test.CustomKey3Transformer;
 import org.infinispan.query.test.Person;
 import org.infinispan.test.SingleCacheManagerTest;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
-import org.testng.AssertJUnit;
 import org.testng.annotations.Test;
 
 import java.util.NoSuchElementException;
@@ -397,10 +396,12 @@ public class LocalCacheTest extends SingleCacheManagerTest {
          try {
             Explanation found = cacheQuery.explain(i);
 
-            if(found.isMatch())
+            if (found.isMatch())
                matchCounter++;
 
             i++;
+            if (i >= 10 || matchCounter == 3)
+                break;
          } catch(ArrayIndexOutOfBoundsException ex) {
             break;
          }
@@ -419,12 +420,12 @@ public class LocalCacheTest extends SingleCacheManagerTest {
       FullTextFilter filter = query.enableFullTextFilter("personFilter");
       filter.setParameter("blurbText", "cheese");
 
-      AssertJUnit.assertEquals(1, query.getResultSize());
+      assertEquals(1, query.getResultSize());
       List result = query.list();
 
       Person person = (Person) result.get(0);
-      AssertJUnit.assertEquals("Mini Goat", person.getName());
-      AssertJUnit.assertEquals("Eats cheese", person.getBlurb());
+      assertEquals("Mini Goat", person.getName());
+      assertEquals("Eats cheese", person.getBlurb());
 
       //Disabling the fullTextFilter.
       query.disableFullTextFilter("personFilter");
