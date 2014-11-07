@@ -51,7 +51,7 @@
       <module>spring/spring</module>
       <module>spring/spring4</module>
       <module>cli/cli-client</module>
-      <module>cdi/extension</module>
+      <module>cdi</module>
       <module>as-modules/as-modules-library</module>
       <module>as-modules/as-modules-remote-client</module>
       <module>compatibility52x</module>
