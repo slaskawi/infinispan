@@ -3,7 +3,6 @@ package org.infinispan.cdi;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 
-import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.Produces;
@@ -58,7 +57,7 @@ public class AdvancedCacheProducer {
    public <K, V> AdvancedCache<K, V> getAdvancedCache(String name, Set<Annotation> qualifiers) {
       
       // lazy register stuff
-      infinispanExtension.registerCacheConfigurations(eventBridge, cacheManagers, beanManager);
+      infinispanExtension.getEmbeddedExtension().registerCacheConfigurations(eventBridge, cacheManagers, beanManager);
        
       Cache<K, V> cache;
       CacheContainer container = getCacheContainer(qualifiers);
@@ -79,7 +78,7 @@ public class AdvancedCacheProducer {
    @Produces
    <K, V> AdvancedCache<K, V> getDefaultAdvancedCache() {
        // lazy register stuff
-       infinispanExtension.registerCacheConfigurations(eventBridge, cacheManagers, beanManager);
+       infinispanExtension.getEmbeddedExtension().registerCacheConfigurations(eventBridge, cacheManagers, beanManager);
        return defaultCacheContainer.<K, V>getCache().getAdvancedCache();
    }
 }

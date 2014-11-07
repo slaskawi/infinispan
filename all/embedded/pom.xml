@@ -59,6 +59,12 @@
 
       <dependency>
          <groupId>org.infinispan</groupId>
+         <artifactId>infinispan-cdi</artifactId>
+         <optional>true</optional>
+      </dependency>
+
+      <dependency>
+         <groupId>org.infinispan</groupId>
          <artifactId>infinispan-cli-server</artifactId>
          <optional>true</optional>
       </dependency>
@@ -88,6 +94,18 @@
       </dependency>
 
       <dependency>
+         <groupId>javax.cache</groupId>
+         <artifactId>cache-api</artifactId>
+         <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+         <groupId>javax.enterprise</groupId>
+         <artifactId>cdi-api</artifactId>
+         <scope>provided</scope>
+      </dependency>
+
+      <dependency>
          <groupId>org.hibernate</groupId>
          <artifactId>hibernate-core</artifactId>
          <scope>provided</scope>
@@ -114,11 +132,14 @@
                   <configuration>
                      <artifactSet>
                         <excludes>
+                           <exclude>javax.cache:cache-api:jar:</exclude>
                            <exclude>org.fusesource.hawtjni:hawtjni-runtime:jar:</exclude>
                            <exclude>org.fusesource.leveldbjni:leveldbjni:jar:</exclude>
                            <exclude>org.iq80.leveldb:leveldb-api:jar:</exclude>
                            <exclude>log4j:log4j:jar:</exclude>
                            <exclude>net.jcip:jcip-annotations:jar:</exclude>
+                           <exclude>org.jboss.marshalling:jboss-marshalling:jar:</exclude>
+                           <exclude>org.jboss.marshalling:jboss-marshalling-river:jar:</exclude>
                            <exclude>org.jboss.spec.javax.transaction:jboss-transaction-api_1.1_spec:jar:</exclude>
                            <exclude>org.osgi:org.osgi.core:jar:</exclude>
                            <exclude>org.osgi:org.osgi.compendium:jar:</exclude>

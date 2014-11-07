@@ -39,18 +39,17 @@
       <dependency>
          <groupId>org.infinispan</groupId>
          <artifactId>infinispan-core</artifactId>
+         <optional>true</optional>
       </dependency>
       <dependency>
          <groupId>org.infinispan</groupId>
          <artifactId>infinispan-client-hotrod</artifactId>
+         <optional>true</optional>
       </dependency>
-
       <dependency>
          <groupId>org.jboss.logging</groupId>
          <artifactId>jboss-logging</artifactId>
       </dependency>
-
-      
       <dependency>
          <groupId>org.testng</groupId>
          <artifactId>testng</artifactId>
@@ -102,7 +101,6 @@
    </dependencies>
    <build>
       <plugins>
-         
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>

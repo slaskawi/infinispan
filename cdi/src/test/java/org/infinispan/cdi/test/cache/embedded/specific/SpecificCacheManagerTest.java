@@ -3,13 +3,11 @@ package org.infinispan.cdi.test.cache.embedded.specific;
 import org.infinispan.Cache;
 import org.infinispan.cdi.InfinispanExtension;
 import org.infinispan.cdi.test.DefaultTestEmbeddedCacheManagerProducer;
-import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.testng.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.testng.annotations.Test;
 
-import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
 
@@ -54,7 +52,7 @@ public class SpecificCacheManagerTest extends Arquillian {
    private BeanManager beanManager;
    
    public void testCorrectCacheManagersRegistered() {
-       assertEquals(infinispanExtension.getInstalledEmbeddedCacheManagers(beanManager).size(), 2);
+       assertEquals(infinispanExtension.getEmbeddedExtension().getInstalledEmbeddedCacheManagers(beanManager).size(), 2);
    }
 
    public void testSpecificCacheManager() throws Exception {

@@ -69,6 +69,8 @@
       <version.hibernate.javax.persistence>1.0.1.Final-redhat-2</version.hibernate.javax.persistence>
       <version.hibernate.search>4.5.0.Final-redhat-3</version.hibernate.search>
       <version.jansi>1.9.redhat-4</version.jansi>
+      <version.javax.cache>1.0.0</version.javax.cache>
+      <version.javax.cdi>1.0-SP4-redhat-4</version.javax.cdi>
       <version.jboss.marshalling>1.4.8.Final-redhat-1</version.jboss.marshalling>
       <version.jboss.logging>3.1.4.GA-redhat-1</version.jboss.logging>
       <version.jgroups>3.6.0.Final-redhat-1</version.jgroups>
@@ -417,7 +419,25 @@
                </exclusion>
             </exclusions>
          </dependency>
-         
+
+         <dependency>
+            <groupId>javax.enterprise</groupId>
+            <artifactId>cdi-api</artifactId>
+            <version>${version.javax.cdi}</version>
+            <exclusions>
+               <exclusion>
+                  <groupId>org.testng</groupId>
+                  <artifactId>testng</artifactId>
+               </exclusion>
+            </exclusions>
+         </dependency>
+
+         <dependency>
+            <groupId>javax.cache</groupId>
+            <artifactId>cache-api</artifactId>
+            <version>${version.javax.cache}</version>
+         </dependency>
+
          <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
