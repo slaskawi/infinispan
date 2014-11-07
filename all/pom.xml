@@ -5,7 +5,7 @@
       <groupId>org.infinispan</groupId>
       <artifactId>infinispan-bom</artifactId>
       <version>6.2.0-redhat-SNAPSHOT</version>
-      <relativePath>../bom/pom.xml</relativePath>
+      <relativePath>../parent/pom.xml</relativePath>
    </parent>
    <artifactId>infinispan-all-parent</artifactId>
    <name>Parent pom for uberjar modules</name>
