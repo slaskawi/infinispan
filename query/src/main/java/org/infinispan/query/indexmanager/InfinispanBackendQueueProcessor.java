@@ -44,11 +44,11 @@ final class InfinispanBackendQueueProcessor implements BackendQueueProcessor {
       EmbeddedCacheManager cacheManager = serviceManager.requestService(CacheManagerServiceProvider.class, context);
       this.indexName = indexManager.getIndexName();
       ComponentRegistry componentRegistry = serviceManager.requestService(ComponentRegistryServiceProvider.class, context);
-      this.fowardingBackend = createForwardingBackend(componentRegistry, indexName, localBackendFactory, cacheManager, indexManager);
+      this.fowardingBackend = createForwardingBackend(props, componentRegistry, indexName, localBackendFactory, cacheManager, indexManager);
       log.commandsBackendInitialized(indexName);
    }
 
-   private static SwitchingBackend createForwardingBackend(ComponentRegistry componentRegistry, String indexName, LocalBackendFactory localBackendFactory, EmbeddedCacheManager embeddedCacheManager, DirectoryBasedIndexManager indexManager) {
+   private static SwitchingBackend createForwardingBackend(Properties props, ComponentRegistry componentRegistry, String indexName, LocalBackendFactory localBackendFactory, EmbeddedCacheManager embeddedCacheManager, DirectoryBasedIndexManager indexManager) {
       RpcManager rpcManager = componentRegistry.getComponent(RpcManager.class);
       if (rpcManager == null) {
          //non-clustered case:
@@ -59,7 +59,7 @@ final class InfinispanBackendQueueProcessor implements BackendQueueProcessor {
       else {
          TransactionManager transactionManager = componentRegistry.getComponent(TransactionManager.class);
          IndexLockController lockControl = new IndexManagerBasedLockController(indexManager, transactionManager);
-         ClusteredSwitchingBackend backend = new ClusteredSwitchingBackend(componentRegistry, indexName, localBackendFactory, lockControl);
+         ClusteredSwitchingBackend backend = new ClusteredSwitchingBackend(props, componentRegistry, indexName, localBackendFactory, lockControl);
          backend.initialize();
          embeddedCacheManager.addListener(backend);
          return backend;
