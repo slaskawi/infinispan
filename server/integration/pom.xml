@@ -72,7 +72,6 @@
                   <configuration>
                      <descriptors>
                         <descriptor>${project.basedir}/src/main/assemblies/bin.xml</descriptor>
-                        <descriptor>${project.basedir}/src/main/assemblies/remote-client.xml</descriptor>
                         <descriptor>${project.basedir}/src/main/assemblies/source.xml</descriptor>
                      </descriptors>
                      <finalName>${product.name}-${product.version}</finalName>

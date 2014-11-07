@@ -148,6 +148,7 @@ pageTracker._trackPageview();
                      <descriptors>
                         <descriptor>src/main/resources/assemblies/jdg-bin.xml</descriptor>
                         <descriptor>src/main/resources/assemblies/jdg-src.xml</descriptor>
+                        <descriptor>src/main/resources/assemblies/jdg-remote-java.xml</descriptor>
                      </descriptors>
                      <finalName>${project.artifactId}-${project.version}</finalName>
                      <outputDirectory>${buildDirectory}/distribution</outputDirectory>
@@ -195,6 +196,7 @@ pageTracker._trackPageview();
                      <descriptors>
                         <descriptor>src/main/resources/assemblies/jdg-bin.xml</descriptor>
                         <descriptor>src/main/resources/assemblies/jdg-src.xml</descriptor>
+                        <descriptor>src/main/resources/assemblies/jdg-remote-java.xml</descriptor>
                      </descriptors>
                      <finalName>${project.artifactId}-${project.version}</finalName>
                      <outputDirectory>${buildDirectory}/distribution</outputDirectory>
