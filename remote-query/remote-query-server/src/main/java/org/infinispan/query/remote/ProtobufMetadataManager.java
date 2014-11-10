@@ -42,7 +42,7 @@ import java.util.Map;
  */
 @Scope(Scopes.GLOBAL)
 @MBean(objectName = ProtobufMetadataManager.OBJECT_NAME,
-       description = "Component that acts as a manager and container for Protocol Buffers metadata descriptors in the scope of a CacheManger.")
+       description = "Component that acts as a manager and container for Protocol Buffers message type definitions in the scope of a CacheManger.")
 public class ProtobufMetadataManager implements ProtobufMetadataManagerMBean {
 
    public static final String OBJECT_NAME = "ProtobufMetadataManager";
@@ -79,9 +79,9 @@ public class ProtobufMetadataManager implements ProtobufMetadataManagerMBean {
       try {
          MarshallerRegistration.registerMarshallers(serCtx);
       } catch (IOException e) {
-         throw new CacheException("Failed to initialise serialization context", e);
+         throw new CacheException("Failed to initialise the Protobuf serialization context", e);
       } catch (DescriptorParserException e) {
-         throw new CacheException("Failed to initialise serialization context", e);
+         throw new CacheException("Failed to initialise the Protobuf serialization context", e);
       }
    }
 
