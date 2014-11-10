@@ -1175,4 +1175,8 @@ public interface Log extends BasicLogger {
    @LogMessage(level = WARN)
    @Message(value = "Remote transaction %s timed out. Rolling back after %d ms", id = 326)
    void remoteTransactionTimeout(GlobalTransaction gtx, long ageMilliSeconds);
+
+   @LogMessage(level = INFO)
+   @Message(value = "Finished local rebalance for cache %s on node %s, topology id = %d", id = 328)
+   void rebalanceCompleted(String cacheName, Address node, int topologyId);
 }
