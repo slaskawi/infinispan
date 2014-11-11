@@ -45,7 +45,8 @@ public class LargeClusterStressTest extends MultipleCacheManagersTest {
          ExecutorFactory remoteExecutorFactory = new ExecutorFactory() {
              @Override
              public ExecutorService getExecutor(Properties p) {
-                 return new ThreadPoolExecutor(1, 10, 60, TimeUnit.SECONDS, new SynchronousQueue<Runnable>());
+                 return new ThreadPoolExecutor(1, 10, 60, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(),
+                         new ThreadPoolExecutor.CallerRunsPolicy());
              }
          };
          gcb.remoteCommandsExecutor().factory(remoteExecutorFactory);
