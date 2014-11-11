@@ -8,7 +8,6 @@ import org.testng.annotations.AfterTest;
 
 import javax.transaction.TransactionManager;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -163,10 +162,9 @@ public class AbstractInfinispanTest {
          try {
             log.trace("Started fork thread..");
             realOne.run();
+            log.debug("Exiting fork runnable.");
          } catch (Throwable e) {
-            log.trace("Exiting fork thread due to exception", e);
-         } finally {
-            log.trace("Exiting fork thread.");
+            log.debug("Exiting fork runnable due to exception", e);
          }
       }
    }
@@ -198,9 +196,12 @@ public class AbstractInfinispanTest {
       @Override
       public T call() throws Exception {
          try {
-            return c.call();
+            log.trace("Started fork callable..");
+            T result = c.call();
+            log.debug("Exiting fork callable.");
+            return result;
          } catch (Exception e) {
-            log.trace("Exception in forked task", e);
+            log.debug("Exiting fork callable due to exception", e);
             throw e;
          }
       }

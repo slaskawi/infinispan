@@ -82,6 +82,11 @@ public abstract class AbstractDelegatingTransport implements Transport {
    }
 
    @Override
+   public void waitForView(int viewId) throws InterruptedException {
+      actual.waitForView(viewId);
+   }
+
+   @Override
    public void checkTotalOrderSupported() {
       actual.checkTotalOrderSupported();
    }

@@ -1,19 +1,19 @@
 package org.infinispan.topology;
 
+import org.infinispan.commons.marshall.AbstractExternalizer;
+import org.infinispan.commons.util.InfinispanCollections;
+import org.infinispan.distribution.ch.ConsistentHash;
+import org.infinispan.marshall.core.Ids;
+import org.infinispan.remoting.transport.Address;
+import org.infinispan.util.logging.Log;
+import org.infinispan.util.logging.LogFactory;
+
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-
-import org.infinispan.distribution.ch.ConsistentHash;
-import org.infinispan.commons.marshall.AbstractExternalizer;
-import org.infinispan.commons.util.InfinispanCollections;
-import org.infinispan.marshall.core.Ids;
-import org.infinispan.remoting.transport.Address;
-import org.infinispan.util.logging.Log;
-import org.infinispan.util.logging.LogFactory;
 
 /**
  * The status of a cache from a distribution/state transfer point of view.
@@ -38,21 +38,25 @@ public class CacheTopology {
    private final ConsistentHash currentCH;
    private final ConsistentHash pendingCH;
    private final transient ConsistentHash unionCH;
+   private List<Address> actualMembers;
 
-   public CacheTopology(int topologyId, int rebalanceId, ConsistentHash currentCH, ConsistentHash pendingCH) {
-      this(topologyId, rebalanceId, currentCH, pendingCH, null);
+   public CacheTopology(int topologyId, int rebalanceId, ConsistentHash currentCH, ConsistentHash pendingCH,
+         List<Address> actualMembers) {
+      this(topologyId, rebalanceId, currentCH, pendingCH, null, actualMembers);
    }
 
-   public CacheTopology(int topologyId, int rebalanceId, ConsistentHash currentCH, ConsistentHash pendingCH, ConsistentHash unionCH) {
+   public CacheTopology(int topologyId, int rebalanceId, ConsistentHash currentCH, ConsistentHash pendingCH,
+         ConsistentHash unionCH, List<Address> actualMembers) {
       if (pendingCH != null && !pendingCH.getMembers().containsAll(currentCH.getMembers())) {
          throw new IllegalArgumentException("A cache topology's pending consistent hash must " +
                "contain all the current consistent hash's members");
       }
       this.topologyId = topologyId;
+      this.rebalanceId = rebalanceId;
       this.currentCH = currentCH;
       this.pendingCH = pendingCH;
       this.unionCH = unionCH;
-      this.rebalanceId = rebalanceId;
+      this.actualMembers = actualMembers;
    }
 
    public int getTopologyId() {
@@ -87,6 +91,11 @@ public class CacheTopology {
       return rebalanceId;
    }
 
+   /**
+    * @return The nodes that are members in both consistent hashes (if {@code pendingCH != null},
+    *    otherwise the members of the current CH).
+    * @see #getActualMembers()
+    */
    public List<Address> getMembers() {
       if (pendingCH != null)
          return pendingCH.getMembers();
@@ -94,6 +103,15 @@ public class CacheTopology {
          return currentCH.getMembers();
       else
          return InfinispanCollections.emptyList();
+   }
+
+   /**
+    * @return The nodes that are active members of the cache. It should be equal to {@link #getMembers()} when the
+    *    cache is available, and a strict subset if the cache is in degraded/unavailable mode.
+    * @see org.infinispan.partitionhandling.AvailabilityMode
+    */
+   public List<Address> getActualMembers() {
+      return actualMembers;
    }
 
    /**
@@ -128,6 +146,7 @@ public class CacheTopology {
       if (currentCH != null ? !currentCH.equals(that.currentCH) : that.currentCH != null) return false;
       if (pendingCH != null ? !pendingCH.equals(that.pendingCH) : that.pendingCH != null) return false;
       if (unionCH != null ? !unionCH.equals(that.unionCH) : that.unionCH != null) return false;
+      if (actualMembers != null ? !actualMembers.equals(that.actualMembers) : that.actualMembers != null) return false;
 
       return true;
    }
@@ -139,6 +158,7 @@ public class CacheTopology {
       result = 31 * result + (currentCH != null ? currentCH.hashCode() : 0);
       result = 31 * result + (pendingCH != null ? pendingCH.hashCode() : 0);
       result = 31 * result + (unionCH != null ? unionCH.hashCode() : 0);
+      result = 31 * result + (actualMembers != null ? actualMembers.hashCode() : 0);
       return result;
    }
 
@@ -150,6 +170,7 @@ public class CacheTopology {
             ", currentCH=" + currentCH +
             ", pendingCH=" + pendingCH +
             ", unionCH=" + unionCH +
+            ", actualMembers=" + actualMembers +
             '}';
    }
 
@@ -170,6 +191,7 @@ public class CacheTopology {
          output.writeObject(cacheTopology.currentCH);
          output.writeObject(cacheTopology.pendingCH);
          output.writeObject(cacheTopology.unionCH);
+         output.writeObject(cacheTopology.actualMembers);
       }
 
       @Override
@@ -179,7 +201,8 @@ public class CacheTopology {
          ConsistentHash currentCH = (ConsistentHash) unmarshaller.readObject();
          ConsistentHash pendingCH = (ConsistentHash) unmarshaller.readObject();
          ConsistentHash unionCH = (ConsistentHash) unmarshaller.readObject();
-         return new CacheTopology(topologyId, rebalanceId, currentCH, pendingCH, unionCH);
+         List<Address> actualMembers = (List<Address>) unmarshaller.readObject();
+         return new CacheTopology(topologyId, rebalanceId, currentCH, pendingCH, unionCH, actualMembers);
       }
 
       @Override
