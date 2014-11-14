@@ -322,7 +322,23 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
                         if (!processedKeys.contains(key)) {
                            CacheEntry entry = advancedCache.getCacheEntry(key);
                            if (entry != null) {
-                              queue.add(entry);
+                              // We don't want to modify the entry itself
+                              CacheEntry clone = entry.clone();
+                              if (filter != null) {
+                                 if (usedConverter == null && filter instanceof KeyValueFilterConverter) {
+                                    C converted = ((KeyValueFilterConverter<K, V, C>)filter).filterAndConvert(
+                                          key, (V) clone.getValue(), clone.getMetadata());
+                                    if (converted != null) {
+                                       clone.setValue((V) converted);
+                                    } else {
+                                       continue;
+                                    }
+                                 }
+                                 else if (!filter.accept(key, (V) clone.getValue(), clone.getMetadata())) {
+                                    continue;
+                                 }
+                              }
+                              action.apply((K) clone.getKey(), clone);
                            }
                         }
                      }
@@ -343,7 +359,7 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
       return iterator;
    }
 
-   private class MapAction<C> implements ParallelIterableMap.KeyValueAction<K, InternalCacheEntry> {
+   private class MapAction<C> implements ParallelIterableMap.KeyValueAction<K, CacheEntry> {
       final Converter<? super K, ? super V, ? extends C> converter;
       final Queue<CacheEntry> queue;
       final int batchSize;
@@ -360,8 +376,8 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
       }
 
       @Override
-      public void apply(K k, InternalCacheEntry kvInternalCacheEntry) {
-         CacheEntry clone = (CacheEntry)kvInternalCacheEntry.clone();
+      public void apply(K k, CacheEntry kvInternalCacheEntry) {
+         CacheEntry clone = kvInternalCacheEntry.clone();
          if (converter != null) {
             C value = converter.convert((K) k, (V) kvInternalCacheEntry.getValue(), kvInternalCacheEntry.getMetadata());
             if (value == null && converter instanceof KeyValueFilterConverter) {
