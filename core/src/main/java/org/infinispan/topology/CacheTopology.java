@@ -1,6 +1,7 @@
 package org.infinispan.topology;
 
 import org.infinispan.commons.marshall.AbstractExternalizer;
+import org.infinispan.commons.marshall.InstanceReusingAdvancedExternalizer;
 import org.infinispan.commons.util.InfinispanCollections;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.marshall.core.Ids;
@@ -183,9 +184,9 @@ public class CacheTopology {
    }
 
 
-   public static class Externalizer extends AbstractExternalizer<CacheTopology> {
+   public static class Externalizer extends InstanceReusingAdvancedExternalizer<CacheTopology> {
       @Override
-      public void writeObject(ObjectOutput output, CacheTopology cacheTopology) throws IOException {
+      public void doWriteObject(ObjectOutput output, CacheTopology cacheTopology) throws IOException {
          output.writeInt(cacheTopology.topologyId);
          output.writeInt(cacheTopology.rebalanceId);
          output.writeObject(cacheTopology.currentCH);
@@ -195,7 +196,7 @@ public class CacheTopology {
       }
 
       @Override
-      public CacheTopology readObject(ObjectInput unmarshaller) throws IOException, ClassNotFoundException {
+      public CacheTopology doReadObject(ObjectInput unmarshaller) throws IOException, ClassNotFoundException {
          int topologyId = unmarshaller.readInt();
          int rebalanceId = unmarshaller.readInt();
          ConsistentHash currentCH = (ConsistentHash) unmarshaller.readObject();

@@ -1,5 +1,8 @@
 package org.infinispan.distribution.ch;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.infinispan.commons.hash.MurmurHash3;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.remoting.transport.jgroups.JGroupsTopologyAwareAddress;
@@ -35,7 +38,7 @@ public class TopologyAwareSyncConsistentHashFactoryKeyDistributionTest extends S
 
    @Override
    protected DefaultConsistentHash createConsistentHash(int numSegments, int numOwners, List<Address> members) {
-      MurmurHash3 hash = new MurmurHash3();
+      MurmurHash3 hash = MurmurHash3.getInstance();
       ConsistentHashFactory<DefaultConsistentHash> chf = new TopologyAwareSyncConsistentHashFactory();
       DefaultConsistentHash ch = chf.create(hash, numOwners, numSegments, members, null);
       return ch;

@@ -490,7 +490,7 @@ class Server(@Context request: Request, @Context servletContext: ServletContext,
          "Preconditions were not implemented yet for PUT, POST, and DELETE methods.").build()
    }
 
-   val hashFunc = new MurmurHash3()
+   val hashFunc = MurmurHash3.getInstance
 
    private def calcETAG(entry: InternalCacheEntry, meta: MimeMetadata): EntityTag =
       new EntityTag(meta.contentType + hashFunc.hash(entry.getValue))

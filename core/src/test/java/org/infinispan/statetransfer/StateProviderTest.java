@@ -149,7 +149,7 @@ public class StateProviderTest {
 
       // create CHes
       DefaultConsistentHashFactory chf = new DefaultConsistentHashFactory();
-      DefaultConsistentHash ch1 = chf.create(new MurmurHash3(), 2, numSegments, members1, null);
+      DefaultConsistentHash ch1 = chf.create(MurmurHash3.getInstance(), 2, numSegments, members1, null);
       DefaultConsistentHash ch2 = chf.updateMembers(ch1, members2, null);
 
       // create dependencies
@@ -237,7 +237,7 @@ public class StateProviderTest {
 
       // create CHes
       DefaultConsistentHashFactory chf = new DefaultConsistentHashFactory();
-      DefaultConsistentHash ch1 = chf.create(new MurmurHash3(), 2, numSegments, members1, null);
+      DefaultConsistentHash ch1 = chf.create(MurmurHash3.getInstance(), 2, numSegments, members1, null);
       //todo [anistor] it seems that address 6 is not used for un-owned segments
       DefaultConsistentHash ch2 = chf.updateMembers(ch1, members2, null);
 
