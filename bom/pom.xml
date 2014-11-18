@@ -100,7 +100,7 @@
 
    <dependencyManagement>
       <dependencies>
-         
+         <!-- Infinispan module versions -->
          <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>infinispan-cachestore-jdbc</artifactId>
@@ -381,7 +381,11 @@
             <artifactId>rhq-jboss-as-7-plugin</artifactId>
             <version>${version.rhq}</version>
          </dependency>
-         
+         <dependency>
+            <groupId>org.rhq</groupId>
+            <artifactId>rhq-core-native-system</artifactId>
+            <version>${version.rhq}</version>
+         </dependency>
          <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-search-engine</artifactId>
@@ -392,7 +396,16 @@
             <artifactId>hibernate-search-infinispan</artifactId>
             <version>${version.hibernate.search}</version>
          </dependency>
-         
+         <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-search-serialization-avro</artifactId>
+            <version>${version.hibernate.search}</version>
+         </dependency>
+         <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-entitymanager</artifactId>
+            <version>${version.hibernate.core}</version>
+         </dependency>
          <dependency>
             <groupId>org.infinispan.protostream</groupId>
             <artifactId>protostream</artifactId>
@@ -456,6 +469,12 @@
          </dependency>
          <dependency>
             <groupId>c3p0</groupId>
+            <artifactId>c3p0</artifactId>
+            <version>${version.c3p0}</version>
+         </dependency>
+         <!-- Other dependencies -->
+         <dependency>
+            <groupId>com.mchange</groupId>
             <artifactId>c3p0</artifactId>
             <version>${version.c3p0}</version>
          </dependency>
