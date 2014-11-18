@@ -1,0 +1,2 @@
+org.infinispan.server.test.client.hotrod.StaticCacheEventFilterFactory
+org.infinispan.server.test.client.hotrod.DynamicCacheEventFilterFactory

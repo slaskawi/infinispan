@@ -1,0 +1,2 @@
+org.infinispan.server.test.client.hotrod.StaticCacheEventConverterFactory
+org.infinispan.server.test.client.hotrod.DynamicCacheEventConverterFactory
