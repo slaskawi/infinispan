@@ -116,13 +116,6 @@
       <version.hibernate.entitymanager>${version.hibernate.core}</version.hibernate.entitymanager>
       <version.hibernate.hql.parser>1.0.0.CR2-redhat-1</version.hibernate.hql.parser>
       <version.hibernate.javax.persistence>1.0.1.Final-redhat-2</version.hibernate.javax.persistence>
-      <version.hibernate.osgi>${version.hibernate.core}</version.hibernate.osgi>
-      <version.hibernate_dep.antlr>2.7.7_5</version.hibernate_dep.antlr>
-      <version.hibernate_dep.dom4j>1.6.1_5</version.hibernate_dep.dom4j>
-      <version.hibernate_dep.classmate>0.5.4</version.hibernate_dep.classmate>
-      <version.hibernate_dep.javaassist>3.18.1-GA-redhat-1</version.hibernate_dep.javaassist>
-      <version.hibernate_dep.jandex>1.0.3.Final-redhat-2</version.hibernate_dep.jandex>
-      <version.hibernate_dep.hibernate-commons-annotations>4.0.2.Final</version.hibernate_dep.hibernate-commons-annotations>
       <version.httpclient>4.2.6.redhat-3</version.httpclient>
       <version.howl>1.0.1-1</version.howl>
       <version.jackson>1.9.9.redhat-3</version.jackson>
@@ -198,17 +191,6 @@
             <artifactId>infinispan-cachestore-jdbc</artifactId>
             <version>${project.version}</version>
             <type>test-jar</type>
-         </dependency>
-         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>infinispan-cachestore-jpa</artifactId>
-            <version>${project.version}</version>
-            <type>test-jar</type>
-         </dependency>
-         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>infinispan-client-hotrod</artifactId>
-            <version>${project.version}</version>
          </dependency>
          <dependency>
             <groupId>${project.groupId}</groupId>
