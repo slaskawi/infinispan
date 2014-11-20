@@ -141,6 +141,11 @@ public class CoreImmutables extends Immutables {
       }
 
       @Override
+      public boolean isL1Entry() {
+         return entry.isL1Entry();
+      }
+
+      @Override
       public void setMetadata(Metadata metadata) {
          throw new UnsupportedOperationException();
       }

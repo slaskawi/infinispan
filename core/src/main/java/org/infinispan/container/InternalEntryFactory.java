@@ -124,4 +124,11 @@ public interface InternalEntryFactory {
     * This is requires so that readers of the entry will get an consistent snapshot of the value red.
     */
    CacheEntry copy(CacheEntry cacheEntry);
+
+   /**
+    * Creates a L1 entry.
+    *
+    * @return a new {@link org.infinispan.container.entries.InternalCacheEntry}
+    */
+   InternalCacheEntry createL1(Object key, Object value, Metadata metadata);
 }

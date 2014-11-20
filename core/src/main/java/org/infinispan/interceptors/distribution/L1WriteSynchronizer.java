@@ -1,6 +1,7 @@
 package org.infinispan.interceptors.distribution;
 
 import org.infinispan.container.DataContainer;
+import org.infinispan.metadata.impl.L1Metadata;
 import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.interceptors.locking.ClusteringDependentLogic;
 import org.infinispan.metadata.Metadata;
@@ -31,6 +32,7 @@ public class L1WriteSynchronizer {
 
    public L1WriteSynchronizer(DataContainer dc, long l1Lifespan, StateTransferLock stateTransferLock,
                               ClusteringDependentLogic cdl) {
+      //noinspection unchecked
       this.dc = dc;
       this.l1Lifespan = l1Lifespan;
       this.stateTransferLock = stateTransferLock;
@@ -182,7 +184,7 @@ public class L1WriteSynchronizer {
                      // lifespan/maxIdle settings and send them a modification
                      Metadata newMetadata = ice.getMetadata().builder()
                            .lifespan(lifespan).maxIdle(-1).build();
-                     dc.put(key, ice.getValue(), newMetadata);
+                     dc.put(key, ice.getValue(), new L1Metadata(newMetadata));
                   } else {
                      log.tracef("Data container contained value after rehash for key %s", key);
                   }

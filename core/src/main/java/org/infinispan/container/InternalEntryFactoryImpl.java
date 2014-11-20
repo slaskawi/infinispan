@@ -1,18 +1,9 @@
 package org.infinispan.container;
 
+import org.infinispan.container.entries.*;
+import org.infinispan.container.entries.metadata.L1MetadataInternalCacheEntry;
 import org.infinispan.metadata.EmbeddedMetadata;
 import org.infinispan.metadata.Metadata;
-import org.infinispan.container.entries.CacheEntry;
-import org.infinispan.container.entries.ImmortalCacheEntry;
-import org.infinispan.container.entries.ImmortalCacheValue;
-import org.infinispan.container.entries.InternalCacheEntry;
-import org.infinispan.container.entries.InternalCacheValue;
-import org.infinispan.container.entries.MortalCacheEntry;
-import org.infinispan.container.entries.MortalCacheValue;
-import org.infinispan.container.entries.TransientCacheEntry;
-import org.infinispan.container.entries.TransientCacheValue;
-import org.infinispan.container.entries.TransientMortalCacheEntry;
-import org.infinispan.container.entries.TransientMortalCacheValue;
 import org.infinispan.container.entries.metadata.MetadataImmortalCacheEntry;
 import org.infinispan.container.entries.metadata.MetadataImmortalCacheValue;
 import org.infinispan.container.entries.metadata.MetadataMortalCacheEntry;
@@ -172,6 +163,15 @@ public class InternalEntryFactoryImpl implements InternalEntryFactory {
    public CacheEntry copy(CacheEntry cacheEntry) {
       synchronized (cacheEntry) {
          return cacheEntry.clone();
+      }
+   }
+
+   @Override
+   public InternalCacheEntry createL1(Object key, Object value, Metadata metadata) {
+      if (!isStoreMetadata(metadata)) {
+         return new L1InternalCacheEntry(key, value, metadata.lifespan(), timeService.wallClockTime());
+      } else {
+         return new L1MetadataInternalCacheEntry(key, value, metadata, timeService.wallClockTime());
       }
    }
 

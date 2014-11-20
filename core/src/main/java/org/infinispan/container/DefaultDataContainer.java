@@ -16,6 +16,7 @@ import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.eviction.EvictionThreadPolicy;
 import org.infinispan.eviction.PassivationManager;
 import org.infinispan.factories.annotations.Inject;
+import org.infinispan.metadata.impl.L1Metadata;
 import org.infinispan.persistence.manager.PersistenceManager;
 import org.infinispan.persistence.spi.AdvancedCacheLoader;
 import org.infinispan.util.CoreImmutables;
@@ -156,12 +157,19 @@ public class DefaultDataContainer implements DataContainer {
 
    @Override
    public void put(Object k, Object v, Metadata metadata) {
+      boolean l1Entry = false;
+      if (metadata instanceof L1Metadata) {
+         metadata = ((L1Metadata) metadata).metadata();
+         l1Entry = true;
+      }
       InternalCacheEntry e = entries.get(k);
 
       if (trace) {
          log.tracef("Creating new ICE for writing. Existing=%s, metadata=%s, new value=%s", e, metadata, v);
       }
-      if (e != null) {
+      if (l1Entry) {
+         e = entryFactory.createL1(k, v, metadata);
+      } else if (e != null) {
          e = entryFactory.update(e, v, metadata);
       } else {
          // this is a brand-new entry
