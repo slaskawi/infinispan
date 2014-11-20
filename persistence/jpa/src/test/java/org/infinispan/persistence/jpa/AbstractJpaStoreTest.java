@@ -60,9 +60,6 @@ public abstract class AbstractJpaStoreTest extends AbstractInfinispanTest {
             getMarshaller(), new DefaultTimeService(), null, new MarshalledEntryFactoryImpl(getMarshaller())));
       store.start();
 
-      assertNotNull(store.getEntityManagerFactory());
-      assertTrue(store.getEntityManagerFactory() instanceof HibernateEntityManagerFactory);
-
       return store;
    }
 
