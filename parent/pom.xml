@@ -98,7 +98,6 @@
       <version.arquillian>1.0.3.Final</version.arquillian>
       <version.arquillian.container.managed>7.4.2.Final-redhat-2</version.arquillian.container.managed>
       <version.arquillian.container.weld>1.0.0.CR3</version.arquillian.container.weld>
-      <version.c3p0>0.9.1.2</version.c3p0>
       <version.c3p0_dep.mchange-commons-java>0.2.7</version.c3p0_dep.mchange-commons-java>
       <version.ch.qos.cal10n>0.7.3.redhat-4</version.ch.qos.cal10n>
       <version.commons.codec>1.4.redhat-3</version.commons.codec>
@@ -233,11 +232,6 @@
             <artifactId>infinispan-server-rest</artifactId>
             <version>${project.version}</version>
             <type>test-jar</type>
-         </dependency>
-         <dependency>
-            <groupId>c3p0</groupId>
-            <artifactId>c3p0</artifactId>
-            <version>${version.c3p0}</version>
          </dependency>
          <dependency>
             <groupId>com.h2database</groupId>

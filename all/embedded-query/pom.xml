@@ -67,10 +67,6 @@
                            <pattern>org.jboss.logging</pattern>
                            <shadedPattern>infinispanembedded.org.jboss.logging</shadedPattern>
                         </relocation>
-                        <relocation>
-                           <pattern>com.mchange</pattern>
-                           <shadedPattern>infinispanembedded.com.mchange</shadedPattern>
-                        </relocation>
                      </relocations>
                      <createSourcesJar>true</createSourcesJar>
                      <transformers>
