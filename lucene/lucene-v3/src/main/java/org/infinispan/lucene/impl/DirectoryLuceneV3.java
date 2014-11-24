@@ -1,6 +1,7 @@
 package org.infinispan.lucene.impl;
 
 import java.io.IOException;
+import java.util.concurrent.Executor;
 
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IndexInput;
@@ -47,8 +48,10 @@ class DirectoryLuceneV3 extends Directory implements DirectoryExtensions {
 
    // indexName is used to be able to store multiple named indexes in the same caches
    private final String indexName;
+   private final Executor deleteExecutor;
 
-   DirectoryLuceneV3(Cache<?, ?> metadataCache, Cache<?, ?> chunksCache, String indexName, LockFactory lf, int chunkSize, SegmentReadLocker readLocker, boolean fileListUpdatedAsync) {
+   DirectoryLuceneV3(Cache<?, ?> metadataCache, Cache<?, ?> chunksCache, String indexName, LockFactory lf, int chunkSize, SegmentReadLocker readLocker, boolean fileListUpdatedAsync, Executor deleteExecutor) {
+      this.deleteExecutor = deleteExecutor;
       this.impl = new DirectoryImplementor(metadataCache, chunksCache, indexName, chunkSize, readLocker, fileListUpdatedAsync);
       this.indexName = indexName;
       this.lockFactory = lf;
@@ -94,7 +97,7 @@ class DirectoryLuceneV3 extends Directory implements DirectoryExtensions {
    @Override
    public void deleteFile(final String name) {
       ensureOpen();
-      impl.deleteFile(name);
+      deleteExecutor.execute(new DeleteTask(name));
    }
 
    /**
@@ -178,6 +181,24 @@ class DirectoryLuceneV3 extends Directory implements DirectoryExtensions {
    @Override
    public Cache getDataCache() {
       return impl.getDataCache();
+   }
+
+   final class DeleteTask implements Runnable {
+
+      private final String fileName;
+
+      private DeleteTask(String fileName) {
+         this.fileName = fileName;
+      }
+
+      public String getFileName() {
+         return fileName;
+      }
+
+      @Override
+      public void run() {
+         impl.deleteFile(fileName);
+      }
    }
 
 }
