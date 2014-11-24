@@ -74,7 +74,7 @@
                   <configuration>
                      <artifactSet>
                         <excludes>
-                           <exclude>javax.cache:cache-api:jar:</exclude>
+                           <exclude>org.infinispan:infinispan-remote</exclude>
                            <exclude>log4j:log4j:jar:</exclude>
                            <exclude>net.jcip:jcip-annotations:jar:</exclude>
                            <exclude>org.infinispan:infinispan-core:jar:</exclude>
@@ -98,4 +98,3 @@
    </build>
 
 </project>
-
