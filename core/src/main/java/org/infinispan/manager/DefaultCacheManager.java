@@ -613,10 +613,13 @@ public class DefaultCacheManager implements EmbeddedCacheManager, CacheManager {
       log.debugf("Started cache manager %s on %s", clusterName, nodeName);
    }
 
-   private void terminate(Cache cache) {
-      if (cache != null) {
+   private void terminate(String cacheName) {
+      if (cacheExists(cacheName)) {
+         Cache<?, ?> cache = this.caches.get(cacheName).cache;
+         if (cache != null) {
             unregisterCacheMBean(cache);
             cache.stop();
+         }
       }
    }
 
@@ -641,20 +644,15 @@ public class DefaultCacheManager implements EmbeddedCacheManager, CacheManager {
                   log.stopOrderIgnored();
                }
                cachesToStop.addAll(caches.keySet());
+               // will be stopped by the GCR
+               cachesToStop.remove(ClusterRegistryImpl.GLOBAL_REGISTRY_CACHE_NAME);
                // make sure we stop the default cache LAST!
-               Cache<?, ?> defaultCache = null;
-               for (String cacheName : cachesToStop) {
-                  if (cacheName.equals(ClusterRegistryImpl.GLOBAL_REGISTRY_CACHE_NAME)) {
-                     // will be stopped by the GCR
-                  } else if (cacheName.equals(DEFAULT_CACHE_NAME) && !defaultCacheHasDependency) {
-                     defaultCache = this.caches.get(cacheName).cache;
-                  } else {
-//                     if(this.cacheExists(cacheName)) {
-                        terminate(this.caches.get(cacheName).cache);
-//                     }
-                  }
+               if(!defaultCacheHasDependency) {
+                  cachesToStop.add(DEFAULT_CACHE_NAME);
                }
-               terminate(defaultCache);
+               for (String cacheName : cachesToStop) {
+                  terminate(cacheName);
+               }
                globalComponentRegistry.getComponent(CacheManagerJmxRegistration.class).stop();
                globalComponentRegistry.stop();
 
