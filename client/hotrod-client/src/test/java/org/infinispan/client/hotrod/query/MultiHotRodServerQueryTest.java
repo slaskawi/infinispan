@@ -25,9 +25,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.infinispan.server.hotrod.test.HotRodTestingUtil.hotRodCacheConfiguration;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Tests query over Hot Rod in a two-node cluster.
@@ -67,6 +65,8 @@ public class MultiHotRodServerQueryTest extends MultiHotRodServersTest {
       //initialize server-side serialization context
       ProtobufMetadataManager protobufMetadataManager = manager(0).getGlobalComponentRegistry().getComponent(ProtobufMetadataManager.class);
       protobufMetadataManager.registerProtofile("sample_bank_account/bank.proto", read("/sample_bank_account/bank.proto"));
+      assertNull(protobufMetadataManager.getFileErrors("/sample_bank_account/bank.proto"));
+      assertNull(protobufMetadataManager.getFilesWithErrors());
 
       //initialize client-side serialization context
       for (RemoteCacheManager rcm : clients) {

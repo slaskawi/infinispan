@@ -5,6 +5,8 @@ import org.infinispan.arquillian.core.WithRunningServer;
 import org.infinispan.arquillian.utils.MBeanServerConnectionProvider;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.marshall.ProtoStreamMarshaller;
+import org.infinispan.client.hotrod.RemoteCache;
+import org.infinispan.query.remote.client.ProtobufMetadataManagerConstants;
 import org.infinispan.protostream.sampledomain.marshallers.MarshallerRegistration;
 import org.infinispan.server.test.util.RemoteCacheManagerFactory;
 import org.jboss.arquillian.junit.Arquillian;
@@ -14,11 +16,12 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  * Tests for remote queries over HotRod but registering the proto file via JON/RHQ plugin.
@@ -53,9 +56,12 @@ public class RemoteQueryJONRegisterIT extends RemoteQueryIT {
       ModelNode addProtobufFileOp = getOperation("local", "upload-proto-schemas", nameList, urlList);
 
       ModelNode result = client.execute(addProtobufFileOp);
-      Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+      assertEquals(SUCCESS, result.get(OUTCOME).asString());
 
       client.close();
+
+      RemoteCache<String, String> metadataCache = remoteCacheManager.getCache(ProtobufMetadataManagerConstants.PROTOBUF_METADATA_CACHE_NAME);
+      assertFalse(metadataCache.containsKey(ProtobufMetadataManagerConstants.ERRORS_KEY_SUFFIX));
 
       //initialize client-side serialization context
       MarshallerRegistration.registerMarshallers(ProtoStreamMarshaller.getSerializationContext(remoteCacheManager));
