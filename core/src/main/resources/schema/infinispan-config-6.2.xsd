@@ -808,10 +808,10 @@
                 </xs:documentation>
               </xs:annotation>
               <xs:complexType>
-                <xs:attribute name="chunkSize" type="xs:int" default="10000">
+                <xs:attribute name="chunkSize" type="xs:int" default="512">
                   <xs:annotation>
                     <xs:documentation>
-                       If &gt; 0, the state will be transferred in batches of {@code chunkSize} cache entries. If &lt;= 0, the state will be transferred in all at once. Not recommended. Defaults to 10000.
+                       If &gt; 0, the state will be transferred in batches of {@code chunkSize} cache entries. If &lt;= 0, the state will be transferred in all at once. Not recommended. Defaults to 512.
                     </xs:documentation>
                   </xs:annotation>
                 </xs:attribute>
@@ -1714,7 +1714,7 @@
   <xs:complexType name="clusterLoader">
     <xs:complexContent>
       <xs:extension base="tns:store">
-        <xs:attribute name="remoteCallTimeout" type="xs:long" default="0">
+        <xs:attribute name="remoteCallTimeout" type="xs:long" default="15000">
           <xs:annotation>
             <xs:documentation>
               How long to wait for results from other members in the cluster before returning a null. Defaults to 0 (no timeout).
