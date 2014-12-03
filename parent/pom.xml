@@ -154,7 +154,7 @@
       <version.xnio>3.0.10.GA-redhat-1</version.xnio>
       <version.antlr.maven.plugin>3.4</version.antlr.maven.plugin>
       <version.exec.maven.plugin>1.2.1</version.exec.maven.plugin>
-      <version.maven.animal.sniffer>1.9</version.maven.animal.sniffer>
+      <version.maven.animal.sniffer>1.12</version.maven.animal.sniffer>
       <version.maven.antrun.plugin>1.7</version.maven.antrun.plugin>
       <version.maven.buildhelper>1.8</version.maven.buildhelper>
       <version.maven.bundle>2.4.0</version.maven.bundle>
@@ -1216,6 +1216,13 @@
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>animal-sniffer-maven-plugin</artifactId>
             <version>${version.maven.animal.sniffer}</version>
+            <dependencies>
+               <dependency>
+                  <groupId>org.ow2.asm</groupId>
+                  <artifactId>asm-all</artifactId>
+                  <version>5.0.3</version>
+               </dependency>
+            </dependencies>
             <configuration>
                <signature>
                   <groupId>org.codehaus.mojo.signature</groupId>
