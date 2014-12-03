@@ -32,7 +32,8 @@ public class LocalCachePerfProgrammaticConfTest extends LocalCacheTest {
             .addProperty("default.indexwriter.merge_factor", "30")
             .addProperty("default.indexwriter.merge_max_size", "4096")
             .addProperty("default.indexwriter.ram_buffer_size", "220")
-            .addProperty("default.locking_strategy", "native")
+            // Temporarily disabled until HSEARCH-1737 is fixed.
+            //.addProperty("default.locking_strategy", "native")
             .addProperty("default.sharding_strategy.nbr_of_shards", "6")
             .addProperty("lucene_version", "LUCENE_36");
 

@@ -68,7 +68,7 @@
       <version.gnu.getopt>1.0.13.redhat-4</version.gnu.getopt>
       <version.hibernate.core>4.2.14.SP4-redhat-1</version.hibernate.core>
       <version.hibernate.javax.persistence>1.0.1.Final-redhat-2</version.hibernate.javax.persistence>
-      <version.hibernate.search>4.5.0.Final-redhat-3</version.hibernate.search>
+      <version.hibernate.search>4.5.2.Final-redhat-1</version.hibernate.search>
       <version.jansi>1.9.redhat-4</version.jansi>
       <version.javax.cache>1.0.0</version.javax.cache>
       <version.javax.cdi>1.0-SP4-redhat-4</version.javax.cdi>
