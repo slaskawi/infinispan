@@ -14,9 +14,8 @@
     <TCP bind_port="7800" port_range="10"
          recv_buf_size="20000000"
          send_buf_size="640000"
-         loopback="false"
          max_bundle_size="64k"
-         bundler_type="old"
+         bundler_type="sender-sends-with-timer"
          enable_diagnostics="true"
          thread_naming_pattern="cl"
 

@@ -4,16 +4,14 @@
    <TCP
          bind_addr="${jgroups.tcp.address:127.0.0.1}"
          bind_port="${jgroups.tcp.port:7800}"
-         loopback="true"
          port_range="30"
          recv_buf_size="20m"
          send_buf_size="640k"
          max_bundle_size="31k"
          use_send_queues="true"
          enable_diagnostics="false"
-         bundler_type="old"
+         bundler_type="sender-sends-with-timer"
          logical_addr_cache_expiration="86400000"
-         physical_addr_max_fetch_attempts="1"
 
          thread_naming_pattern="pl"
 

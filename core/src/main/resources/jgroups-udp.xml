@@ -13,7 +13,6 @@
          ip_ttl="${jgroups.udp.ip_ttl:2}"
          enable_diagnostics="false"
          logical_addr_cache_expiration="86400000"
-         physical_addr_max_fetch_attempts="1"
 
          thread_naming_pattern="pl"
 

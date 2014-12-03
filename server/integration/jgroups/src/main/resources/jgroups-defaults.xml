@@ -31,7 +31,6 @@
         max_bundle_size="31k"
         ip_ttl="2"
         logical_addr_cache_expiration="86400000"
-        physical_addr_max_fetch_attempts="1"
 
         thread_pool.enabled="true"
         thread_pool.min_threads="200"
@@ -65,7 +64,6 @@
         use_send_queues="false"
         sock_conn_timeout="300"
         logical_addr_cache_expiration="86400000"
-        physical_addr_max_fetch_attempts="1"
 
         thread_pool.enabled="true"
         thread_pool.min_threads="200"
