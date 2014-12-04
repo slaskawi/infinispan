@@ -4,10 +4,12 @@
             xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
-    <bean id="parser71" class="org.infinispan.configuration.parsing.Parser71"/>
-    <service ref="parser71" interface="org.infinispan.configuration.parsing.ConfigurationParser"/>
-    <bean id="parser70" class="org.infinispan.configuration.parsing.Parser70"/>
-    <service ref="parser70" interface="org.infinispan.configuration.parsing.ConfigurationParser"/>
+    <bean id="parser62" class="org.infinispan.configuration.parsing.Parser62"/>
+    <service ref="parser62" interface="org.infinispan.configuration.parsing.ConfigurationParser"/>
+    <bean id="parser61" class="org.infinispan.configuration.parsing.Parser61"/>
+    <service ref="parser61" interface="org.infinispan.configuration.parsing.ConfigurationParser"/>
+    <bean id="parser60" class="org.infinispan.configuration.parsing.Parser60"/>
+    <service ref="parser60" interface="org.infinispan.configuration.parsing.ConfigurationParser"/>
 
     <bean id="defaultMapReduceTaskLifecycle" class="org.infinispan.distexec.mapreduce.spi.DefaultMapReduceTaskLifecycle"/>
     <service ref="defaultMapReduceTaskLifecycle" interface="org.infinispan.distexec.mapreduce.spi.MapReduceTaskLifecycle"/>
@@ -15,27 +17,14 @@
     <bean id="defaultDistributedTaskLifecycle" class="org.infinispan.distexec.spi.DefaultDistributedTaskLifecycle"/>
     <service ref="defaultDistributedTaskLifecycle" interface="org.infinispan.distexec.spi.DistributedTaskLifecycle"/>
 
-    <bean id="jdbcStoreConfigurationParser71" class="org.infinispan.persistence.jdbc.configuration.JdbcStoreConfigurationParser71"/>
-    <service ref="jdbcStoreConfigurationParser71" interface="org.infinispan.configuration.parsing.ConfigurationParser"/>
-    <bean id="jdbcStoreConfigurationParser70" class="org.infinispan.persistence.jdbc.configuration.JdbcStoreConfigurationParser70"/>
-    <service ref="jdbcStoreConfigurationParser70" interface="org.infinispan.configuration.parsing.ConfigurationParser"/>
+    <bean id="jdbcStoreConfigurationParser60" class="org.infinispan.persistence.jdbc.configuration.JdbcStoreConfigurationParser60"/>
+    <service ref="jdbcStoreConfigurationParser60" interface="org.infinispan.configuration.parsing.ConfigurationParser"/>
     
-    <bean id="jpaStoreConfigurationParser71" class="org.infinispan.persistence.jpa.configuration.JpaStoreConfigurationParser71"/>
-    <service ref="jpaStoreConfigurationParser71" interface="org.infinispan.configuration.parsing.ConfigurationParser"/>
-    <bean id="jpaStoreConfigurationParser70" class="org.infinispan.persistence.jpa.configuration.JpaStoreConfigurationParser70"/>
-    <service ref="jpaStoreConfigurationParser70" interface="org.infinispan.configuration.parsing.ConfigurationParser"/>
-    <bean id="jpaStoreLifecycleManager" class="org.infinispan.persistence.jpa.impl.JpaStoreLifecycleManager"/>
-    <service ref="jpaStoreLifecycleManager" interface="org.infinispan.lifecycle.ModuleLifecycle"/>
+    <bean id="levelDBStoreConfigurationParser60" class="org.infinispan.persistence.leveldb.configuration.LevelDBStoreConfigurationParser60"/>
+    <service ref="levelDBStoreConfigurationParser60" interface="org.infinispan.configuration.parsing.ConfigurationParser"/>
 
-    <bean id="levelDBStoreConfigurationParser71" class="org.infinispan.persistence.leveldb.configuration.LevelDBStoreConfigurationParser71"/>
-    <service ref="levelDBStoreConfigurationParser71" interface="org.infinispan.configuration.parsing.ConfigurationParser"/>
-    <bean id="levelDBStoreConfigurationParser70" class="org.infinispan.persistence.leveldb.configuration.LevelDBStoreConfigurationParser70"/>
-    <service ref="levelDBStoreConfigurationParser70" interface="org.infinispan.configuration.parsing.ConfigurationParser"/>
-
-    <bean id="remoteStoreConfigurationParser71" class="org.infinispan.persistence.remote.configuration.RemoteStoreConfigurationParser71"/>
-    <service ref="remoteStoreConfigurationParser71" interface="org.infinispan.configuration.parsing.ConfigurationParser"/>
-    <bean id="remoteStoreConfigurationParser70" class="org.infinispan.persistence.remote.configuration.RemoteStoreConfigurationParser70"/>
-    <service ref="remoteStoreConfigurationParser70" interface="org.infinispan.configuration.parsing.ConfigurationParser"/>
+    <bean id="remoteStoreConfigurationParser60" class="org.infinispan.persistence.remote.configuration.RemoteStoreConfigurationParser60"/>
+    <service ref="remoteStoreConfigurationParser60" interface="org.infinispan.configuration.parsing.ConfigurationParser"/>
     
     <bean id="riverProviderDescriptor" class="org.jboss.marshalling.river.RiverProviderDescriptor"/>
     <service ref="riverProviderDescriptor" interface="org.jboss.marshalling.ProviderDescriptor"/>

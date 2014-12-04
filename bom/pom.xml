@@ -382,11 +382,6 @@
             <version>${version.rhq}</version>
          </dependency>
          <dependency>
-            <groupId>org.rhq</groupId>
-            <artifactId>rhq-core-native-system</artifactId>
-            <version>${version.rhq}</version>
-         </dependency>
-         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-search-engine</artifactId>
             <version>${version.hibernate.search}</version>
@@ -469,12 +464,6 @@
          </dependency>
          <dependency>
             <groupId>c3p0</groupId>
-            <artifactId>c3p0</artifactId>
-            <version>${version.c3p0}</version>
-         </dependency>
-         <!-- Other dependencies -->
-         <dependency>
-            <groupId>com.mchange</groupId>
             <artifactId>c3p0</artifactId>
             <version>${version.c3p0}</version>
          </dependency>

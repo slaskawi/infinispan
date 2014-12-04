@@ -20,6 +20,7 @@
    </properties>
 
    <dependencies>
+      
       <dependency>
          <groupId>org.infinispan</groupId>
          <artifactId>infinispan-commons</artifactId>
@@ -50,12 +51,6 @@
          <optional>true</optional>
       </dependency>
       
-      <dependency>
-         <groupId>org.infinispan</groupId>
-         <artifactId>infinispan-cachestore-remote</artifactId>
-         <optional>true</optional>
-      </dependency>
-
       <dependency>
          <groupId>org.infinispan</groupId>
          <artifactId>infinispan-cachestore-remote</artifactId>
@@ -274,6 +269,7 @@
                         <Import-Package>
                            !com.mchange.v2.c3p0,
                            !com.sun.jmx.mbeanserver,
+                           !infinispanembedded.*,
                            !javax.cache.*,
                            !javax.enterprise.*,
                            !javax.inject.*,
@@ -287,8 +283,11 @@
                            !org.jgroups.*,
                            !org.jboss.logmanager,
                            !org.jboss.modules,
+                           !org.joda.time.*,
                            !org.iq80.snappy,
                            !org.jboss.marshalling.*,
+                           !org.osgi.framework.*,
+                           !org.osgi.util.tracker.*,
                            !org.xerial.snappy,
                            !sun.misc,
                            !sun.reflect,
