@@ -55,6 +55,12 @@
          <groupId>org.infinispan</groupId>
          <artifactId>infinispan-cachestore-remote</artifactId>
          <optional>true</optional>
+         <exclusions>
+            <exclusion>
+               <groupId>org.infinispan</groupId>
+               <artifactId>infinispan-client-hotrod</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
 
       <dependency>
@@ -87,13 +93,6 @@
          <optional>true</optional>
       </dependency>
 
-      <dependency>
-         <groupId>org.infinispan</groupId>
-         <artifactId>infinispan-adaptor52x</artifactId>
-         <optional>true</optional>
-      </dependency>
-
-      <!-- These dependencies will be left in the rewritten pom -->
       <dependency>
          <groupId>org.jboss.spec.javax.transaction</groupId>
          <artifactId>jboss-transaction-api_1.1_spec</artifactId>
@@ -137,6 +136,12 @@
       <dependency>
          <groupId>org.osgi</groupId>
          <artifactId>org.osgi.compendium</artifactId>
+         <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+         <groupId>org.infinispan</groupId>
+         <artifactId>infinispan-remote</artifactId>
          <scope>provided</scope>
       </dependency>
    </dependencies>
@@ -189,35 +194,41 @@
                            <exclude>com.google.code.findbugs:jsr305:jar:</exclude>
                         </excludes>
                      </artifactSet>
+                     <filters>
+                        <filter>
+                           <artifact>org.infinispan:infinispan-cdi</artifact>
+                           <excludes>
+                              <exclude>META-INF/beans.xml</exclude>
+                           </excludes>
+                        </filter>
+                        <filter>
+                           <artifact>*:*</artifact>
+                           <excludes>
+                              <exclude>INSTALL.html</exclude>
+                              <exclude>LICENSE</exclude>
+                              <exclude>README</exclude>
+                              <exclude>META-INF/*.SF</exclude>
+                              <exclude>META-INF/*.DSA</exclude>
+                              <exclude>META-INF/*.RSA</exclude>
+                              <exclude>META-INF/ASL2.0</exclude>
+                              <exclude>META-INF/DEPENDENCIES</exclude>
+                              <exclude>META-INF/DEPENDENCIES.txt</exclude>
+                              <exclude>META-INF/LICENSE</exclude>
+                              <exclude>META-INF/LICENSE.txt</exclude>
+                              <exclude>META-INF/NOTICE</exclude>
+                              <exclude>META-INF/NOTICE.txt</exclude>
+                           </excludes>
+                        </filter>
+                     </filters>
                      <createSourcesJar>true</createSourcesJar>
                      <relocations>
                         <relocation>
-                           <pattern>antlr</pattern>
-                           <shadedPattern>infinispanembedded.antlr</shadedPattern>
+                           <pattern>com.google</pattern>
+                           <shadedPattern>infinispan.com.google</shadedPattern>
                         </relocation>
                         <relocation>
-                           <pattern>com.google.common</pattern>
-                           <shadedPattern>infinispanembedded.com.google.common</shadedPattern>
-                        </relocation>
-                        <relocation>
-                           <pattern>org.antlr</pattern>
-                           <shadedPattern>infinispanembedded.org.antlr</shadedPattern>
-                        </relocation>
-                        <relocation>
-                           <pattern>org.apache.commons</pattern>
-                           <shadedPattern>infinispanembedded.org.apache.commons</shadedPattern>
-                        </relocation>
-                        <relocation>
-                           <pattern>org.apache.http</pattern>
-                           <shadedPattern>infinispanembedded.org.apache.http</shadedPattern>
-                        </relocation>
-                        <relocation>
-                           <pattern>org.codehaus.jackson</pattern>
-                           <shadedPattern>infinispanembedded.org.codehaus.jackson</shadedPattern>
-                        </relocation>
-                        <relocation>
-                           <pattern>org.infinispan.client.hotrod</pattern>
-                           <shadedPattern>infinispanembedded.org.infinispan.client.hotrod</shadedPattern>
+                           <pattern>org.iq80</pattern>
+                           <shadedPattern>infinispan.org.iq80</shadedPattern>
                         </relocation>
                         <relocation>
                            <pattern>org.jboss.logging</pattern>
