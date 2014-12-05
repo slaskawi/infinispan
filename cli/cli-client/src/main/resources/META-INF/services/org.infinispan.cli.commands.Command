@@ -13,11 +13,14 @@ org.infinispan.cli.commands.server.Encoding
 org.infinispan.cli.commands.server.End
 org.infinispan.cli.commands.server.Evict
 org.infinispan.cli.commands.server.Get
+org.infinispan.cli.commands.server.Grant
 org.infinispan.cli.commands.server.Info
 org.infinispan.cli.commands.server.Locate
+org.infinispan.cli.commands.server.Ping
 org.infinispan.cli.commands.server.Put
 org.infinispan.cli.commands.server.Remove
 org.infinispan.cli.commands.server.Replace
+org.infinispan.cli.commands.server.Roles
 org.infinispan.cli.commands.server.Rollback
 org.infinispan.cli.commands.server.Site
 org.infinispan.cli.commands.server.Start
