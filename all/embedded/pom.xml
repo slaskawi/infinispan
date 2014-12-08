@@ -232,7 +232,7 @@
                         </relocation>
                         <relocation>
                            <pattern>org.jboss.logging</pattern>
-                           <shadedPattern>infinispanembedded.org.jboss.logging</shadedPattern>
+                           <shadedPattern>infinispan.org.jboss.logging</shadedPattern>
                         </relocation>
                      </relocations>
                      <transformers>
@@ -250,6 +250,7 @@
          <plugin>
             <groupId>org.apache.felix</groupId>
             <artifactId>maven-bundle-plugin</artifactId>
+            <version>2.4.0</version>
             <executions>
                <execution>
                   <id>default-bundle</id>
@@ -280,14 +281,10 @@
                         <Import-Package>
                            !com.mchange.v2.c3p0,
                            !com.sun.jmx.mbeanserver,
-                           !infinispanembedded.*,
-                           !javax.cache.*,
-                           !javax.enterprise.*,
-                           !javax.inject.*,
-                           !javax.interceptor.*,
-                           !javax.persistence.*,
+                           !infinispan.*,
+                           !javax.*,
                            !net.jcip.annotations,
-                           !org.apache.logging.*,
+                           !org.apache.*,
                            !org.hibernate.*,
                            !org.infinispan.*,
                            !org.infinispan.client.*,
@@ -314,6 +311,7 @@
          <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>build-helper-maven-plugin</artifactId>
+            <version>1.8</version>
             <executions>
                <execution>
                   <id>attach-artifacts</id>
@@ -340,6 +338,7 @@
          </plugin>
          <plugin>
             <artifactId>maven-source-plugin</artifactId>
+            <version>2.3</version>
             <executions>
                <execution>
                   <id>attach-sources</id>
@@ -349,6 +348,7 @@
          </plugin>
          <plugin>
             <artifactId>maven-jar-plugin</artifactId>
+            <version>2.4</version>
             <executions>
                <execution>
                   <id>build-test-jar</id>
