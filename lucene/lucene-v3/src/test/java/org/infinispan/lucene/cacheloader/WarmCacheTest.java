@@ -15,7 +15,6 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
 
 import java.io.File;
-import java.nio.file.Files;
 
 import static org.infinispan.lucene.cacheloader.TestHelper.createIndex;
 import static org.infinispan.test.TestingUtil.findInterceptor;
@@ -60,7 +59,7 @@ public class WarmCacheTest extends MultipleCacheManagersTest {
 
    @Override
    protected void createCacheManagers() throws Throwable {
-      indexDir = Files.createTempDirectory("test-").toFile();
+      indexDir = new File(TestingUtil.tmpDirectory(this.getClass()));
       createIndex(indexDir, INDEX_NAME, TERMS_NUMBER, false);
       ConfigurationBuilder c = getDefaultClusteredCacheConfig(CacheMode.DIST_ASYNC, false);
       c.clustering().hash().numOwners(1);
