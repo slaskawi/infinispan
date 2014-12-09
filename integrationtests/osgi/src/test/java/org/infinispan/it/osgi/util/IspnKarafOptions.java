@@ -257,11 +257,9 @@ public class IspnKarafOptions {
       if (localRepo == null) {
          return null;
       }
-
-      return composite(systemProperty(PaxURLUtils.PROP_PAX_URL_LOCAL_REPO).value(localRepo),
-                       editConfigurationFilePut("etc/org.ops4j.pax.url.mvn.cfg", PaxURLUtils.PROP_PAX_URL_LOCAL_REPO, localRepo));
+      return composite(systemProperty(PaxURLUtils.PROP_PAX_URL_LOCAL_REPO).value(localRepo));
    }
-
+   
    /**
     * Sets the system variables used inside persistence.xml to use H2.
     */
@@ -269,21 +267,32 @@ public class IspnKarafOptions {
       return composite(systemProperty("connection.url").value("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1"),
                        systemProperty("driver.class").value("org.h2.Driver"));
    }
-
+   
    public static Option bundlePaxExamSpi() throws Exception {
       String version = MavenUtils.getProperties().getProperty(PROP_VERSION_PAX_EXAM);
       return wrappedBundle(mavenBundle().groupId("org.ops4j.pax.exam").artifactId("pax-exam-spi").version(version));
    }
+   
+   /**
+    * Workaround for downloading artifacts from Sonatype repository. This repository does not return 404 when
+    * the artifact is not there and and this magic error occurs in PAX-EXAM:
+    * "The element type "hr" must be terminated by the matching end-tag "</hr>"."
+    * So we exclude the repository altogether. It is not required.
+    */
+   public static Option remoteRepositories() throws Exception {
+      return editConfigurationFilePut("etc/org.ops4j.pax.url.mvn.cfg", PaxURLUtils.PROP_PAX_URL_REPOSITORIES, PaxURLUtils.ALL_REPOS);
+   }
 
    public static Option commonOptions() throws Exception {
       return composite(karafContainer(),
-                       vmOptions("-Djava.net.preferIPv4Stack=true", "-Djgroups.bind_addr=127.0.0.1"),
-                       verboseKaraf(),
-                       junitBundles(),
-                       keepRuntimeFolder(),
-                       /* Required for the @Category(Per{Suite,Class,Method}) annotations. */
-                       bundlePaxExamSpi(),
-                       localRepoForPAXUrl());
+            vmOptions("-Djava.net.preferIPv4Stack=true", "-Djgroups.bind_addr=127.0.0.1"),
+            verboseKaraf(),
+            junitBundles(),
+            keepRuntimeFolder(),
+            /* Required for the @Category(Per{Suite,Class,Method}) annotations. */
+            bundlePaxExamSpi(),
+            localRepoForPAXUrl(),
+            remoteRepositories());
    }
 
    public static Option perSuiteOptions() throws Exception {
