@@ -1007,6 +1007,22 @@
                 </xs:attribute --> 
               </xs:complexType>
             </xs:element>
+            <xs:element name="partitionHandling" minOccurs="0">
+              <xs:annotation>
+                <xs:documentation>
+                   The partition handling configuration for distributed and replicated caches.
+                </xs:documentation>
+              </xs:annotation>
+              <xs:complexType>
+                <xs:attribute name="enabled" type="xs:boolean" default="false">
+                  <xs:annotation>
+                    <xs:documentation>
+                      If enabled, the cache will enter degraded mode when it loses too many nodes.
+                    </xs:documentation>
+                  </xs:annotation>
+                </xs:attribute>
+              </xs:complexType>
+            </xs:element>
           </xs:all>
           <xs:attribute name="mode" type="xs:string" default="local">
             <xs:annotation>
@@ -1181,7 +1197,7 @@
             </xs:annotation>
           </xs:attribute>
         </xs:complexType>
-       </xs:element>
+      </xs:element>
     </xs:all>
     <xs:attribute name="name" type="xs:string"/>
   </xs:complexType>

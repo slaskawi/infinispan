@@ -305,5 +305,11 @@
    <namedCache name="storeKeyValueBinary">
       <storeAsBinary storeKeysAsBinary="true" storeValuesAsBinary="false" enabled="true" />
    </namedCache>
+   
+   <namedCache name="withPartitionHandling">
+      <clustering mode="repl">
+         <partitionHandling enabled="true"/>
+      </clustering>
+   </namedCache>
 
 </infinispan>

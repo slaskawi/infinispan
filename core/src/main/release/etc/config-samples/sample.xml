@@ -188,10 +188,6 @@
          concurrencyLevel="5000"
          useLockStriping="false"
       />
-      <!--
-        Used to configure how the cache to react to node failures, split brains etc.
-        <partition-handling enabled="true"/>
-      -->
 
       <!--
          Used to register a transaction manager and participate in JTA and XA transactions.
@@ -390,7 +386,15 @@
          </store>
       </persistence>
    </namedCache>
-
+   
+   <!-- Used to configure how the cache to react to node failures, split brains etc. -->
+   <!--
+   <namedCache name="withPartitionHandling">
+      <clustering mode="r">
+         <partitionHandling enabled="true"/>
+      </clustering>
+   </namedCache>
+   -->
 
    <!--
       A cache where data can be evicted if not used after some time, or if it exceeds certain capacity.
