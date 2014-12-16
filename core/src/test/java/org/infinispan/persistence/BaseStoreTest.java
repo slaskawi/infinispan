@@ -337,24 +337,34 @@ public abstract class BaseStoreTest extends AbstractInfinispanTest {
 
    public void testPurgeExpired() throws Exception {
       // Increased lifespan and idle timeouts to accommodate slower cache stores
-      long lifespan = 6000;
-      long idle = 4000;
+      // checking if cache store contains the entry right after inserting because
+      // some slower cache stores (seen on DB2) don't manage to entry all the entries
+      // before running out of lifespan making this test unpredictably fail on them.
+
+      long lifespan = 7000;
+      long idle = 5000;
+
       InternalCacheEntry ice1 = TestInternalCacheEntryFactory.create("k1", wrap("k1", "v1"), lifespan);
       cl.write(marshalledEntry(ice1, getMarshaller()));
+      assert cl.contains("k1");
+
       InternalCacheEntry ice2 = TestInternalCacheEntryFactory.create("k2", wrap("k2", "v2"), -1, idle);
       cl.write(marshalledEntry(ice2, getMarshaller()));
+      assert cl.contains("k2");
+
       InternalCacheEntry ice3 = TestInternalCacheEntryFactory.create("k3", wrap("k3", "v3"), lifespan, idle);
       cl.write(marshalledEntry(ice3, getMarshaller()));
+      assert cl.contains("k3");
+
       InternalCacheEntry ice4 = TestInternalCacheEntryFactory.create("k4", wrap("k4", "v4"), -1, -1);
       cl.write(marshalledEntry(ice4, getMarshaller())); // immortal entry
+      assert cl.contains("k4");
+
       InternalCacheEntry ice5 = TestInternalCacheEntryFactory.create("k5", wrap("k5", "v5"), lifespan * 1000, idle * 1000);
       cl.write(marshalledEntry(ice5, getMarshaller())); // long life mortal entry
-      assert cl.contains("k1");
-      assert cl.contains("k2");
-      assert cl.contains("k3");
-      assert cl.contains("k4");
       assert cl.contains("k5");
 
+      // TODO: when available, use TimeService instead
       Thread.sleep(lifespan + 10);
       purgeExpired();
 
