@@ -144,6 +144,12 @@
                       <goal>jar</goal>
                   </goals>
                   <configuration>
+                     <doclet>org.infinispan.tools.doclet.DocletMultiplexer</doclet>
+                        <docletArtifact>
+                           <groupId>org.infinispan</groupId>
+                           <artifactId>infinispan-tools</artifactId>
+                           <version>${project.version}</version>
+                         </docletArtifact>
                      <doctitle>JBoss Data Grid 6.4.0 Hot Rod Client API</doctitle>
                      <quiet>true</quiet>
                      <!-- In case you anyone needs to trace javadoc issues
