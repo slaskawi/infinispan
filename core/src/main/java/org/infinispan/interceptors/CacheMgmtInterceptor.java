@@ -262,9 +262,10 @@ public class CacheMgmtInterceptor extends JmxStatsCommandInterceptor {
    )
    @SuppressWarnings("unused")
    public double getReadWriteRatio() {
-      if (stores.sum() == 0)
+      long sum = stores.sum();
+      if (sum == 0)
          return 0;
-      return (((double) (hits.sum() + misses.sum()) / (double) stores.sum()));
+      return (((double) (hits.sum() + misses.sum()) / (double) sum));
    }
 
    @ManagedAttribute(
@@ -289,9 +290,10 @@ public class CacheMgmtInterceptor extends JmxStatsCommandInterceptor {
    )
    @SuppressWarnings("unused")
    public long getAverageWriteTime() {
-      if (stores.sum() == 0)
+      long sum = stores.sum();
+      if (sum == 0)
          return 0;
-      return (storeTimes.sum()) / stores.sum();
+      return (storeTimes.sum()) / sum;
    }
 
    @ManagedAttribute(
