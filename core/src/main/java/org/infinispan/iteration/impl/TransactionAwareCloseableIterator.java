@@ -48,15 +48,16 @@ public class TransactionAwareCloseableIterator<K, C> extends RemovableEntryItera
          while (realIterator.hasNext()) {
             CacheEntry iteratedEntry = realIterator.next();
             CacheEntry contextEntry;
-            // If the value was in the context then we ignore it since we use the context value
-            if ((contextEntry = ctx.lookupEntry(iteratedEntry.getKey())) == null) {
-               returnedEntry = iteratedEntry;
-               break;
-            } else {
+            // If the value was in the context then we ignore the stored value since we use the context value
+            if ((contextEntry = ctx.lookupEntry(iteratedEntry.getKey())) != null) {
                if (seenContextKeys.add(contextEntry.getKey()) && !contextEntry.isRemoved()) {
                   returnedEntry = contextEntry;
                   break;
                }
+               
+            } else {
+               returnedEntry = iteratedEntry;
+               break;
             }
          }
       }
@@ -64,7 +65,7 @@ public class TransactionAwareCloseableIterator<K, C> extends RemovableEntryItera
       if (returnedEntry == null) {
          // We do a last check to make sure no additional values were added to our context while iterating
          for (CacheEntry lookedUpEntry : ctx.getLookedUpEntries().values()) {
-            if (!seenContextKeys.contains(lookedUpEntry.getKey())) {
+            if (seenContextKeys.add(lookedUpEntry.getKey()) && !lookedUpEntry.isRemoved()) {
                if (returnedEntry == null) {
                   returnedEntry = lookedUpEntry;
                } else {

@@ -12,10 +12,13 @@ import org.testng.annotations.Test;
 import javax.transaction.NotSupportedException;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
+
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import static org.infinispan.test.TestingUtil.v;
 import static org.testng.AssertJUnit.assertEquals;
@@ -222,5 +225,36 @@ public abstract class CacheAPIBulkTest extends APINonTxBulkTest {
       TestingUtil.getTransactionManager(cache).rollback();
 
       assertEquals(old_value, cache.get(key));
+   }
+
+   public void testEntrySetIterationInTx(Method m) throws Exception {
+      Map<Integer, String> dataIn = new HashMap<Integer, String>();
+      dataIn.put(1, v(m, 1));
+      dataIn.put(2, v(m, 2));
+
+      cache.putAll(dataIn);
+
+      Map<Object, Object> foundValues = new HashMap<Object, Object>();
+      TransactionManager tm = cache.getAdvancedCache().getTransactionManager();
+      tm.begin();
+      try {
+         Set<Entry<Object, Object>> entries = cache.entrySet();
+
+         Iterator<Entry<Object, Object>> itr = entries.iterator();
+
+         // Add an entry within tx
+         cache.put(3, v(m, 3));
+
+         while (itr.hasNext()) {
+            Entry<Object, Object> entry = itr.next();
+            foundValues.put(entry.getKey(), entry.getValue());
+         }
+      } finally {
+         tm.rollback();
+      }
+      assertEquals(3, foundValues.size());
+      assertEquals(v(m, 1), foundValues.get(1));
+      assertEquals(v(m, 2), foundValues.get(2));
+      assertEquals(v(m, 3), foundValues.get(3));
    }
 }
