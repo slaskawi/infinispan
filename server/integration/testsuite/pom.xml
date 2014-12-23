@@ -1000,5 +1000,22 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>testsuite-jdk6</id>
+            <properties>
+                <server.jvm>${env.JAVA_HOME_16}</server.jvm>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <jvm>${env.JAVA_HOME_16}/bin/java</jvm>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 </project>
