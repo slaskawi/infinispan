@@ -1,18 +1,21 @@
 package org.infinispan.server.hotrod
 
 import java.lang.reflect.Method
-import java.util.Arrays
-import test.HotRodTestingUtil._
-import org.testng.Assert._
-import org.infinispan.server.hotrod.OperationStatus._
 
-import org.infinispan.server.hotrod.test.{TestResponseWithPrevious, HotRodClient}
+import org.infinispan.server.hotrod.OperationStatus._
+import org.infinispan.server.hotrod.test.HotRodTestingUtil._
+import org.infinispan.server.hotrod.test.{HotRodClient, TestResponseWithPrevious}
+import org.testng.Assert._
 import org.testng.annotations.Test
 
 @Test(groups = Array("functional"), testName = "server.hotrod.HotRod1xFunctionalTest")
 class HotRod1xFunctionalTest extends HotRodFunctionalTest {
    override protected def connectClient: HotRodClient =
       new HotRodClient("127.0.0.1", hotRodServer.getPort, cacheName, 60, 13)
+
+   override def testSize(m: Method): Unit = {
+      // Not supported
+   }
 
    override protected def assertSuccessPrevious(resp: TestResponseWithPrevious, expected: Array[Byte]): Boolean = {
       if (expected == null) assertEquals(None, resp.previous)
