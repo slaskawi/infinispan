@@ -4,7 +4,6 @@ import org.infinispan.arquillian.core.InfinispanResource;
 import org.infinispan.arquillian.core.RemoteInfinispanServer;
 import org.infinispan.arquillian.core.RunningServer;
 import org.infinispan.arquillian.core.WithRunningServer;
-import org.infinispan.arquillian.utils.MBeanServerConnectionProvider;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.Search;
@@ -41,7 +40,6 @@ public class RemoteQueryWithProtostreamAnnotationsIT {
 
    private RemoteCacheManager remoteCacheManager;
    private RemoteCache<Integer, AnnotatedUser> remoteCache;
-   private MBeanServerConnectionProvider jmxConnectionProvider;
    private RemoteCacheManagerFactory rcmFactory;
 
    @InfinispanResource("remote-query")
@@ -80,7 +78,6 @@ public class RemoteQueryWithProtostreamAnnotationsIT {
 
    @Before
    public void setUp() throws Exception {
-      jmxConnectionProvider = new MBeanServerConnectionProvider(server.getHotrodEndpoint().getInetAddress().getHostName(), 9999);
       rcmFactory = new RemoteCacheManagerFactory();
       ConfigurationBuilder clientBuilder = new ConfigurationBuilder();
       clientBuilder.addServer()
