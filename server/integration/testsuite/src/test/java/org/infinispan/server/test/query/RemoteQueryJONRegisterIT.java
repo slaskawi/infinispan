@@ -2,7 +2,6 @@ package org.infinispan.server.test.query;
 
 import org.infinispan.arquillian.core.RunningServer;
 import org.infinispan.arquillian.core.WithRunningServer;
-import org.infinispan.arquillian.utils.MBeanServerConnectionProvider;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.marshall.ProtoStreamMarshaller;
 import org.infinispan.client.hotrod.RemoteCache;
@@ -33,8 +32,8 @@ import static org.junit.Assert.assertFalse;
 public class RemoteQueryJONRegisterIT extends RemoteQueryIT {
 
    @Before
+   @Override
    public void setUp() throws Exception {
-      jmxConnectionProvider = new MBeanServerConnectionProvider(getServer().getHotrodEndpoint().getInetAddress().getHostName(), 9999);
       rcmFactory = new RemoteCacheManagerFactory();
       ConfigurationBuilder clientBuilder = new ConfigurationBuilder();
       clientBuilder.addServer()

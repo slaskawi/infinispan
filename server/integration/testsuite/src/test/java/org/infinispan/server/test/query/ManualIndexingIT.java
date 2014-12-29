@@ -6,12 +6,14 @@ import javax.management.ObjectName;
 
 import org.infinispan.arquillian.core.InfinispanResource;
 import org.infinispan.arquillian.core.RemoteInfinispanServer;
+import org.infinispan.arquillian.utils.MBeanServerConnectionProvider;
 import org.infinispan.arquillian.core.RunningServer;
 import org.infinispan.arquillian.core.WithRunningServer;
 import org.infinispan.client.hotrod.Search;
 import org.infinispan.protostream.sampledomain.User;
 import org.infinispan.query.dsl.QueryBuilder;
 import org.jboss.arquillian.junit.Arquillian;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -34,6 +36,8 @@ public class ManualIndexingIT extends RemoteQueryBaseIT {
     @InfinispanResource("remote-query")
     protected RemoteInfinispanServer server;
 
+    private MBeanServerConnectionProvider jmxConnectionProvider;
+
     public ManualIndexingIT() {
         super(CACHE_CONTAINER_NAME, CACHE_NAME);
     }
@@ -41,6 +45,13 @@ public class ManualIndexingIT extends RemoteQueryBaseIT {
     @Override
     public RemoteInfinispanServer getServer() {
         return server;
+    }
+
+    @Before
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        jmxConnectionProvider = new MBeanServerConnectionProvider(getServer().getHotrodEndpoint().getInetAddress().getHostName(), 9999);
     }
 
     @Test
