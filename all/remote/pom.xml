@@ -38,6 +38,12 @@
          <artifactId>infinispan-client-hotrod</artifactId>
          <optional>true</optional>
       </dependency>
+      
+      <dependency>
+         <groupId>org.infinispan</groupId>
+         <artifactId>infinispan-remote-query-client</artifactId>
+         <optional>true</optional>
+      </dependency>
 
       <dependency>
          <groupId>org.infinispan</groupId>
@@ -177,16 +183,19 @@
                            org.infinispan.client.hotrod.*,
                            org.infinispan.commons.*,
                            org.infinispan.query.*,
-                           org.infinispan.protostream;version=${version.protostream}
+                           org.infinispan.protostream.*
                         </_exportcontents>
                         <Export-Package>
                            !${project.groupId}.*.logging
                         </Export-Package>
                         <Import-Package>
+                           !com.sun.jdi.*,
                            !infinispan.*,
+                           !javax.*,
                            !sun.misc,
                            !sun.reflect,
                            !net.jcip.annotations,
+                           !org.infinispan.*,
                            !org.jboss.logmanager,
                            !org.jboss.modules,
                            *
