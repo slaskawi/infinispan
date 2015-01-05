@@ -7,7 +7,7 @@
     <global>
         <transport clusterName="infinispan-cluster" machineId="m1" rackId="r1" nodeName="Node-A">
             <properties>
-                <property name="configurationFile" value="jgroups-tcp.xml"/>
+                <property name="configurationFile" value="default-configs/default-jgroups-tcp.xml"/>
             </properties>
         </transport>
         <globalJmxStatistics allowDuplicateDomains="true" jmxDomain="org.infinispan" />
