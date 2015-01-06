@@ -13,7 +13,7 @@ import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.InjectionPoint;
 
 import org.infinispan.cdi.util.logging.Log;
-import org.infinispan.util.logging.LogFactory;
+import org.infinispan.commons.logging.LogFactory;
 
 /**
  * <p>

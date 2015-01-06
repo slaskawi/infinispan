@@ -18,7 +18,7 @@ import javax.enterprise.inject.spi.AnnotatedType;
 
 import org.infinispan.cdi.util.Reflections;
 import org.infinispan.cdi.util.logging.Log;
-import org.infinispan.util.logging.LogFactory;
+import org.infinispan.commons.logging.LogFactory;
 
 /**
  * <p> Class for constructing a new AnnotatedType. A new instance of builder

@@ -2,7 +2,7 @@ package org.infinispan.cdi.interceptor;
 
 import org.infinispan.cdi.util.logging.Log;
 import org.infinispan.commons.util.ReflectionUtil;
-import org.infinispan.util.logging.LogFactory;
+import org.infinispan.commons.logging.LogFactory;
 
 import javax.cache.annotation.CacheInvocationParameter;
 import javax.cache.annotation.CacheKeyGenerator;

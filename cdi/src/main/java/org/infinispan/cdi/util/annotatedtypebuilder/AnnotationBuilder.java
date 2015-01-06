@@ -9,7 +9,7 @@ import java.util.Set;
 
 import org.infinispan.cdi.util.Reflections;
 import org.infinispan.cdi.util.logging.Log;
-import org.infinispan.util.logging.LogFactory;
+import org.infinispan.commons.logging.LogFactory;
 
 /**
  * Helper class used to build annotation stores

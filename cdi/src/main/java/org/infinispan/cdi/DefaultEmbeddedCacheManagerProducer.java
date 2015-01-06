@@ -5,7 +5,7 @@ import org.infinispan.cdi.util.logging.Log;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.infinispan.util.logging.LogFactory;
+import org.infinispan.commons.logging.LogFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Disposes;

@@ -38,7 +38,7 @@ import org.infinispan.cdi.util.Reflections;
 import org.infinispan.cdi.util.Synthetic;
 import org.infinispan.cdi.util.annotatedtypebuilder.AnnotatedTypeBuilder;
 import org.infinispan.cdi.util.logging.Log;
-import org.infinispan.util.logging.LogFactory;
+import org.infinispan.commons.logging.LogFactory;
 
 /**
  * Registers beans annotated @DefaultBean
