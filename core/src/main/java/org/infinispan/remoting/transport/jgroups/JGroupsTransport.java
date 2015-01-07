@@ -44,10 +44,7 @@ import org.jgroups.jmx.JmxConfigurator;
 import org.jgroups.protocols.relay.SiteMaster;
 import org.jgroups.protocols.tom.TOA;
 import org.jgroups.stack.AddressGenerator;
-import org.jgroups.util.Buffer;
-import org.jgroups.util.Rsp;
-import org.jgroups.util.RspList;
-import org.jgroups.util.TopologyUUID;
+import org.jgroups.util.*;
 
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
@@ -736,8 +733,8 @@ public class JGroupsTransport extends AbstractTransport implements MembershipLis
    }
 
    static Address fromJGroupsAddress(org.jgroups.Address addr) {
-      if (addr instanceof TopologyUUID)
-         return new JGroupsTopologyAwareAddress((TopologyUUID)addr);
+      if (addr instanceof ExtendedUUID)
+         return new JGroupsTopologyAwareAddress((ExtendedUUID)addr);
       else
          return new JGroupsAddress(addr);
    }
