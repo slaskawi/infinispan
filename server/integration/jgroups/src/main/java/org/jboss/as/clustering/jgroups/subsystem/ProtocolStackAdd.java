@@ -332,8 +332,10 @@ public class ProtocolStackAdd extends AbstractAddStepHandler implements Descript
                 //       "relative-to" => {"value" => "fred"},
                 //   }
                 String propertyName = property.getName();
-                ModelNode propertyValue = PropertyResourceDefinition.VALUE.resolveModelAttribute(context, property.getValue());
-                properties.put(propertyName, propertyValue.asString());
+                String propertyValue = PropertyResourceDefinition.VALUE.resolveModelAttribute(context, property.getValue()).asString();
+                if (propertyValue != null && !propertyValue.isEmpty()) {
+                   properties.put(propertyName, propertyValue);
+                }
             }
        }
     }
