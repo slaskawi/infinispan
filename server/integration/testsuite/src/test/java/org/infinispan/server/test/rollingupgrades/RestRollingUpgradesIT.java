@@ -1,8 +1,5 @@
 package org.infinispan.server.test.rollingupgrades;
 
-import javax.management.ObjectName;
-import javax.servlet.http.HttpServletResponse;
-
 import org.infinispan.arquillian.core.InfinispanResource;
 import org.infinispan.arquillian.core.RemoteInfinispanServers;
 import org.infinispan.arquillian.utils.MBeanServerConnectionProvider;
@@ -16,9 +13,10 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
-import static org.infinispan.server.test.client.rest.RESTHelper.fullPathKey;
-import static org.infinispan.server.test.client.rest.RESTHelper.get;
-import static org.infinispan.server.test.client.rest.RESTHelper.post;
+import javax.management.ObjectName;
+import javax.servlet.http.HttpServletResponse;
+
+import static org.infinispan.server.test.client.rest.RESTHelper.*;
 
 /**
  * Tests for REST rolling upgrades.
@@ -75,7 +73,8 @@ public class RestRollingUpgradesIT {
             final ObjectName rollMan = new ObjectName("jboss.infinispan:type=Cache," + "name=\"default(local)\","
                     + "manager=\"local\"," + "component=RollingUpgradeManager");
 
-            invokeOperation(provider2, rollMan.toString(), "recordKnownGlobalKeyset", new Object[]{}, new String[]{});
+            // we intentionally omit recordKnownGlobalKeyset here as a workaround! BZ#1086180
+            // invokeOperation(provider2, rollMan.toString(), "recordKnownGlobalKeyset", new Object[]{}, new String[]{});
 
             invokeOperation(provider1, rollMan.toString(), "synchronizeData", new Object[]{"rest"},
                     new String[]{"java.lang.String"});

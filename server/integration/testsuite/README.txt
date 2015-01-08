@@ -19,7 +19,7 @@ Currently these subsets are predefined:
                                       1) -Dold.server.schema.version=6.1 -- used for failsafe report suffix
                                       2) -Dnew.server.schema.version=7.0 -- used to decide which snippet to use during
                                           transformation of a configuration for new servers in the clustered scenario
-                                      Configuration snippets for new cluster are prepared for versions: 6.0, 6.1, 7.0)
+                                      Configuration snippets for new cluster are prepared for versions: 6.0, 6.1, 6.2, 7.0)
 
   -P suite.others                    (Tests that do not belong to any of the suites above. Useful when running a single test that's outside
                                       of any pre-defined group)

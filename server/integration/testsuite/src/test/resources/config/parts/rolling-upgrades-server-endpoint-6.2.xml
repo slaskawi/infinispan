@@ -1,0 +1,9 @@
+        <!-- In JDG 6.4 where we use 6.2 schema version for core, for endpoint this is still 6.1.
+             Check standalone.xml in original untransformed distribution -->
+        <subsystem xmlns="urn:infinispan:server:endpoint:6.1">
+            <hotrod-connector socket-binding="hotrod" cache-container="clustered-new">
+                <topology-state-transfer lazy-retrieval="false" lock-timeout="1000" replication-timeout="5000"/>
+            </hotrod-connector>
+            <memcached-connector socket-binding="memcached" cache-container="clustered-new"/>
+            <rest-connector virtual-server="default-host" cache-container="clustered-new"/>
+        </subsystem>
