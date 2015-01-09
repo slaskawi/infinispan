@@ -72,7 +72,7 @@ public class RemoteCacheOsgiIT extends KarafTestSupport {
                   .karafDistributionConfiguration()
                   .unpackDirectory(new File("target/pax"))
                   .frameworkUrl(
-                        maven().groupId("org.apache.karaf").artifactId("apache-karaf").type("zip")
+                        maven().groupId("org.apache.karaf").artifactId("apache-karaf").type("tar.gz")
                               .version(KARAF_VERSION)).karafVersion(KARAF_VERSION),
             KarafDistributionOption.features(maven().groupId("org.infinispan").artifactId("infinispan-remote")
                                                    .type("xml").classifier("features").versionAsInProject(), "infinispan-remote"),
@@ -128,7 +128,7 @@ public class RemoteCacheOsgiIT extends KarafTestSupport {
 
       ProtoSchemaBuilder protoSchemaBuilder = new ProtoSchemaBuilder();
       String testSchemaFile = protoSchemaBuilder.fileName("test.proto")
-            .addClass(User.class)
+            .addClass(Note.class)
             .build(ctx);
 
       // register schemas on server
@@ -173,7 +173,7 @@ public class RemoteCacheOsgiIT extends KarafTestSupport {
       User author = new User();
       author.setId(20);
       author.setName("name");
-      author.setName("surname");
+      author.setSurname("surname");
       note.setAuthor(author);
       return note;
    }
