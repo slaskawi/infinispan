@@ -284,6 +284,10 @@
       <module-def name="org.hibernate.hql.lucene">
          <maven-resource group="org.hibernate.hql" artifact="hibernate-hql-lucene" />
       </module-def>
+
+      <module-def name="com.h2database.h2">
+         <maven-resource group="com.h2database" artifact="h2" />
+      </module-def>
    </target>
 
    <target name="trim-modules">
