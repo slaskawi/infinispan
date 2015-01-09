@@ -354,13 +354,13 @@ object Decoder2x extends AbstractVersionedDecoder with ServerConstants with Log 
    }
 
    private def calculateSize(cache: Cache): Int = {
-      val mode = cache.getCacheConfiguration.clustering().cacheMode()
+      val mode = SecurityActions.getCacheConfiguration(cache).clustering().cacheMode()
       val invokeLocalSize = !mode.isClustered || mode.isReplicated
       if (invokeLocalSize) cache.size()
       else {
-         val task = new MapReduceTask[Bytes, Bytes, Bytes, Int](cache)
+         val task = SecurityActions.createMapReduceTask(cache)
                .mappedWith(new KeyCountMapper).reducedWith(new KeyCountReducer)
-         task.execute(new KeyCountCollator)
+         SecurityActions.executeMapReduceTask(task, new KeyCountCollator)
       }
    }
 

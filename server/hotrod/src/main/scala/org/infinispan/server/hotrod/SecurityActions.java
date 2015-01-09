@@ -5,11 +5,15 @@ import java.security.PrivilegedAction;
 
 import org.infinispan.AdvancedCache;
 import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.distexec.mapreduce.Collator;
+import org.infinispan.distexec.mapreduce.MapReduceTask;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.factories.ComponentRegistry;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.rpc.RpcManager;
 import org.infinispan.security.Security;
+import org.infinispan.security.actions.CreateMapReduceTaskAction;
+import org.infinispan.security.actions.ExecuteMapReduceTaskAction;
 import org.infinispan.security.actions.GetCacheAction;
 import org.infinispan.security.actions.GetCacheComponentRegistryAction;
 import org.infinispan.security.actions.GetCacheConfigurationAction;
@@ -57,6 +61,16 @@ final class SecurityActions {
 
    static RpcManager getCacheRpcManager(final AdvancedCache<?, ?> cache) {
       GetCacheRpcManagerAction action = new GetCacheRpcManagerAction(cache);
+      return doPrivileged(action);
+   }
+   
+   static <KIn, VIn, KOut, VOut> MapReduceTask<KIn, VIn, KOut, VOut> createMapReduceTask(final AdvancedCache<KIn, VIn> cache) {
+      CreateMapReduceTaskAction<KIn, VIn, KOut, VOut> action = new CreateMapReduceTaskAction<KIn, VIn, KOut, VOut>(cache);
+      return doPrivileged(action);
+   }
+   
+   static <KIn, VIn, KOut, VOut, R>  R executeMapReduceTask(final MapReduceTask<KIn, VIn, KOut, VOut> task, final Collator<KOut, VOut, R> collator) {
+      ExecuteMapReduceTaskAction<KIn, VIn, KOut, VOut, R> action = new ExecuteMapReduceTaskAction<KIn, VIn, KOut, VOut, R>(task, collator);
       return doPrivileged(action);
    }
 }
