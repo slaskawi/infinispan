@@ -21,7 +21,7 @@ import java.util.Properties;
 import java.util.Set;
 
 /**
- * Class that implements {@link org.hibernate.search.cfg.SearchConfiguration} so that within Infinispan-Query, there is
+ * Class that implements {@link SearchConfiguration} so that within Infinispan-Query, there is
  * no need for a Hibernate Core configuration object.
  *
  * @author Navin Surtani
@@ -72,6 +72,11 @@ public class SearchableCacheConfiguration extends SearchConfigurationBase implem
       map.put(CacheManagerServiceProvider.class, uninitializedCacheManager);
       map.put(ComponentRegistryServiceProvider.class, cr);
       return Collections.unmodifiableMap(map);
+   }
+
+   @Override
+   public boolean isDeleteByTermEnforced() {
+      return true;
    }
 
    @Override
