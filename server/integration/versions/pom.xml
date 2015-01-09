@@ -40,7 +40,7 @@
       <version.org.slf4j>1.7.2.redhat-3</version.org.slf4j>
       <version.org.xerial.snappy>1.0.5</version.org.xerial.snappy>
       <version.xml.maven.plugin>1.0</version.xml.maven.plugin>
-      <version.org.infinispan.protostream>3.0.0.Alpha2-redhat-1</version.org.infinispan.protostream>
+      <version.org.infinispan.protostream>3.0.0.Alpha5-redhat-1</version.org.infinispan.protostream>
       <version.protoparser>3.1.4.redhat-1</version.protoparser>
       <version.javassist>3.18.1-GA-redhat-1</version.javassist>
       <version.protobuf>2.6.0.redhat-1</version.protobuf>
