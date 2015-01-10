@@ -40,8 +40,7 @@
       <version.org.slf4j>1.7.2.redhat-3</version.org.slf4j>
       <version.org.xerial.snappy>1.0.5</version.org.xerial.snappy>
       <version.xml.maven.plugin>1.0</version.xml.maven.plugin>
-      <version.org.infinispan.protostream>3.0.0.Alpha5-redhat-1</version.org.infinispan.protostream>
-      <version.protobuf>2.6.0.redhat-1</version.protobuf>
+      <version.org.infinispan.protostream>3.0.0.Alpha7-redhat-1</version.org.infinispan.protostream>
       <version.http.client>4.3</version.http.client>
       <version.org.picketbox>4.0.19.SP8-redhat-1</version.org.picketbox>
       <version.xpp3>1.1.4c-redhat-2</version.xpp3>

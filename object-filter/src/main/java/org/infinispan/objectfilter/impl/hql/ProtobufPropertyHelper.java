@@ -1,6 +1,5 @@
 package org.infinispan.objectfilter.impl.hql;
 
-import com.google.protobuf.ByteString;
 import org.hibernate.hql.ast.spi.EntityNamesResolver;
 import org.infinispan.objectfilter.impl.logging.Log;
 import org.infinispan.protostream.SerializationContext;
@@ -50,7 +49,7 @@ public final class ProtobufPropertyHelper extends ObjectPropertyHelper<Descripto
          case STRING:
             return String.class;
          case BYTE_STRING:
-            return ByteString.class;
+            return byte[].class;
          case ENUM:
             return Integer.class;
       }
@@ -138,7 +137,7 @@ public final class ProtobufPropertyHelper extends ObjectPropertyHelper<Descripto
             return super.convertToPropertyType(entityType, propertyPath, value);
          }
       } else if (field.getJavaType() == JavaType.ENUM) {
-         EnumDescriptor enumType = field.getEnumDescriptor();
+         EnumDescriptor enumType = field.getEnumType();
          EnumValueDescriptor enumValue;
          try {
             enumValue = enumType.findValueByNumber(Integer.parseInt(value));
