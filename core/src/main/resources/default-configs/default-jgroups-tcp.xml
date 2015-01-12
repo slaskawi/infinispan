@@ -1,8 +1,8 @@
 <config xmlns="urn:org:jgroups"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="urn:org:jgroups http://www.jgroups.org/schema/JGroups-3.6.xsd">
-   <TCP bind_addr="${jgroups.tcp.address:127.0.0.1}"
-        bind_port="${jgroups.tcp.port:7800}"
+   <TCP bind_addr="${jgroups.bind_addr:localhost}"
+        bind_port="${jgroups.bind_port:7800}"
         enable_diagnostics="false"
         thread_naming_pattern="pl"
         recv_buf_size="20m"
@@ -26,10 +26,11 @@
         oob_thread_pool.keep_alive_time="60000"
         oob_thread_pool.queue_enabled="false"
    />
-   <MPING bind_addr="${jgroups.bind_addr:127.0.0.1}"
+   <MPING bind_addr="${jgroups.bind_addr:localhost}"
           mcast_addr="${jgroups.mping.mcast_addr:228.2.4.6}"
           mcast_port="${jgroups.mping.mcast_port:43366}"
           ip_ttl="${jgroups.udp.ip_ttl:2}" 
+          timeout="10000"
    />
    <MERGE3 min_interval="10000" 
            max_interval="30000" 

@@ -2,8 +2,8 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="urn:org:jgroups http://www.jgroups.org/schema/JGroups-3.6.xsd">
 
-   <TCP bind_addr="${jgroups.tcp.address:127.0.0.1}"
-        bind_port="${jgroups.tcp.port:7800}"
+   <TCP bind_addr="${jgroups.bind_addr:localhost}"
+        bind_port="${jgroups.bind_port:7800}"
         enable_diagnostics="false"
         thread_naming_pattern="pl"
         recv_buf_size="20m"

@@ -71,11 +71,15 @@
       oob_thread_pool.keep_alive_time="60000"
       oob_thread_pool.queue_enabled="false"/>
    <PING
-      num_initial_members="40"/>
+      num_initial_members="40"
+      timeout="10000"/>
    <MPING 
-      ip_ttl="${jgroups.udp.ip_ttl:2}"/>
+      ip_ttl="${jgroups.udp.ip_ttl:2}"
+      timeout="10000"/>
    <MERGE2/>
-   <MERGE3/>
+   <MERGE3
+      min_interval="10000"
+      max_interval="30000"/>
    <FD_SOCK/>
    <FD timeout="6000" max_tries="5" msg_counts_as_heartbeat="false"/>
    <FD_ALL2 interval="3000" timeout="15000"/>
@@ -84,7 +88,7 @@
       interval="15000" 
       timeout_check_interval="5000"/>
    <VERIFY_SUSPECT 
-      timeout="1500"/>
+      timeout="5000"/>
    <BARRIER/>
    <pbcast.NAKACK use_mcast_xmit="true"
       retransmit_timeout="300,600,1200,2400,4800"
