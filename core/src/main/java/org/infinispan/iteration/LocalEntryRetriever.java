@@ -229,7 +229,7 @@ public class LocalEntryRetriever<K, V> implements EntryRetriever<K, V> {
          partitionListener.iterators.add(itr);
          if (partitionListener.currentMode != AvailabilityMode.AVAILABLE) {
             partitionListener.iterators.remove(itr);
-            throw log.partitionUnavailable();
+            throw log.partitionDegraded();
          }
       }
    }
