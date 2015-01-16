@@ -1,22 +1,16 @@
 package org.infinispan.cdi;
 
+import org.infinispan.cdi.util.defaultbean.DefaultBeanHolder;
+import org.infinispan.cdi.util.defaultbean.Installed;
+import org.infinispan.cdi.util.logging.Log;
+import org.infinispan.commons.logging.LogFactory;
+
 import javax.cache.annotation.CachePut;
 import javax.cache.annotation.CacheRemove;
 import javax.cache.annotation.CacheRemoveAll;
 import javax.cache.annotation.CacheResult;
 import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.AfterBeanDiscovery;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.BeforeBeanDiscovery;
-import javax.enterprise.inject.spi.Extension;
-import javax.enterprise.inject.spi.ProcessBean;
-import javax.enterprise.inject.spi.ProcessInjectionTarget;
-import javax.enterprise.inject.spi.ProcessProducer;
-
-import org.infinispan.cdi.util.defaultbean.DefaultBeanHolder;
-import org.infinispan.cdi.util.defaultbean.Installed;
-import org.infinispan.cdi.util.logging.Log;
-import org.infinispan.commons.logging.LogFactory;
+import javax.enterprise.inject.spi.*;
 
 /**
  * The Infinispan CDI extension class.
@@ -30,23 +24,21 @@ public class InfinispanExtension implements Extension {
    private final InfinispanExtensionRemote remoteExtension;
 
    public InfinispanExtension() {
-      InfinispanExtensionEmbedded e;
+      InfinispanExtensionEmbedded e = null;
+      InfinispanExtensionRemote r = null;
       try {
          e = new InfinispanExtensionEmbedded();
          log.debug("Enabling support for embedded CDI");
       } catch (Throwable t) {
-         e = null;
          log.debug("Disabling support for embedded CDI");
       }
-      embeddedExtension = e;
-      InfinispanExtensionRemote r;
       try {
          r = new InfinispanExtensionRemote();
          log.debug("Enabling support for remote CDI");
       } catch (Throwable t) {
-         r = null;
          log.debug("Disabling support for remote CDI");
       }
+      embeddedExtension = e;
       remoteExtension = r;
    }
 

@@ -2,6 +2,7 @@ package org.infinispan.cdi.util;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -150,4 +151,34 @@ public abstract class AbstractImmutableBean<T> implements Bean<T> {
         return toString;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        AbstractImmutableBean that = (AbstractImmutableBean) o;
+
+//        if (alternative != that.alternative) return false;
+        if (nullable != that.nullable) return false;
+        if (name != null ? !name.equals(that.name) : that.name != null) return false;
+        if (qualifiers != null ? !qualifiers.containsAll(that.qualifiers) : that.qualifiers != null) return false;
+        if (scope != null ? !scope.equals(that.scope) : that.scope != null) return false;
+        if (stereotypes != null ? !stereotypes.containsAll(that.stereotypes) : that.stereotypes != null) return false;
+//        if (types != null ? !types.containsAll(that.types) : that.types != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 31;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (qualifiers != null ? Arrays.deepHashCode(qualifiers.toArray()) : 0);
+        result = 31 * result + (scope != null ? scope.hashCode() : 0);
+        result = 31 * result + (stereotypes != null ? Arrays.deepHashCode(stereotypes.toArray()) : 0);
+//        result = 31 * result + (types != null ? Arrays.deepHashCode(types.toArray()) : 0);
+        result = 31 * result + (alternative ? 1 : 0);
+        result = 31 * result + (nullable ? 1 : 0);
+        return result;
+    }
 }
