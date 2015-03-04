@@ -1,7 +1,5 @@
 package org.infinispan.server.test.cs.custom;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.infinispan.arquillian.core.InfinispanResource;
 import org.infinispan.arquillian.core.RemoteInfinispanServer;
 import org.infinispan.arquillian.core.RunningServer;
@@ -24,11 +22,10 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import javax.management.ObjectName;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -53,15 +50,15 @@ public class CustomCacheStoreIT {
     public static void before() throws Exception {
         // need to put the brno loader classes into ispn core jar, so ispn can see them
         String serverDir = System.getProperty("server1.dist");
-        File ispnCoreJarDir = new File(serverDir + "/modules/system/layers/base/org/infinispan/main/");
-        FileFilter ispnCoreJarFilter = new WildcardFileFilter("infinispan-core*.jar");
-        File ispnCoreJar = ispnCoreJarDir.listFiles(ispnCoreJarFilter)[0];
+//        File ispnCoreJarDir = new File(serverDir + "/modules/system/layers/base/org/infinispan/main/");
+//        FileFilter ispnCoreJarFilter = new WildcardFileFilter("infinispan-core*.jar");
+//        File ispnCoreJar = ispnCoreJarDir.listFiles(ispnCoreJarFilter)[0];
 
-        String customLoaderClassesDir = System.getProperty("basedir") + "/target/test-classes/org/infinispan/persistence/cluster/";
-        File[] csClasses = {new File(customLoaderClassesDir + "MyCustomCacheStore.class"),
-                            new File(customLoaderClassesDir + "MyCustomCacheStoreConfiguration.class"),
-                            new File(customLoaderClassesDir + "MyCustomCacheStoreConfigurationBuilder.class")};
-        addFilesToZip(ispnCoreJar, csClasses, "org/infinispan/persistence/cluster/");
+//        String customLoaderClassesDir = System.getProperty("basedir") + "/target/test-classes/org/infinispan/persistence/cluster/";
+//        File[] csClasses = {new File(customLoaderClassesDir + "MyCustomCacheStore.class"),
+//                            new File(customLoaderClassesDir + "MyCustomCacheStoreConfiguration.class"),
+//                            new File(customLoaderClassesDir + "MyCustomCacheStoreConfigurationBuilder.class")};
+//        addFilesToZip(ispnCoreJar, csClasses, "org/infinispan/persistence/cluster/");
 
         JavaArchive deployedCacheStore = ShrinkWrap.create(JavaArchive.class);
         deployedCacheStore.addPackage(MyCustomCacheStore.class.getPackage());
@@ -95,48 +92,48 @@ public class CustomCacheStoreIT {
         return provider.getConnection().getAttribute(new ObjectName(mbean), attr).toString();
     }
 
-    /*
-    * Credit goes to user577732 - http://stackoverflow.com/a/9305091/2064880 (slightly modified)
-    */
-    public static void addFilesToZip(File source, File[] files, String path){
-        try{
-            File tmpZip = new File(source.getAbsolutePath()+".tmp");
-            FileUtils.copyFile(source, tmpZip);
-
-            byte[] buffer = new byte[4096];
-            ZipInputStream zin = new ZipInputStream(new FileInputStream(tmpZip));
-            ZipOutputStream out = new ZipOutputStream(new FileOutputStream(source));
-            for(int i = 0; i < files.length; i++){
-                InputStream in = new FileInputStream(files[i]);
-                out.putNextEntry(new ZipEntry(path + files[i].getName()));
-                for(int read = in.read(buffer); read > -1; read = in.read(buffer)){
-                    out.write(buffer, 0, read);
-                }
-                out.closeEntry();
-                in.close();
-            }
-            for(ZipEntry ze = zin.getNextEntry(); ze != null; ze = zin.getNextEntry()){
-                if(!zipEntryMatch(ze.getName(), files, path)){
-                    out.putNextEntry(ze);
-                    for(int read = zin.read(buffer); read > -1; read = zin.read(buffer)){
-                        out.write(buffer, 0, read);
-                    }
-                    out.closeEntry();
-                }
-            }
-            out.close();
-            tmpZip.delete();
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-    }
-
-   public static boolean zipEntryMatch(String zeName, File[] files, String path){
-        for(int i = 0; i < files.length; i++){
-            if((path + files[i].getName()).equals(zeName)){
-                return true;
-            }
-        }
-        return false;
-    }
+//    /*
+//    * Credit goes to user577732 - http://stackoverflow.com/a/9305091/2064880 (slightly modified)
+//    */
+//    public static void addFilesToZip(File source, File[] files, String path){
+//        try{
+//            File tmpZip = new File(source.getAbsolutePath()+".tmp");
+//            FileUtils.copyFile(source, tmpZip);
+//
+//            byte[] buffer = new byte[4096];
+//            ZipInputStream zin = new ZipInputStream(new FileInputStream(tmpZip));
+//            ZipOutputStream out = new ZipOutputStream(new FileOutputStream(source));
+//            for(int i = 0; i < files.length; i++){
+//                InputStream in = new FileInputStream(files[i]);
+//                out.putNextEntry(new ZipEntry(path + files[i].getName()));
+//                for(int read = in.read(buffer); read > -1; read = in.read(buffer)){
+//                    out.write(buffer, 0, read);
+//                }
+//                out.closeEntry();
+//                in.close();
+//            }
+//            for(ZipEntry ze = zin.getNextEntry(); ze != null; ze = zin.getNextEntry()){
+//                if(!zipEntryMatch(ze.getName(), files, path)){
+//                    out.putNextEntry(ze);
+//                    for(int read = zin.read(buffer); read > -1; read = zin.read(buffer)){
+//                        out.write(buffer, 0, read);
+//                    }
+//                    out.closeEntry();
+//                }
+//            }
+//            out.close();
+//            tmpZip.delete();
+//        }catch(Exception e){
+//            e.printStackTrace();
+//        }
+//    }
+//
+//   public static boolean zipEntryMatch(String zeName, File[] files, String path){
+//        for(int i = 0; i < files.length; i++){
+//            if((path + files[i].getName()).equals(zeName)){
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
 }
