@@ -1,16 +1,5 @@
 package org.infinispan.server.test.cs.custom;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
-
-import javax.management.ObjectName;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.infinispan.arquillian.core.InfinispanResource;
@@ -20,13 +9,26 @@ import org.infinispan.arquillian.core.WithRunningServer;
 import org.infinispan.arquillian.utils.MBeanServerConnectionProvider;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
+import org.infinispan.persistence.cluster.MyCustomCacheStore;
+import org.infinispan.persistence.spi.ExternalStore;
 import org.infinispan.server.test.category.CacheStore;
 import org.infinispan.server.test.util.ITestUtils;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.Asset;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
+
+import javax.management.ObjectName;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -48,7 +50,7 @@ public class CustomCacheStoreIT {
     final String cacheLoaderMBean = "jboss.infinispan:type=Cache,name=\"default(local)\",manager=\"local\",component=CacheLoader";
 
     @BeforeClass
-    public static void before() {
+    public static void before() throws Exception {
         // need to put the brno loader classes into ispn core jar, so ispn can see them
         String serverDir = System.getProperty("server1.dist");
         File ispnCoreJarDir = new File(serverDir + "/modules/system/layers/base/org/infinispan/main/");
@@ -60,6 +62,20 @@ public class CustomCacheStoreIT {
                             new File(customLoaderClassesDir + "MyCustomCacheStoreConfiguration.class"),
                             new File(customLoaderClassesDir + "MyCustomCacheStoreConfigurationBuilder.class")};
         addFilesToZip(ispnCoreJar, csClasses, "org/infinispan/persistence/cluster/");
+
+        JavaArchive deployedCacheStore = ShrinkWrap.create(JavaArchive.class);
+        deployedCacheStore.addPackage(MyCustomCacheStore.class.getPackage());
+        deployedCacheStore.addAsManifestResource(new Asset() {
+            @Override
+            public InputStream openStream() {
+                String serviceImplementation = MyCustomCacheStore.class.getName();
+                return new ByteArrayInputStream(serviceImplementation.getBytes(StandardCharsets.UTF_8));
+            }
+        }, "services/" + ExternalStore.class.getName());
+
+        deployedCacheStore.as(ZipExporter.class).exportTo(
+                new File(serverDir, "/standalone/deployments/custom-store.jar"), true);
+
     }
 
     @Test
