@@ -168,6 +168,7 @@ public class ModelKeys {
     static final String ROLE = "role";
     static final String ROLES = "roles";
     static final String SECURITY = "security";
+    static final String PERSISTENCE = "persistence";
     static final String SECURITY_NAME = "SECURITY";
     static final String SEGMENTS = "segments";
     static final String CAPACITY_FACTOR = "capacity-factor";

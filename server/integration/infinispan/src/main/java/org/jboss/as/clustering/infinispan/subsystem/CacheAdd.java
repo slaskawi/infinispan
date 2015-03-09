@@ -22,27 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.EnumMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
-
 import org.infinispan.Cache;
-import org.infinispan.commons.configuration.BuiltBy;
-import org.infinispan.commons.configuration.ConfiguredBy;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.commons.util.FileLookupFactory;
 import org.infinispan.commons.util.TypedProperties;
@@ -53,11 +33,7 @@ import org.infinispan.configuration.parsing.ParserRegistry;
 import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.persistence.jdbc.DatabaseType;
-import org.infinispan.persistence.jdbc.configuration.AbstractJdbcStoreConfigurationBuilder;
-import org.infinispan.persistence.jdbc.configuration.JdbcBinaryStoreConfigurationBuilder;
-import org.infinispan.persistence.jdbc.configuration.JdbcMixedStoreConfigurationBuilder;
-import org.infinispan.persistence.jdbc.configuration.JdbcStringBasedStoreConfigurationBuilder;
-import org.infinispan.persistence.jdbc.configuration.TableManipulationConfigurationBuilder;
+import org.infinispan.persistence.jdbc.configuration.*;
 import org.infinispan.persistence.leveldb.configuration.CompressionType;
 import org.infinispan.persistence.leveldb.configuration.LevelDBStoreConfiguration;
 import org.infinispan.persistence.leveldb.configuration.LevelDBStoreConfigurationBuilder;
@@ -69,12 +45,7 @@ import org.infinispan.transaction.LockingMode;
 import org.infinispan.transaction.tm.BatchModeTransactionManager;
 import org.infinispan.util.concurrent.IsolationLevel;
 import org.jboss.as.clustering.infinispan.InfinispanMessages;
-import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.*;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
@@ -92,14 +63,21 @@ import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.*;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
 import org.jboss.tm.XAResourceRecoveryRegistry;
+
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.UnknownHostException;
+import java.util.*;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * Base class for cache add handlers
@@ -183,7 +161,6 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-
         // Because we use child resources in a read-only manner to configure the cache, replace the local model with the full model
         ModelNode cacheModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
 
@@ -196,7 +173,6 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
     }
 
     Collection<ServiceController<?>> installRuntimeServices(OperationContext context, ModelNode operation, ModelNode containerModel, ModelNode cacheModel, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
-
         // get all required addresses, names and service names
         PathAddress cacheAddress = getCacheAddressFromOperation(operation);
         PathAddress containerAddress = getCacheContainerAddressFromOperation(operation);
@@ -235,14 +211,14 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         // install the cache configuration service (configures a cache)
         controllers.add(this.installCacheConfigurationService(target, containerName, cacheName, defaultCache, moduleId,
                         builder, config, dependencies, verificationHandler));
-        log.debugf("Cache configuration service for %s installed for container %s", cacheName, containerName);
+        log.errorf("Cache configuration service for %s installed for container %s", cacheName, containerName);
 
         // now install the corresponding cache service (starts a configured cache)
         controllers.add(this.installCacheService(target, containerName, cacheName, defaultCache, initialMode, config, verificationHandler));
 
         // install a name service entry for the cache
         controllers.add(this.installJndiService(target, containerName, cacheName, InfinispanJndiName.createCacheJndiName(jndiName, containerName, cacheName), verificationHandler));
-        log.debugf("Cache service for cache %s installed for container %s", cacheName, containerName);
+       log.errorf("Cache service for cache %s installed for container %s", cacheName, containerName);
 
         return controllers;
     }
@@ -289,9 +265,9 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         final ServiceBuilder<?> configBuilder = target.addService(CacheConfigurationService.getServiceName(containerName, cacheName), service)
                 .addDependency(EmbeddedCacheManagerService.getServiceName(containerName), EmbeddedCacheManager.class, container)
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, cacheConfigurationDependencies.getModuleLoaderInjector())
-                .setInitialMode(ServiceController.Mode.PASSIVE)
-        ;
-        if (config.invocationBatching().enabled()) {
+                        .setInitialMode(ServiceController.Mode.PASSIVE);
+
+       if (config.invocationBatching().enabled()) {
             cacheConfigurationDependencies.getTransactionManagerInjector().inject(BatchModeTransactionManager.getInstance());
         } else if (config.transaction().transactionMode() == org.infinispan.transaction.TransactionMode.TRANSACTIONAL) {
             configBuilder.addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, TransactionManager.class, cacheConfigurationDependencies.getTransactionManagerInjector());
@@ -320,6 +296,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         final ServiceBuilder<?> builder = target.addService(CacheService.getServiceName(containerName, cacheName), service)
                 .addDependency(CacheConfigurationService.getServiceName(containerName, cacheName))
                 .addDependency(EmbeddedCacheManagerService.getServiceName(containerName), EmbeddedCacheManager.class, container)
+                .addDependency(ServiceName.JBOSS.append("ExternalStore-service.org_infinispan_persistence_cluster_MyCustomCacheStore"))
                 .setInitialMode(initialMode)
         ;
         if (config.transaction().recovery().enabled()) {
@@ -638,7 +615,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         } else if (loaderKey.equals(ModelKeys.LOADER)) {
            String className = loader.require(ModelKeys.CLASS).asString();
            try {
-              Object instance = newInstance(className);
+//              Object instance = newInstance(className);
               return handleStoreOrLoaderClass(className, persistenceBuilder);
            } catch (Exception e) {
               throw InfinispanMessages.MESSAGES.invalidCacheStore(e, className);
@@ -652,22 +629,25 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
     private StoreConfigurationBuilder handleStoreOrLoaderClass(String className,
                                                                PersistenceConfigurationBuilder persistenceBuilder)
           throws ClassNotFoundException {
-       Class<?> storeImplClass = CacheLoader.class.getClassLoader().loadClass(className);
-       ConfiguredBy annotation = storeImplClass.getAnnotation(ConfiguredBy.class);
-       Class<? extends StoreConfigurationBuilder> builderClass = null;
-       if (annotation != null) {
-          Class<?> configuredBy = annotation.value();
-          if (configuredBy != null) {
-             BuiltBy builtBy = configuredBy.getAnnotation(BuiltBy.class);
-             builderClass = builtBy.value().asSubclass(StoreConfigurationBuilder.class);
-          }
-       }
+//       Class<?> storeImplClass = CacheLoader.class.getClassLoader().loadClass(className);
+//       ConfiguredBy annotation = storeImplClass.getAnnotation(ConfiguredBy.class);
+//       Class<? extends StoreConfigurationBuilder> builderClass = null;
+//       if (annotation != null) {
+//          Class<?> configuredBy = annotation.value();
+//          if (configuredBy != null) {
+//             BuiltBy builtBy = configuredBy.getAnnotation(BuiltBy.class);
+//             builderClass = builtBy.value().asSubclass(StoreConfigurationBuilder.class);
+//          }
+//       }
        StoreConfigurationBuilder scb;
-       if (builderClass == null) {
-          scb = persistenceBuilder.addStore(CustomStoreConfigurationBuilder.class).customStoreClass(storeImplClass);
-       } else {
-          scb = persistenceBuilder.addStore(builderClass);
-       }
+//       if (builderClass == null) {
+//          scb = persistenceBuilder.addStore(CustomStoreConfigurationBuilder.class).customStoreClass(storeImplClass);
+//       } else {
+//          scb = persistenceBuilder.addStore(builderClass);
+//       }
+
+       scb = persistenceBuilder.addStore(CustomStoreConfigurationBuilder.class);
+
        return scb;
     }
 
@@ -862,7 +842,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         } else if (storeKey.equals(ModelKeys.STORE)) {
            String className = store.require(ModelKeys.CLASS).asString();
            try {
-              Object instance = newInstance(className);
+//              Object instance = newInstance(className);
               return handleStoreOrLoaderClass(className, persistenceBuilder);
            } catch (Exception e) {
               throw InfinispanMessages.MESSAGES.invalidCacheStore(e, className);

@@ -8,6 +8,7 @@ import org.infinispan.commons.CacheException;
 import org.infinispan.commons.CacheListenerException;
 import org.infinispan.commons.marshall.AdvancedExternalizer;
 import org.infinispan.commons.util.TypedProperties;
+import org.infinispan.configuration.cache.StoreConfiguration;
 import org.infinispan.jmx.JmxDomainConflictException;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.partitionhandling.AvailabilityException;
@@ -1232,4 +1233,7 @@ public interface Log extends BasicLogger {
 
    @Message(value = "Remote transaction %s rolled back because originator is no longer in the cluster", id = 332)
    CacheException orphanTransactionRolledBack(GlobalTransaction gtx);
+   
+   @Message(value = "Unable to instantiate class for StoreConfiguration %s", id = 333)
+   CacheConfigurationException unableToInstantiateClass(StoreConfiguration storeConfiguration);
 }

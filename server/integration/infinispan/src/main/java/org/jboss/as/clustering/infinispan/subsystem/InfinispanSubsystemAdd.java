@@ -22,18 +22,23 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.clustering.infinispan.InfinispanLogger.ROOT_LOGGER;
-
-import java.util.List;
-
+import org.jboss.as.clustering.infinispan.cs.*;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.server.AbstractDeploymentChainStep;
+import org.jboss.as.server.DeploymentProcessorTarget;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
+
+import java.util.List;
+
+import static org.jboss.as.clustering.infinispan.InfinispanLogger.ROOT_LOGGER;
 
 /**
  * @author Paul Ferraro
@@ -58,6 +63,19 @@ public class InfinispanSubsystemAdd extends AbstractAddStepHandler {
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         ROOT_LOGGER.activatingSubsystem();
+       final ServiceName serviceName = ServiceName.JBOSS.append("deployable-cache-stores");
+       context.addStep(new AbstractDeploymentChainStep() {
+          protected void execute(DeploymentProcessorTarget processorTarget) {
+             int basePriority = 0x1701;
+             processorTarget.addDeploymentProcessor("infinispan", Phase.INSTALL, ++basePriority, new AdvancedCacheLoaderExtensionProcessor(serviceName));
+             processorTarget.addDeploymentProcessor("infinispan", Phase.INSTALL, ++basePriority, new AdvancedCacheWriterExtensionProcessor(serviceName));
+             processorTarget.addDeploymentProcessor("infinispan", Phase.INSTALL, ++basePriority, new AdvancedLoadWriteStoreExtensionProcessor(serviceName));
+             processorTarget.addDeploymentProcessor("infinispan", Phase.INSTALL, ++basePriority, new CacheLoaderExtensionProcessor(serviceName));
+             processorTarget.addDeploymentProcessor("infinispan", Phase.INSTALL, ++basePriority, new CacheWriterExtensionProcessor(serviceName));
+             processorTarget.addDeploymentProcessor("infinispan", Phase.INSTALL, ++basePriority, new ExternalStoreExtensionProcessor(serviceName));
+             processorTarget.addDeploymentProcessor("infinispan", Phase.DEPENDENCIES, ++basePriority, new ServerExtensionDependenciesProcessor());
+          }
+       }, OperationContext.Stage.RUNTIME);
     }
 
     protected boolean requiresRuntimeVerification() {
