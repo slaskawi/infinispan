@@ -1,14 +1,13 @@
 package org.infinispan.configuration.cache;
 
-import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-
+import org.infinispan.commons.CacheConfigurationException;
 import org.infinispan.commons.configuration.Builder;
 import org.infinispan.commons.configuration.ConfigurationUtils;
-import org.infinispan.commons.CacheConfigurationException;
 import org.infinispan.configuration.global.GlobalConfiguration;
+
+import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Configuration for cache stores.
@@ -129,15 +128,20 @@ public class PersistenceConfigurationBuilder extends AbstractConfigurationChildB
    public PersistenceConfigurationBuilder read(PersistenceConfiguration template) {
       clearStores();
       for (StoreConfiguration c : template.stores()) {
-         Class<? extends StoreConfigurationBuilder<?, ?>> builderClass = (Class<? extends StoreConfigurationBuilder<?, ?>>) ConfigurationUtils.builderForNonStrict(c);
-         if (builderClass == null) {
-            builderClass = CustomStoreConfigurationBuilder.class;
-         }
+         Class<? extends StoreConfigurationBuilder<?, ?>> builderClass = getBuilderClass(c);
          StoreConfigurationBuilder builder =  this.addStore(builderClass);
          builder.read(c);
       }
       this.passivation = template.passivation();
       return this;
+   }
+
+   private Class<? extends StoreConfigurationBuilder<?, ?>> getBuilderClass(StoreConfiguration c) {
+      Class<? extends StoreConfigurationBuilder<?, ?>> builderClass = (Class<? extends StoreConfigurationBuilder<?, ?>>) ConfigurationUtils.builderForNonStrict(c);
+      if (builderClass == null) {
+         builderClass = CustomStoreConfigurationBuilder.class;
+      }
+      return builderClass;
    }
 
    public List<StoreConfigurationBuilder<?, ?>> stores() {
