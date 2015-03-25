@@ -1244,4 +1244,7 @@ public interface Log extends BasicLogger {
    @LogMessage(level = INFO)
    @Message(value = "Finished cluster-wide rebalance for cache %s, topology id = %d", id = 336)
    void clusterWideRebalanceCompleted(String cacheName, int topologyId);
+   
+   @Message(value = "Unable to instantiate loader/writer instance for StoreConfiguration %s", id = 337)
+   CacheConfigurationException unableToInstantiateClass(Class<?> storeConfigurationClass);
 }
