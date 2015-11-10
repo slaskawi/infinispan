@@ -45,6 +45,18 @@
         <module-def name="org.infinispan.commons" slot="${infinispan.slot}">
             <maven-resource group="org.infinispan" artifact="infinispan-commons" />
         </module-def>
+
+        <module-def name="org.infinispan.cdi-remote" slot="${infinispan.slot}">
+            <maven-resource group="org.infinispan" artifact="infinispan-cdi-remote" />
+        </module-def>
+
+        <module-def name="org.infinispan.jcache-remote.commons" slot="${infinispan.slot}">
+            <maven-resource group="org.infinispan" artifact="infinispan-jcache-commons" />
+        </module-def>
+
+        <module-def name="org.infinispan.jcache-remote" slot="${infinispan.slot}">
+            <maven-resource group="org.infinispan" artifact="infinispan-jcache-remote" />
+        </module-def>
     </target>
 
     <target name="all" depends="clean, copy-files, modules" />
