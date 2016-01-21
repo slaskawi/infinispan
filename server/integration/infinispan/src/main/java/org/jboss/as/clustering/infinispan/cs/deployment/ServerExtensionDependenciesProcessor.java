@@ -30,12 +30,12 @@ public class ServerExtensionDependenciesProcessor implements DeploymentUnitProce
 
    @Override
    public void deploy(DeploymentPhaseContext ctx) throws DeploymentUnitProcessingException {
-      if (hasInfinispanExtensions(ctx)) {
+//      if (hasInfinispanExtensions(ctx)) {
          DeploymentUnit deploymentUnit = ctx.getDeploymentUnit();
          ModuleSpecification moduleSpec = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
          ModuleLoader moduleLoader = Module.getBootModuleLoader();
          moduleSpec.addSystemDependency(new ModuleDependency(moduleLoader, API, false, false, false, false));
-      }
+//      }
    }
 
    private boolean hasInfinispanExtensions(DeploymentPhaseContext ctx) {
