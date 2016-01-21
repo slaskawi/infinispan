@@ -22,6 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import org.jboss.as.clustering.infinispan.task.DeployableTaskProcessor;
 import org.jboss.as.clustering.infinispan.cs.deployment.AdvancedCacheLoaderExtensionProcessor;
 import org.jboss.as.clustering.infinispan.cs.deployment.AdvancedCacheWriterExtensionProcessor;
 import org.jboss.as.clustering.infinispan.cs.deployment.AdvancedLoadWriteStoreExtensionProcessor;
@@ -72,6 +73,16 @@ public class InfinispanSubsystemAdd extends AbstractAddStepHandler {
    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
       ROOT_LOGGER.activatingSubsystem();
       addDeployableCacheStoresProcessors(context);
+      addDeployabeTasks(context);
+   }
+
+   private void addDeployabeTasks(OperationContext context) {
+      context.addStep(new AbstractDeploymentChainStep() {
+         @Override
+         protected void execute(DeploymentProcessorTarget processorTarget) {
+            processorTarget.addDeploymentProcessor(INFINISPAN_SUBSYSTEM_NAME, Phase.POST_MODULE, POST_MODULE_PRIORITY, new DeployableTaskProcessor());
+         }
+      }, OperationContext.Stage.RUNTIME);
    }
 
    private void addDeployableCacheStoresProcessors(OperationContext context) {
