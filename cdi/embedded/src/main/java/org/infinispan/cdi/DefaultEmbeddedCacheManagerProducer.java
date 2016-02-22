@@ -8,6 +8,7 @@ import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.Disposes;
 import javax.enterprise.inject.Produces;
 
@@ -21,6 +22,7 @@ import javax.enterprise.inject.Produces;
  *
  * @author Kevin Pollet <kevin.pollet@serli.com> (C) 2011 SERLI
  */
+@Dependent
 public class DefaultEmbeddedCacheManagerProducer {
 
    private static final String CACHE_NAME = "CDIExtensionDefaultCacheManager";

@@ -1,5 +1,6 @@
 package org.infinispan.cdi.event;
 
+import javax.enterprise.context.Dependent;
 import javax.enterprise.event.Event;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
@@ -8,6 +9,7 @@ import java.lang.annotation.Annotation;
 /**
  * @author Pete Muir
  */
+@Dependent
 public abstract class AbstractEventBridge<T> {
 
    @Inject

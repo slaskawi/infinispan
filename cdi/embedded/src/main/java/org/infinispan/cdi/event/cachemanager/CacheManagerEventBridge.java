@@ -7,12 +7,14 @@ import org.infinispan.notifications.cachemanagerlistener.event.CacheStoppedEvent
 import org.infinispan.notifications.cachemanagerlistener.event.Event;
 import org.infinispan.notifications.cachemanagerlistener.event.ViewChangedEvent;
 
+import javax.enterprise.context.Dependent;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 
 /**
  * @author Pete Muir
  */
+@Dependent
 public class CacheManagerEventBridge extends AbstractEventBridge<Event> {
 
    public void registerObservers(Set<Annotation> qualifierSet,

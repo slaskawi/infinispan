@@ -4,6 +4,7 @@ import org.infinispan.cdi.util.defaultbean.DefaultBean;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.Disposes;
 import javax.enterprise.inject.Produces;
 
@@ -16,6 +17,7 @@ import javax.enterprise.inject.Produces;
  *
  * @author Kevin Pollet <kevin.pollet@serli.com> (C) 2011 SERLI
  */
+@Dependent
 public class DefaultRemoteCacheManagerProducer {
    /**
     * Produces the default remote cache manager with the default settings.

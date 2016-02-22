@@ -6,6 +6,7 @@ import org.infinispan.commons.logging.LogFactory;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 
+import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.Produces;
 
 /**
@@ -18,6 +19,7 @@ import javax.enterprise.inject.Produces;
  * @author Pete Muir
  * @author Kevin Pollet <kevin.pollet@serli.com> (C) 2011 SERLI
  */
+@Dependent
 public class DefaultEmbeddedCacheConfigurationProducer {
 
    private static final EmbeddedLog log = LogFactory.getLog(DefaultEmbeddedCacheConfigurationProducer.class, EmbeddedLog.class);

@@ -6,11 +6,13 @@ import org.infinispan.distexec.mapreduce.Mapper;
 import org.infinispan.distexec.mapreduce.Reducer;
 import org.infinispan.distexec.mapreduce.spi.MapReduceTaskLifecycle;
 
+import javax.enterprise.context.Dependent;
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.InjectionTarget;
 
+@Dependent
 public class DelegatingMapReduceTaskLifecycle implements MapReduceTaskLifecycle {
 
    private final MapReduceTaskLifecycle delegate;

@@ -3,6 +3,7 @@ package org.infinispan.cdi;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 
+import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.Produces;
@@ -19,6 +20,7 @@ import static org.infinispan.cdi.util.Reflections.getMetaAnnotation;
  *
  * @author Kevin Pollet <kevin.pollet@serli.com> (C) 2011 SERLI
  */
+@Dependent
 public class RemoteCacheProducer {
 
    @Inject

@@ -4,6 +4,7 @@ import org.infinispan.cdi.event.AbstractEventBridge;
 import org.infinispan.notifications.Listenable;
 import org.infinispan.notifications.cachelistener.event.Event;
 
+import javax.enterprise.context.Dependent;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 
@@ -13,6 +14,7 @@ import java.util.Set;
  * @author Pete Muir
  * @author Sebastian Laskawiec
  */
+@Dependent
 public class CacheEventBridge extends AbstractEventBridge<Event<?, ?>> {
 
    public void registerObservers(Set<Annotation> qualifierSet,
