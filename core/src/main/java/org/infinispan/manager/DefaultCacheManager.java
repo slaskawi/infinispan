@@ -46,6 +46,8 @@ import org.infinispan.factories.KnownComponentNames;
 import org.infinispan.factories.annotations.SurvivesRestarts;
 import org.infinispan.factories.scopes.Scope;
 import org.infinispan.factories.scopes.Scopes;
+import org.infinispan.health.Health;
+import org.infinispan.health.HealthFactory;
 import org.infinispan.jmx.CacheJmxRegistration;
 import org.infinispan.jmx.CacheManagerJmxRegistration;
 import org.infinispan.jmx.annotations.DataType;
@@ -134,6 +136,7 @@ public class DefaultCacheManager implements EmbeddedCacheManager {
    private final AuthorizationHelper authzHelper;
    private final DependencyGraph<String> cacheDependencyGraph = new DependencyGraph<>();
    private final CacheContainerStats stats;
+   private final Health health;
    private final ConfigurationManager configurationManager;
 
    @GuardedBy("this")
@@ -231,6 +234,7 @@ public class DefaultCacheManager implements EmbeddedCacheManager {
       this.globalComponentRegistry.registerComponent(cacheDependencyGraph, CACHE_DEPENDENCY_GRAPH, false);
       this.globalComponentRegistry.registerComponent(authzHelper, AuthorizationHelper.class);
       this.stats = new CacheContainerStatsImpl(this);
+      this.health = HealthFactory.create(this);
       if (start)
          start();
    }
@@ -304,6 +308,7 @@ public class DefaultCacheManager implements EmbeddedCacheManager {
          globalComponentRegistry.registerComponent(cacheDependencyGraph, CACHE_DEPENDENCY_GRAPH, false);
          authzHelper = new AuthorizationHelper(globalConfiguration.security(), AuditContext.CACHEMANAGER, globalConfiguration.globalJmxStatistics().cacheManagerName());
          stats = new CacheContainerStatsImpl(this);
+         health = HealthFactory.create(this);
       } catch (CacheConfigurationException ce) {
          throw ce;
       } catch (RuntimeException re) {
@@ -347,6 +352,7 @@ public class DefaultCacheManager implements EmbeddedCacheManager {
       globalComponentRegistry.registerComponent(cacheDependencyGraph, CACHE_DEPENDENCY_GRAPH, false);
       authzHelper = new AuthorizationHelper(globalConfiguration.security(), AuditContext.CACHEMANAGER, globalConfiguration.globalJmxStatistics().cacheManagerName());
       stats = new CacheContainerStatsImpl(this);
+      health = HealthFactory.create(this);
       if (start)
          start();
    }
@@ -987,6 +993,11 @@ public class DefaultCacheManager implements EmbeddedCacheManager {
    @Override
    public CacheContainerStats getStats() {
       return stats;
+   }
+
+   @Override
+   public Health getHealth() {
+      return health;
    }
 
    @Override
