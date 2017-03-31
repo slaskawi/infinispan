@@ -17,13 +17,11 @@ pipeline {
                 }
             }
         }
-        
-        post {
-            always {
-                archive '**/target/*.jar'
-                junit '**/target/*-reports/*.xml'
-            }
+    }
+    post {
+        always {
+            archive '**/target/*.jar'
+            junit '**/target/*-reports/*.xml'
         }
-    
     }
 }
