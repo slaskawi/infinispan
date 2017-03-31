@@ -23,9 +23,11 @@ pipeline {
                 branch 'master'
             }
             steps {
-                script {
-                    def mvnHome = tool 'Maven'
-                    sh "${mvnHome}/bin/mvn deploy -pl bom -pl license -pl commons"
+                configFileProvider([configFile(fileId: 'Settings-with-snapshot-deployment', variable: 'MAVEN_SETTINGS')]) {
+                    script {
+                        def mvnHome = tool 'Maven'
+                        sh "${mvnHome}/bin/mvn deploy -s $MAVEN_SETTINGS -pl bom -pl license -pl commons"
+                    }  
                 }
             }
         }
