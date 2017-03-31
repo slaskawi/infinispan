@@ -6,7 +6,7 @@ node {
   
   stage 'Build'
   def mvnHome = tool 'Maven'
-  sh "${mvnHome}/bin/mvn clean package -pl bom -pl commons"
+  sh "${mvnHome}/bin/mvn clean package -pl bom -pl license -pl commons"
   
   stage 'Tests'
   junit 'target/*-reports/**/*.xml'
