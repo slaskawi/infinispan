@@ -2,7 +2,6 @@
 
 pipeline {
     agent any
-
     stages {
         stage('Checkout') {
             steps {
@@ -11,8 +10,7 @@ pipeline {
         }
         stage('Compile') {
             steps {
-                def mvnHome = tool 'maven-3'
-                sh "${mvnHome}/bin/mvn clean install -DskipTests"
+                sh "mvn clean install -DskipTests"
             }
         }
         stage('Deploy') {
