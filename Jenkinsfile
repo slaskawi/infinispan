@@ -10,7 +10,8 @@ pipeline {
         }
         stage('Compile') {
             steps {
-                sh "mvn clean install -DskipTests"
+                def mvnHome = tool 'Maven'
+                sh "${mvnHome}/bin/mvn clean install -pl bom"
             }
         }
         stage('Deploy') {
