@@ -19,10 +19,13 @@ pipeline {
         }
         
         stage('Deploy SNAPSHOT') {
+            when {
+                branch 'master'
+            }
             steps {
                 script {
                     def mvnHome = tool 'Maven'
-                    sh "${mvnHome}/bin/mvn deploy:deploy -pl bom -pl license -pl commons"
+                    sh "${mvnHome}/bin/mvn deploy -pl bom -pl license -pl commons"
                 }
             }
         }
