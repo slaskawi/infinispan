@@ -18,8 +18,8 @@ pipeline {
             }
         }
         
-        stage('Record test results') {
-          junit 'target/*-reports/**/*.xml'
-        }
+        //stage('Record test results') {
+          //junit 'target/*-reports/**/*.xml'
+        //}
     }
 }
