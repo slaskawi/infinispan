@@ -17,10 +17,18 @@ pipeline {
                 }
             }
         }
+        
+        stage('Deploy SNAPSHOT') {
+            steps {
+                script {
+                    def mvnHome = tool 'Maven'
+                    sh "${mvnHome}/bin/mvn deploy:deploy -pl bom -pl license -pl commons"
+                }
+            }
+        }
     }
     post {
         always {
-            archive '**/target/*.jar'
             junit '**/target/*-reports/*.xml'
         }
     }
