@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.infinispan.client.hotrod.ProtocolVersion;
+import org.infinispan.client.hotrod.impl.AddressMapper;
 import org.infinispan.client.hotrod.impl.ConfigurationProperties;
 import org.infinispan.client.hotrod.impl.consistenthash.ConsistentHash;
 import org.infinispan.client.hotrod.impl.transport.TransportFactory;
@@ -48,13 +49,14 @@ public class Configuration {
    private final int maxRetries;
    private final NearCacheConfiguration nearCache;
    private final List<ClusterConfiguration> clusters;
+   private final Class<? extends AddressMapper> addressMapperClass;
 
    Configuration(ExecutorFactoryConfiguration asyncExecutorFactory, Class<? extends FailoverRequestBalancingStrategy> balancingStrategyClass, FailoverRequestBalancingStrategy balancingStrategy, ClassLoader classLoader,
-         ClientIntelligence clientIntelligence, ConnectionPoolConfiguration connectionPool, int connectionTimeout, Class<? extends ConsistentHash>[] consistentHashImpl, boolean forceReturnValues, int keySizeEstimate,
-         Marshaller marshaller, Class<? extends Marshaller> marshallerClass,
-         ProtocolVersion protocolVersion, List<ServerConfiguration> servers, int socketTimeout, SecurityConfiguration security, boolean tcpNoDelay, boolean tcpKeepAlive,
-         Class<? extends TransportFactory> transportFactory, int valueSizeEstimate, int maxRetries, NearCacheConfiguration nearCache,
-         List<ClusterConfiguration> clusters) {
+                 ClientIntelligence clientIntelligence, ConnectionPoolConfiguration connectionPool, int connectionTimeout, Class<? extends ConsistentHash>[] consistentHashImpl, boolean forceReturnValues, int keySizeEstimate,
+                 Marshaller marshaller, Class<? extends Marshaller> marshallerClass,
+                 ProtocolVersion protocolVersion, List<ServerConfiguration> servers, int socketTimeout, SecurityConfiguration security, boolean tcpNoDelay, boolean tcpKeepAlive,
+                 Class<? extends TransportFactory> transportFactory, int valueSizeEstimate, int maxRetries, NearCacheConfiguration nearCache,
+                 List<ClusterConfiguration> clusters, Class<? extends AddressMapper> addressMapperClass) {
       this.asyncExecutorFactory = asyncExecutorFactory;
       this.balancingStrategyClass = balancingStrategyClass;
       this.balancingStrategy = balancingStrategy;
@@ -78,6 +80,7 @@ public class Configuration {
       this.valueSizeEstimate = valueSizeEstimate;
       this.nearCache = nearCache;
       this.clusters = clusters;
+      this.addressMapperClass = addressMapperClass;
    }
 
    public ExecutorFactoryConfiguration asyncExecutorFactory() {
@@ -185,6 +188,10 @@ public class Configuration {
       return maxRetries;
    }
 
+   public Class<? extends AddressMapper> addressMapper() {
+      return addressMapperClass;
+   }
+
    @Override
    public String toString() {
       return "Configuration [asyncExecutorFactory=" + asyncExecutorFactory + ", balancingStrategyClass=" + balancingStrategyClass + ", balancingStrategy=" + balancingStrategy
@@ -193,7 +200,7 @@ public class Configuration {
             + forceReturnValues + ", keySizeEstimate=" + keySizeEstimate + ", marshallerClass=" + marshallerClass + ", marshaller=" + marshaller + ", protocolVersion="
             + protocolVersion + ", servers=" + servers + ", socketTimeout=" + socketTimeout + ", security=" + security + ", tcpNoDelay=" + tcpNoDelay + ", tcpKeepAlive=" + tcpKeepAlive
             + ", transportFactory=" + transportFactory + ", valueSizeEstimate=" + valueSizeEstimate + ", maxRetries=" + maxRetries
-            + "nearCache=" + nearCache + "]";
+            + ", nearCache=" + nearCache + ", addressMapperClass=" + addressMapperClass + "]";
    }
 
    public Properties properties() {
@@ -207,6 +214,7 @@ public class Configuration {
             }
          }
       }
+      properties.setProperty(ConfigurationProperties.ADDRESS_MAPPER, addressMapper().getName());
       properties.setProperty(ConfigurationProperties.REQUEST_BALANCING_STRATEGY, balancingStrategyClass().getName());
       properties.setProperty(ConfigurationProperties.CLIENT_INTELLIGENCE, clientIntelligence().name());
       properties.setProperty(ConfigurationProperties.CONNECT_TIMEOUT, Integer.toString(connectionTimeout()));

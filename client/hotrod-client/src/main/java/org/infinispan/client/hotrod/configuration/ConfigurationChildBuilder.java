@@ -2,14 +2,15 @@ package org.infinispan.client.hotrod.configuration;
 
 import java.util.Properties;
 
+import javax.net.ssl.SSLContext;
+
 import org.infinispan.client.hotrod.ProtocolVersion;
+import org.infinispan.client.hotrod.impl.AddressMapper;
 import org.infinispan.client.hotrod.impl.consistenthash.ConsistentHash;
 import org.infinispan.client.hotrod.impl.consistenthash.ConsistentHashV2;
 import org.infinispan.client.hotrod.impl.transport.TransportFactory;
 import org.infinispan.client.hotrod.impl.transport.tcp.FailoverRequestBalancingStrategy;
 import org.infinispan.commons.marshall.Marshaller;
-
-import javax.net.ssl.SSLContext;
 
 /**
  * ConfigurationChildBuilder.
@@ -57,6 +58,16 @@ public interface ConfigurationChildBuilder {
     * servers according to this strategy.
     */
    ConfigurationBuilder balancingStrategy(Class<? extends FailoverRequestBalancingStrategy> balancingStrategy);
+
+   /**
+    * Performs internal/external address mapping.
+    */
+   ConfigurationBuilder addressMapping(Class<? extends AddressMapper> addressMapper);
+
+   /**
+    * Performs internal/external address mapping.
+    */
+   ConfigurationBuilder addressMapping(String addressMapper);
 
    /**
     * Specifies the {@link ClassLoader} used to find certain resources used by configuration when specified by name
