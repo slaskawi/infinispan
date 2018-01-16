@@ -21,7 +21,7 @@ public class SslEngineConfiguration {
    private final char[] trustStorePassword;
    private final char[] keyStoreCertificatePassword;
 
-   SslEngineConfiguration(String keyStoreFileName, String keyStoreType, char[] keyStorePassword, char[] keyStoreCertificatePassword, String keyAlias,
+   public SslEngineConfiguration(String keyStoreFileName, String keyStoreType, char[] keyStorePassword, char[] keyStoreCertificatePassword, String keyAlias,
                           SSLContext sslContext, String trustStoreFileName, String trustStoreType, char[] trustStorePassword, String protocol) {
       this.keyStoreFileName = keyStoreFileName;
       this.keyStoreType = keyStoreType;

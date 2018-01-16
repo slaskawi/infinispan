@@ -20,7 +20,7 @@ package org.infinispan.server.endpoint.subsystem;
 
 import java.util.Optional;
 
-import org.infinispan.server.router.configuration.builder.MultiTenantRouterConfigurationBuilder;
+import org.infinispan.server.router.configuration.builder.RouterConfigurationBuilder;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -47,7 +47,7 @@ class RouterSubsystemAdd extends AbstractAddStepHandler {
       // Read the full model
       ModelNode config = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
 
-      MultiTenantRouterConfigurationBuilder configuration = new MultiTenantRouterConfigurationBuilder();
+      RouterConfigurationBuilder configuration = new RouterConfigurationBuilder();
       MultiTenantRouterService routerService = new MultiTenantRouterService(configuration, getServiceName(config));
 
       final ServiceName MultitenantRouterServiceName = EndpointUtils.getServiceName(operation, "router");

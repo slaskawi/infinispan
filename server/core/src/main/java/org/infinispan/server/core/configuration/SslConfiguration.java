@@ -18,7 +18,7 @@ public class SslConfiguration {
    private final boolean requireClientAuth;
    private final Map<String, SslEngineConfiguration> sniDomainsConfiguration;
 
-   SslConfiguration(boolean enabled, boolean requireClientAuth, Map<String, SslEngineConfiguration> sniDomainsConfiguration) {
+   public SslConfiguration(boolean enabled, boolean requireClientAuth, Map<String, SslEngineConfiguration> sniDomainsConfiguration) {
       this.enabled = enabled;
       this.requireClientAuth = requireClientAuth;
       this.sniDomainsConfiguration = sniDomainsConfiguration;

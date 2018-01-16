@@ -10,7 +10,7 @@ import org.infinispan.server.core.admin.AdminOperationsHandler;
  * @author Tristan Tarrant
  * @since 5.3
  */
-public abstract class ProtocolServerConfiguration {
+public abstract class ProtocolServerConfiguration implements NettyTransportConfiguration {
    private final String defaultCacheName;
    private final String name;
    private final String host;
@@ -44,6 +44,12 @@ public abstract class ProtocolServerConfiguration {
       this.adminOperationsHandler = adminOperationsHandler;
    }
 
+   public ProtocolServerConfiguration(String name, String host, int port, int idleTimeout,
+                                      int recvBufSize, int sendBufSize, SslConfiguration ssl, boolean tcpNoDelay,
+                                      int workerThreads) {
+      this(null, name, host, port, idleTimeout, recvBufSize, sendBufSize, ssl, tcpNoDelay, workerThreads, null, true, null);
+   }
+
    public String defaultCacheName() {
       return defaultCacheName;
    }
@@ -60,14 +66,17 @@ public abstract class ProtocolServerConfiguration {
       return port;
    }
 
+   @Override
    public int idleTimeout() {
       return idleTimeout;
    }
 
+   @Override
    public int recvBufSize() {
       return recvBufSize;
    }
 
+   @Override
    public int sendBufSize() {
       return sendBufSize;
    }
@@ -76,10 +85,12 @@ public abstract class ProtocolServerConfiguration {
       return ssl;
    }
 
+   @Override
    public boolean tcpNoDelay() {
       return tcpNoDelay;
    }
 
+   @Override
    public int workerThreads() {
       return workerThreads;
    }

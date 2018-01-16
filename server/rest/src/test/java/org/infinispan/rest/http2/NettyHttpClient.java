@@ -3,8 +3,6 @@ package org.infinispan.rest.http2;
 import java.io.FileInputStream;
 import java.security.KeyStore;
 import java.util.Queue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.net.ssl.KeyManagerFactory;
 
@@ -16,10 +14,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpScheme;
 import io.netty.handler.codec.http2.Http2SecurityUtil;
-import io.netty.handler.codec.http2.HttpConversionUtil;
 import io.netty.handler.ssl.ApplicationProtocolConfig;
 import io.netty.handler.ssl.ApplicationProtocolNames;
 import io.netty.handler.ssl.OpenSsl;
@@ -28,7 +23,6 @@ import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.SupportedCipherSuiteFilter;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
-import io.netty.util.AsciiString;
 
 /**
  * HTTP/2 client based on Netty.
@@ -44,28 +38,29 @@ import io.netty.util.AsciiString;
  * @author Sebastian Łaskawiec
  * @see https://github.com/fstab/http2-examples/tree/master/multiplexing-examples/netty-client/src/main/java/de/consol/labs/h2c/examples/client/netty
  */
-public class Http2Client {
+public class NettyHttpClient {
 
-   final SslContext sslCtx;
-   final EventLoopGroup workerGroup = new NioEventLoopGroup();
+   private final SslContext sslCtx;
+   private final EventLoopGroup workerGroup = new NioEventLoopGroup();
 
-   Channel channel;
-   Http2ClientInitializer initializer;
-   //Netty uses stream ids to separate concurrent conversations. It seems to be an implementation details but this counter
-   //get always incremented by 2
-   AtomicInteger streamCounter = new AtomicInteger(3);
-   AsciiString hostname;
+   private Channel channel;
+   private CommunicationInitializer initializer;
 
 
-   public Http2Client(SslContext sslCtx) {
+   public NettyHttpClient(SslContext sslCtx, CommunicationInitializer initializer) {
       this.sslCtx = sslCtx;
+      this.initializer = initializer;
    }
 
-   public static Http2Client newClientWithHttp11Upgrade() {
-      return new Http2Client(null);
+   public static NettyHttpClient newHttp2ClientWithHttp11Upgrade() {
+      return new NettyHttpClient(null, new Http2ClientInitializer(null, Integer.MAX_VALUE));
    }
 
-   public static Http2Client newClientWithAlpn(String keystorePath, String keystorePassword) throws Exception {
+   public static NettyHttpClient newHttp11Client() {
+      return new NettyHttpClient(null, new Http11ClientInitializer(null, Integer.MAX_VALUE));
+   }
+
+   public static NettyHttpClient newHttp2ClientWithALPN(String keystorePath, String keystorePassword) throws Exception {
       KeyStore ks = KeyStore.getInstance("JKS");
       ks.load(new FileInputStream(keystorePath), keystorePassword.toCharArray());
       KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
@@ -84,13 +79,10 @@ public class Http2Client {
                   ApplicationProtocolNames.HTTP_2))
             .build();
 
-      return new Http2Client(sslCtx);
+      return new NettyHttpClient(sslCtx, new Http2ClientInitializer(sslCtx, Integer.MAX_VALUE));
    }
 
    public void start(String host, int port) throws Exception {
-      hostname = new AsciiString(host + ':' + port);
-      initializer = new Http2ClientInitializer(sslCtx, Integer.MAX_VALUE);
-
       Bootstrap b = new Bootstrap();
       b.group(workerGroup);
       b.channel(NioSocketChannel.class);
@@ -103,36 +95,19 @@ public class Http2Client {
       channel = b.connect().syncUninterruptibly().channel();
       System.out.println("Connected to [" + host + ':' + port + ']');
 
-         // Wait for the HTTP/2 upgrade to occur.
-      Http2SettingsHandler http2SettingsHandler = initializer.settingsHandler();
-      http2SettingsHandler.awaitSettings(15, TimeUnit.SECONDS);
+      initializer.upgradeToHttp2IfNeeded();
    }
 
    public void stop() {
       workerGroup.shutdownGracefully();
    }
 
-   public void awaitForResponses() {
-      HttpResponseHandler responseHandler = initializer.responseHandler();
-      responseHandler.awaitResponses(60, TimeUnit.SECONDS);
-   }
-
    public Queue<FullHttpResponse> getResponses() {
-      awaitForResponses();
-      HttpResponseHandler responseHandler = initializer.responseHandler();
-      return responseHandler.getResponses();
+      return initializer.getCommunicationHandler().getResponses();
    }
 
    public void sendRequest(FullHttpRequest request) {
-      HttpResponseHandler responseHandler = initializer.responseHandler();
-      int streamId = streamCounter.getAndAdd(2);
-      HttpScheme scheme = sslCtx != null ? HttpScheme.HTTPS : HttpScheme.HTTP;
-
-      request.headers().add(HttpHeaderNames.HOST, hostname);
-      request.headers().add(HttpConversionUtil.ExtensionHeaderNames.SCHEME.text(), scheme.name());
-      request.headers().add(HttpConversionUtil.ExtensionHeaderNames.STREAM_ID.text(), streamId);
-      responseHandler.put(streamId, channel.write(request), channel.newPromise());
-      channel.flush();
+      initializer.getCommunicationHandler().sendRequest(request, sslCtx, channel);
    }
 
 }

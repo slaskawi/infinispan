@@ -26,9 +26,9 @@ import java.util.Optional;
 
 import org.infinispan.rest.RestServer;
 import org.infinispan.server.hotrod.HotRodServer;
-import org.infinispan.server.router.MultiTenantRouter;
+import org.infinispan.server.router.Router;
 import org.infinispan.server.router.configuration.builder.HotRodRouterBuilder;
-import org.infinispan.server.router.configuration.builder.MultiTenantRouterConfigurationBuilder;
+import org.infinispan.server.router.configuration.builder.RouterConfigurationBuilder;
 import org.infinispan.server.router.routes.Route;
 import org.infinispan.server.router.routes.hotrod.NettyHandlerRouteDestination;
 import org.infinispan.server.router.routes.hotrod.SniNettyRouteSource;
@@ -48,7 +48,7 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author Sebastian Łaskawiec
  */
-class MultiTenantRouterService implements Service<MultiTenantRouter> {
+class MultiTenantRouterService implements Service<Router> {
 
     static class HotRodRouting {
         private final InjectedValue<HotRodServer> hotRod = new InjectedValue<>();
@@ -80,7 +80,7 @@ class MultiTenantRouterService implements Service<MultiTenantRouter> {
         }
     }
 
-    private static final String DEFAULT_NAME = "Multitenant Router";
+    private static final String DEFAULT_NAME = "Multitenant EndpointRouter";
 
     private final InjectedValue<SocketBinding> restSocketBinding = new InjectedValue<>();
     private final InjectedValue<SocketBinding> hotrodSocketBinding = new InjectedValue<>();
@@ -88,10 +88,10 @@ class MultiTenantRouterService implements Service<MultiTenantRouter> {
     private final java.util.Map<String, RestRouting> restRouting = new HashMap<>();
 
     private final String name;
-    private final MultiTenantRouterConfigurationBuilder configurationBuilder;
-    private MultiTenantRouter router;
+    private final RouterConfigurationBuilder configurationBuilder;
+    private Router router;
 
-    MultiTenantRouterService(MultiTenantRouterConfigurationBuilder configurationBuilder, Optional<String> serverName) {
+    MultiTenantRouterService(RouterConfigurationBuilder configurationBuilder, Optional<String> serverName) {
         this.name = constructServerName(serverName);
         this.configurationBuilder = configurationBuilder;
     }
@@ -140,7 +140,7 @@ class MultiTenantRouterService implements Service<MultiTenantRouter> {
                 configurationBuilder.routing().add(new Route<>(source, destination));
             });
 
-            this.router = new MultiTenantRouter(configurationBuilder.build());
+            this.router = new Router(configurationBuilder.build());
             this.router.start();
 
             ROOT_LOGGER.routerStarted(NetworkUtils.formatAddress(hotrodAddress), NetworkUtils.formatAddress(restAddress));
@@ -157,7 +157,7 @@ class MultiTenantRouterService implements Service<MultiTenantRouter> {
     }
 
     @Override
-    public synchronized MultiTenantRouter getValue() throws IllegalStateException {
+    public synchronized Router getValue() throws IllegalStateException {
         if (router == null) {
             throw ROOT_LOGGER.serviceNotStarted();
         }

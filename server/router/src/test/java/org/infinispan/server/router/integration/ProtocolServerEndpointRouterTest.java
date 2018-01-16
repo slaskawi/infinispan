@@ -9,9 +9,9 @@ import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.commons.dataconversion.GenericJbossMarshallerEncoder;
 import org.infinispan.server.hotrod.HotRodServer;
 import org.infinispan.server.hotrod.test.HotRodTestingUtil;
-import org.infinispan.server.router.MultiTenantRouter;
-import org.infinispan.server.router.configuration.builder.MultiTenantRouterConfigurationBuilder;
-import org.infinispan.server.router.router.Router;
+import org.infinispan.server.router.Router;
+import org.infinispan.server.router.configuration.builder.RouterConfigurationBuilder;
+import org.infinispan.server.router.router.EndpointRouter;
 import org.infinispan.server.router.routes.Route;
 import org.infinispan.server.router.routes.hotrod.NettyHandlerRouteDestination;
 import org.infinispan.server.router.routes.hotrod.SniNettyRouteSource;
@@ -21,7 +21,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class ProtocolServerRouterTest {
+public class ProtocolServerEndpointRouterTest {
 
     private final String KEYSTORE_LOCATION_FOR_HOTROD_1 = getClass().getClassLoader().getResource("sni_server_keystore.jks").getPath();
     private final String TRUSTSTORE_LOCATION_FOR_HOTROD_1 = getClass().getClassLoader().getResource("sni_client_truststore.jks").getPath();
@@ -31,12 +31,12 @@ public class ProtocolServerRouterTest {
 
     @BeforeClass
     public static void beforeClass() {
-        TestResourceTracker.testStarted(ProtocolServerRouterTest.class.getName());
+        TestResourceTracker.testStarted(ProtocolServerEndpointRouterTest.class.getName());
     }
 
     @AfterClass
     public static void afterClass() {
-        TestResourceTracker.testFinished(ProtocolServerRouterTest.class.getName());
+        TestResourceTracker.testFinished(ProtocolServerEndpointRouterTest.class.getName());
     }
     /**
      * In this scenario we create 2 HotRod servers, each one with different credentials and SNI name. We also create a
@@ -58,7 +58,7 @@ public class ProtocolServerRouterTest {
         SniNettyRouteSource hotrod2Source = new SniNettyRouteSource("hotrod2", KEYSTORE_LOCATION_FOR_HOTROD_2, "secret".toCharArray());
         Route<SniNettyRouteSource, NettyHandlerRouteDestination> routeToHotrod2 = new Route<>(hotrod2Source, hotrod2Destination);
 
-        MultiTenantRouterConfigurationBuilder routerConfigurationBuilder = new MultiTenantRouterConfigurationBuilder();
+        RouterConfigurationBuilder routerConfigurationBuilder = new RouterConfigurationBuilder();
         routerConfigurationBuilder
                 .hotrod()
                 //use random port
@@ -68,11 +68,11 @@ public class ProtocolServerRouterTest {
                 .add(routeToHotrod1)
                 .add(routeToHotrod2);
 
-        MultiTenantRouter router = new MultiTenantRouter(routerConfigurationBuilder.build());
+        Router router = new Router(routerConfigurationBuilder.build());
         router.start();
 
-        InetAddress routerIp = router.getRouter(Router.Protocol.HOT_ROD).get().getIp().get();
-        int routerPort = router.getRouter(Router.Protocol.HOT_ROD).get().getPort().get();
+        InetAddress routerIp = router.getRouter(EndpointRouter.Protocol.HOT_ROD).get().getIp();
+        int routerPort = router.getRouter(EndpointRouter.Protocol.HOT_ROD).get().getPort();
 
         //when
         RemoteCacheManager hotrod1Client = HotRodClientTestingUtil.createWithSni(routerIp, routerPort, "hotrod1", TRUSTSTORE_LOCATION_FOR_HOTROD_1, "secret".toCharArray());

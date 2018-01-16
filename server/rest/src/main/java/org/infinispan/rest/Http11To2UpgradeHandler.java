@@ -13,6 +13,7 @@ import io.netty.handler.codec.http2.HttpToHttp2ConnectionHandler;
 import io.netty.handler.codec.http2.HttpToHttp2ConnectionHandlerBuilder;
 import io.netty.handler.codec.http2.InboundHttp2ToHttpAdapter;
 import io.netty.handler.codec.http2.InboundHttp2ToHttpAdapterBuilder;
+import io.netty.handler.ssl.ApplicationProtocolConfig;
 import io.netty.handler.ssl.ApplicationProtocolNames;
 import io.netty.handler.ssl.ApplicationProtocolNegotiationHandler;
 import io.netty.util.AsciiString;
@@ -27,19 +28,25 @@ public class Http11To2UpgradeHandler extends ApplicationProtocolNegotiationHandl
    private static final int MAX_INITIAL_LINE_SIZE = 4096;
    private static final int MAX_HEADER_SIZE = 8192;
 
-   private final RestServer restServer;
+   private final int maxContentLength;
+   private final ChannelHandler http11Handler;
+   private final ChannelHandler http20Handler;
+   private final boolean useAlpn;
 
-   Http11To2UpgradeHandler(RestServer restServer) {
+   public Http11To2UpgradeHandler(ChannelHandler http11Handler, ChannelHandler http20Handler, int maxContentLength, boolean useAlpn) {
       super(ApplicationProtocolNames.HTTP_1_1);
-      this.restServer = restServer;
+      this.maxContentLength = maxContentLength;
+      this.http11Handler = http11Handler;
+      this.http20Handler = http20Handler;
+      this.useAlpn = useAlpn;
    }
 
    @Override
-   protected void configurePipeline(ChannelHandlerContext ctx, String protocol) throws Exception {
+   public void configurePipeline(ChannelHandlerContext ctx, String protocol) throws Exception {
       configurePipeline(ctx.pipeline(), protocol);
    }
 
-   void configurePipeline(ChannelPipeline pipeline, String protocol) {
+   public void configurePipeline(ChannelPipeline pipeline, String protocol) {
       if (ApplicationProtocolNames.HTTP_2.equals(protocol)) {
          configureHttp2(pipeline);
          return;
@@ -59,7 +66,7 @@ public class Http11To2UpgradeHandler extends ApplicationProtocolNegotiationHandl
    }
 
    private void configureHttp1(ChannelPipeline pipeline) {
-      final HttpServerCodec httpCodec = new HttpServerCodec(MAX_INITIAL_LINE_SIZE, MAX_HEADER_SIZE, restServer.getConfiguration().maxContentLength());
+      final HttpServerCodec httpCodec = new HttpServerCodec(MAX_INITIAL_LINE_SIZE, MAX_HEADER_SIZE, maxContentLength);
       pipeline.addLast(httpCodec);
       pipeline.addLast(new HttpServerUpgradeHandler(httpCodec, protocol -> {
          if (AsciiString.contentEquals(Http2CodecUtil.HTTP_UPGRADE_PROTOCOL_NAME, protocol)) {
@@ -75,7 +82,7 @@ public class Http11To2UpgradeHandler extends ApplicationProtocolNegotiationHandl
    }
 
    private int maxContentLength() {
-      return restServer.getConfiguration().maxContentLength() + MAX_INITIAL_LINE_SIZE + MAX_HEADER_SIZE;
+      return this.maxContentLength + MAX_INITIAL_LINE_SIZE + MAX_HEADER_SIZE;
    }
 
    /**
@@ -103,8 +110,8 @@ public class Http11To2UpgradeHandler extends ApplicationProtocolNegotiationHandl
     *
     * @return HTTP/1.1 handler.
     */
-   public Http11RequestHandler getHttp1Handler() {
-      return new Http11RequestHandler(restServer);
+   public ChannelHandler getHttp1Handler() {
+      return http11Handler;
    }
 
    /**
@@ -112,7 +119,21 @@ public class Http11To2UpgradeHandler extends ApplicationProtocolNegotiationHandl
     *
     * @return HTTP/2 handler.
     */
-   private Http20RequestHandler getHttp2Handler() {
-      return new Http20RequestHandler(restServer);
+   private ChannelHandler getHttp2Handler() {
+      return http20Handler;
+   }
+
+   public ApplicationProtocolConfig getAlpnConfiguration() {
+      if (useAlpn) {
+         return new ApplicationProtocolConfig(
+               ApplicationProtocolConfig.Protocol.ALPN,
+               // NO_ADVERTISE is currently the only mode supported by both OpenSsl and JDK providers.
+               ApplicationProtocolConfig.SelectorFailureBehavior.NO_ADVERTISE,
+               // ACCEPT is currently the only mode supported by both OpenSsl and JDK providers.
+               ApplicationProtocolConfig.SelectedListenerFailureBehavior.ACCEPT,
+               ApplicationProtocolNames.HTTP_2,
+               ApplicationProtocolNames.HTTP_1_1);
+      }
+      return null;
    }
 }

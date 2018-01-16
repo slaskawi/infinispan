@@ -10,10 +10,10 @@ import java.util.Set;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.server.hotrod.HotRodServer;
 import org.infinispan.server.hotrod.test.HotRodTestingUtil;
-import org.infinispan.server.router.MultiTenantRouter;
-import org.infinispan.server.router.configuration.builder.MultiTenantRouterConfigurationBuilder;
+import org.infinispan.server.router.Router;
+import org.infinispan.server.router.configuration.builder.RouterConfigurationBuilder;
 import org.infinispan.server.router.profiling.PerfTestConfiguration;
-import org.infinispan.server.router.router.Router;
+import org.infinispan.server.router.router.EndpointRouter;
 import org.infinispan.server.router.routes.Route;
 import org.infinispan.server.router.routes.RouteDestination;
 import org.infinispan.server.router.routes.RouteSource;
@@ -52,8 +52,8 @@ public class TwoServersWithSslSni implements PerfTestConfiguration {
     }
 
     @Override
-    public Optional<MultiTenantRouter> initRouter(Optional<Set<Route<? extends RouteSource, ? extends RouteDestination>>> routes) {
-        MultiTenantRouterConfigurationBuilder routerConfigurationBuilder = new MultiTenantRouterConfigurationBuilder();
+    public Optional<Router> initRouter(Optional<Set<Route<? extends RouteSource, ? extends RouteDestination>>> routes) {
+        RouterConfigurationBuilder routerConfigurationBuilder = new RouterConfigurationBuilder();
         routerConfigurationBuilder
                 .hotrod()
                 .port(0)
@@ -61,15 +61,15 @@ public class TwoServersWithSslSni implements PerfTestConfiguration {
 
         routes.get().stream().forEach(r -> routerConfigurationBuilder.routing().add(r));
 
-        MultiTenantRouter router = new MultiTenantRouter(routerConfigurationBuilder.build());
+        Router router = new Router(routerConfigurationBuilder.build());
         router.start();
         return Optional.of(router);
     }
 
     @Override
-    public RemoteCacheManager initClient(Optional<MultiTenantRouter> router, Optional<Set<Route<? extends RouteSource, ? extends RouteDestination>>> routes, List<HotRodServer> servers) {
-        InetAddress ip = router.flatMap(r -> r.getRouter(Router.Protocol.HOT_ROD)).flatMap(r -> r.getIp()).get();
-        int port = router.flatMap(r -> r.getRouter(Router.Protocol.HOT_ROD)).flatMap(r -> r.getPort()).get();
+    public RemoteCacheManager initClient(Optional<Router> router, Optional<Set<Route<? extends RouteSource, ? extends RouteDestination>>> routes, List<HotRodServer> servers) {
+        InetAddress ip = router.flatMap(r -> r.getRouter(EndpointRouter.Protocol.HOT_ROD)).map(r -> r.getIp()).get();
+        int port = router.flatMap(r -> r.getRouter(EndpointRouter.Protocol.HOT_ROD)).map(r -> r.getPort()).get();
         return HotRodClientTestingUtil.createWithSni(ip, port, "hotrod1", TRUSTSTORE_LOCATION_FOT_HOTROD_1, KEYSTORE_PASSWORD);
     }
 

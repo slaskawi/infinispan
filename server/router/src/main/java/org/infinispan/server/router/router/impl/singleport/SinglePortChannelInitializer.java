@@ -1,5 +1,9 @@
-package org.infinispan.rest;
+package org.infinispan.server.router.router.impl.singleport;
 
+import org.infinispan.rest.Http11RequestHandler;
+import org.infinispan.rest.Http11To2UpgradeHandler;
+import org.infinispan.rest.Http20RequestHandler;
+import org.infinispan.rest.RestServer;
 import org.infinispan.server.core.transport.NettyChannelInitializer;
 import org.infinispan.server.core.transport.NettyTransport;
 
@@ -8,28 +12,17 @@ import io.netty.handler.ssl.ApplicationProtocolConfig;
 import io.netty.handler.ssl.ApplicationProtocolNames;
 
 /**
- * Creates Netty Channels for this server.
- *
- * <p>
- *    With ALPN support, this class acts only as a bridge between Server Core and ALPN Handler which bootstraps
- *    pipeline handlers
- * </p>
+ * Netty pipeline initializer for Single Port
  *
  * @author Sebastian Łaskawiec
  */
-public class RestChannelInitializer extends NettyChannelInitializer {
+class SinglePortChannelInitializer extends NettyChannelInitializer {
 
    private final Http11To2UpgradeHandler http11To2UpgradeHandler;
 
-   /**
-    * Creates new {@link RestChannelInitializer}.
-    *
-    * @param server Rest Server this initializer belongs to.
-    * @param transport Netty transport.
-    */
-   public RestChannelInitializer(RestServer server, NettyTransport transport) {
+   public SinglePortChannelInitializer(SinglePortEndpointRouter server, RestServer targetRestServer, NettyTransport transport) {
       super(server, transport, null, null);
-      http11To2UpgradeHandler = new Http11To2UpgradeHandler(new Http11RequestHandler(server), new Http20RequestHandler(server), server.getConfiguration().maxContentLength(), server.getConfiguration().ssl().enabled());
+      http11To2UpgradeHandler = new Http11To2UpgradeHandler(new Http11RequestHandler(targetRestServer), new Http20RequestHandler(targetRestServer), targetRestServer.getConfiguration().maxContentLength(), server.getConfiguration().ssl().enabled());
    }
 
    @Override
@@ -47,7 +40,4 @@ public class RestChannelInitializer extends NettyChannelInitializer {
       return http11To2UpgradeHandler.getAlpnConfiguration();
    }
 
-   public Http11To2UpgradeHandler getHttp11To2UpgradeHandler() {
-      return http11To2UpgradeHandler;
-   }
 }

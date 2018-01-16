@@ -1,27 +1,30 @@
 package org.infinispan.server.router.configuration;
 
+import org.infinispan.server.router.Router;
 import org.infinispan.server.router.RoutingTable;
 
 /**
- * Global {@link org.infinispan.server.router.MultiTenantRouter}'s configuration.
+ * Global {@link Router}'s configuration.
  */
-public class MultiTenantRouterConfiguration {
+public class RouterConfiguration {
 
     private final RoutingTable routingTable;
     private final HotRodRouterConfiguration hotRodRouterConfiguration;
     private final RestRouterConfiguration restRouterConfiguration;
+    private final SinglePortRouterConfiguration singlePortRouterConfiguration;
 
     /**
      * Creates new configuration based on protocol configurations and the {@link RoutingTable}.
-     *
-     * @param routingTable              The {@link RoutingTable} for supplying {@link org.infinispan.server.router.routes.Route}s.
+     *  @param routingTable              The {@link RoutingTable} for supplying {@link org.infinispan.server.router.routes.Route}s.
      * @param hotRodRouterConfiguration Hot Rod Configuration.
      * @param restRouterConfiguration   REST Configuration.
+     * @param singlePortRouterConfiguration
      */
-    public MultiTenantRouterConfiguration(RoutingTable routingTable, HotRodRouterConfiguration hotRodRouterConfiguration, RestRouterConfiguration restRouterConfiguration) {
+    public RouterConfiguration(RoutingTable routingTable, HotRodRouterConfiguration hotRodRouterConfiguration, RestRouterConfiguration restRouterConfiguration, SinglePortRouterConfiguration singlePortRouterConfiguration) {
         this.routingTable = routingTable;
         this.hotRodRouterConfiguration = hotRodRouterConfiguration;
         this.restRouterConfiguration = restRouterConfiguration;
+        this.singlePortRouterConfiguration = singlePortRouterConfiguration;
     }
 
     /**
@@ -43,5 +46,12 @@ public class MultiTenantRouterConfiguration {
      */
     public RestRouterConfiguration getRestRouterConfiguration() {
         return restRouterConfiguration;
+    }
+
+    /**
+     * Gets Single Port Configuration.
+     */
+    public SinglePortRouterConfiguration getSinglePortRouterConfiguration() {
+        return singlePortRouterConfiguration;
     }
 }

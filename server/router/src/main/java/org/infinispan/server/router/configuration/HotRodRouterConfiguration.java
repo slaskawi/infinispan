@@ -2,8 +2,10 @@ package org.infinispan.server.router.configuration;
 
 import java.net.InetAddress;
 
+import org.infinispan.server.router.Router;
+
 /**
- * {@link org.infinispan.server.router.MultiTenantRouter}'s configuration for Hot Rod.
+ * {@link Router}'s configuration for Hot Rod.
  */
 public class HotRodRouterConfiguration extends AbstractRouterConfiguration {
 

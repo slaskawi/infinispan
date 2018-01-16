@@ -1,17 +1,16 @@
-package org.infinispan.server.router.router.impl.rest;
+package org.infinispan.server.router.router.impl.hotrod;
 
 import java.lang.invoke.MethodHandles;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import org.infinispan.commons.logging.LogFactory;
 import org.infinispan.server.router.RoutingTable;
-import org.infinispan.server.router.configuration.RestRouterConfiguration;
+import org.infinispan.server.router.configuration.HotRodRouterConfiguration;
 import org.infinispan.server.router.logging.RouterLogger;
-import org.infinispan.server.router.router.Router;
-import org.infinispan.server.router.router.impl.rest.handlers.ChannelInboundHandlerDelegatorInitializer;
+import org.infinispan.server.router.router.EndpointRouter;
+import org.infinispan.server.router.router.impl.hotrod.handlers.SniHandlerInitializer;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -22,19 +21,19 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.util.concurrent.DefaultThreadFactory;
 import io.netty.util.concurrent.Future;
 
-public class RestRouter implements Router {
+public class HotRodEndpointRouter implements EndpointRouter {
 
    private static final RouterLogger logger = LogFactory.getLog(MethodHandles.lookup().lookupClass(), RouterLogger.class);
 
-   private static final String THREAD_NAME_PREFIX = "MultiTenantRouter";
+   private static final String THREAD_NAME_PREFIX = "EndpointRouter";
 
    private final NioEventLoopGroup masterGroup = new NioEventLoopGroup(1, new DefaultThreadFactory(THREAD_NAME_PREFIX + "-ServerMaster"));
    private final NioEventLoopGroup workerGroup = new NioEventLoopGroup(0, new DefaultThreadFactory(THREAD_NAME_PREFIX + "-ServerWorker"));
-   private final RestRouterConfiguration configuration;
-   private Optional<Integer> port = Optional.empty();
-   private Optional<InetAddress> ip = Optional.empty();
+   private final HotRodRouterConfiguration configuration;
+   private Integer port = null;
+   private InetAddress ip = null;
 
-   public RestRouter(RestRouterConfiguration configuration) {
+   public HotRodEndpointRouter(HotRodRouterConfiguration configuration) {
       this.configuration = configuration;
    }
 
@@ -44,23 +43,29 @@ public class RestRouter implements Router {
          ServerBootstrap bootstrap = new ServerBootstrap();
          bootstrap.group(masterGroup, workerGroup)
                .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-               .childHandler(new ChannelInboundHandlerDelegatorInitializer(routingTable))
+               .childOption(ChannelOption.TCP_NODELAY, configuration.tcpNoDelay())
+               .childOption(ChannelOption.SO_KEEPALIVE, configuration.keepAlive())
+               .childHandler(new SniHandlerInitializer(routingTable))
                .channel(NioServerSocketChannel.class);
+         if (configuration.sendBufferSize() > 0)
+            bootstrap.childOption(ChannelOption.SO_SNDBUF, configuration.sendBufferSize());
+         if (configuration.receiveBufferSize() > 0)
+            bootstrap.childOption(ChannelOption.SO_RCVBUF, configuration.receiveBufferSize());
 
          InetAddress ip = configuration.getIp();
          int port = configuration.getPort();
 
          Channel channel = bootstrap.bind(ip, port).sync().channel();
          InetSocketAddress localAddress = (InetSocketAddress) channel.localAddress();
-         this.port = Optional.of(localAddress.getPort());
-         this.ip = Optional.of(localAddress.getAddress());
+         this.port = localAddress.getPort();
+         this.ip = localAddress.getAddress();
       } catch (InterruptedException e) {
          Thread.currentThread().interrupt();
       } catch (Exception e) {
-         throw logger.restRouterStartFailed(e);
+         throw logger.hotrodRouterStartFailed(e);
       }
 
-      logger.restRouterStarted(ip + ":" + port);
+      logger.hotRodRouterStarted(ip + ":" + port);
    }
 
    @Override
@@ -72,17 +77,17 @@ public class RestRouter implements Router {
       } catch (Exception e) {
          logger.errorWhileShuttingDown(e);
       }
-      port = Optional.empty();
-      ip = Optional.empty();
+      port = null;
+      ip = null;
    }
 
    @Override
-   public Optional<InetAddress> getIp() {
+   public InetAddress getIp() {
       return ip;
    }
 
    @Override
-   public Optional<Integer> getPort() {
+   public Integer getPort() {
       return port;
    }
 
@@ -100,6 +105,6 @@ public class RestRouter implements Router {
 
    @Override
    public Protocol getProtocol() {
-      return Protocol.REST;
+      return Protocol.HOT_ROD;
    }
 }

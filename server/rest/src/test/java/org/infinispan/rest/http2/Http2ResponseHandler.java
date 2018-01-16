@@ -1,17 +1,3 @@
-/*
- * Copyright 2014 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License, version 2.0 (the
- * "License"); you may not use this file except in compliance with the License. You may obtain a
- * copy of the License at:
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software distributed under the License
- * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions and limitations under
- * the License.
- */
 package org.infinispan.rest.http2;
 
 import java.util.AbstractMap.SimpleEntry;
@@ -21,24 +7,36 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpScheme;
 import io.netty.handler.codec.http2.HttpConversionUtil;
+import io.netty.handler.ssl.SslContext;
 import io.netty.util.internal.PlatformDependent;
 
 /**
  * Process {@link io.netty.handler.codec.http.FullHttpResponse} translated from HTTP/2 frames
  */
-public class HttpResponseHandler extends SimpleChannelInboundHandler<FullHttpResponse> {
+public class Http2ResponseHandler extends SimpleChannelInboundHandler<FullHttpResponse> implements  CommunicationHandler {
+
+    private final TimeUnit TIMEOUT_UNITS = TimeUnit.MINUTES;
+    private final int TIMEOUT = 15;
 
     private final Map<Integer, Entry<ChannelFuture, ChannelPromise>> streamidPromiseMap;
     private final Queue<FullHttpResponse> responses = new LinkedBlockingQueue<>();
 
-    public HttpResponseHandler() {
+    //Netty uses stream ids to separate concurrent conversations. It seems to be an implementation details but this counter
+    //get always incremented by 2
+    private final AtomicInteger streamCounter = new AtomicInteger(3);
+
+    public Http2ResponseHandler() {
         // Use a concurrent map because we add and iterate from the main thread (just for the purposes of the example),
         // but Netty also does a get on the map when messages are received in a EventLoop thread.
         streamidPromiseMap = PlatformDependent.newConcurrentHashMap();
@@ -51,20 +49,13 @@ public class HttpResponseHandler extends SimpleChannelInboundHandler<FullHttpRes
      * @param writeFuture A future that represent the request write operation
      * @param promise The promise object that will be used to wait/notify events
      * @return The previous object associated with {@code streamId}
-     * @see HttpResponseHandler#awaitResponses(long, java.util.concurrent.TimeUnit)
+     * @see Http2ResponseHandler#awaitResponses(long, java.util.concurrent.TimeUnit)
      */
     public Entry<ChannelFuture, ChannelPromise> put(int streamId, ChannelFuture writeFuture, ChannelPromise promise) {
         return streamidPromiseMap.put(streamId, new SimpleEntry<ChannelFuture, ChannelPromise>(writeFuture, promise));
     }
 
-    /**
-     * Wait (sequentially) for a time duration for each anticipated response
-     *
-     * @param timeout Value of time to wait for each response
-     * @param unit Units associated with {@code timeout}
-     * @see HttpResponseHandler#put(int, io.netty.channel.ChannelFuture, io.netty.channel.ChannelPromise)
-     */
-    public void awaitResponses(long timeout, TimeUnit unit) {
+    private void awaitResponses(long timeout, TimeUnit unit) {
         Iterator<Entry<Integer, Entry<ChannelFuture, ChannelPromise>>> itr = streamidPromiseMap.entrySet().iterator();
         while (itr.hasNext()) {
             Entry<Integer, Entry<ChannelFuture, ChannelPromise>> entry = itr.next();
@@ -90,7 +81,7 @@ public class HttpResponseHandler extends SimpleChannelInboundHandler<FullHttpRes
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpResponse msg) throws Exception {
         Integer streamId = msg.headers().getInt(HttpConversionUtil.ExtensionHeaderNames.STREAM_ID.text());
         if (streamId == null) {
-            throw new IllegalArgumentException("HttpResponseHandler unexpected message received: " + msg);
+            throw new IllegalArgumentException("Http2ResponseHandler unexpected message received: " + msg);
         }
 
         Entry<ChannelFuture, ChannelPromise> entry = streamidPromiseMap.get(streamId);
@@ -102,7 +93,20 @@ public class HttpResponseHandler extends SimpleChannelInboundHandler<FullHttpRes
         }
     }
 
+    @Override
     public Queue<FullHttpResponse> getResponses() {
+        awaitResponses(TIMEOUT, TIMEOUT_UNITS);
         return responses;
+    }
+
+    @Override
+    public void sendRequest(FullHttpRequest request, SslContext sslContext, Channel channel) {
+        int streamId = streamCounter.getAndAdd(2);
+        HttpScheme scheme = sslContext != null ? HttpScheme.HTTPS : HttpScheme.HTTP;
+
+        request.headers().add(HttpConversionUtil.ExtensionHeaderNames.SCHEME.text(), scheme.name());
+        request.headers().add(HttpConversionUtil.ExtensionHeaderNames.STREAM_ID.text(), streamId);
+        put(streamId, channel.write(request), channel.newPromise());
+        channel.flush();
     }
 }

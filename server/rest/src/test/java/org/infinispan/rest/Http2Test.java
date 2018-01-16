@@ -22,8 +22,7 @@ import java.util.Queue;
 
 import org.assertj.core.api.Assertions;
 import org.infinispan.rest.helper.RestServerHelper;
-import org.infinispan.rest.http2.Http2Client;
-import org.testng.SkipException;
+import org.infinispan.rest.http2.NettyHttpClient;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -39,11 +38,12 @@ import io.netty.util.CharsetUtil;
  *
  * @author Sebastian Łaskawiec
  */
+@Test(groups = "functional", testName = "rest.Http2Test")
 public final class Http2Test {
 
     public static final String KEY_STORE_PATH = Http2Test.class.getClassLoader().getResource("./default_client_truststore.jks").getPath();
 
-    private Http2Client client;
+    private NettyHttpClient client;
     private RestServerHelper restServer;
 
     @BeforeMethod
@@ -59,7 +59,7 @@ public final class Http2Test {
     @Test
     public void shouldUpgradeUsingALPN() throws Exception {
         if (!OpenSsl.isAlpnSupported()) {
-            throw new SkipException("OpenSSL is not present, can not test TLS/ALPN support");
+            throw new IllegalStateException("OpenSSL is not present, can not test TLS/ALPN support. Version: " + OpenSsl.versionString() + " Cause: " + OpenSsl.unavailabilityCause());
         }
 
         //given
@@ -67,7 +67,7 @@ public final class Http2Test {
               .withKeyStore(KEY_STORE_PATH, "secret")
               .start();
 
-        client = Http2Client.newClientWithAlpn(KEY_STORE_PATH, "secret");
+        client = NettyHttpClient.newHttp2ClientWithALPN(KEY_STORE_PATH, "secret");
         client.start(restServer.getHost(), restServer.getPort());
 
         FullHttpRequest putValueInCacheRequest = new DefaultFullHttpRequest(HTTP_1_1, POST, "/rest/http2testcache/test",
@@ -88,7 +88,7 @@ public final class Http2Test {
         //given
         restServer = RestServerHelper.defaultRestServer("http2testcache").start();
 
-        client = Http2Client.newClientWithHttp11Upgrade();
+        client = NettyHttpClient.newHttp2ClientWithHttp11Upgrade();
         client.start(restServer.getHost(), restServer.getPort());
 
         FullHttpRequest putValueInCacheRequest = new DefaultFullHttpRequest(HTTP_1_1, POST, "/rest/http2testcache/test",

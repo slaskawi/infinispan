@@ -5,9 +5,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.net.InetAddress;
 
 import org.infinispan.rest.RestServer;
-import org.infinispan.server.router.MultiTenantRouter;
-import org.infinispan.server.router.configuration.builder.MultiTenantRouterConfigurationBuilder;
-import org.infinispan.server.router.router.Router;
+import org.infinispan.server.router.Router;
+import org.infinispan.server.router.configuration.builder.RouterConfigurationBuilder;
+import org.infinispan.server.router.router.EndpointRouter;
 import org.infinispan.server.router.routes.Route;
 import org.infinispan.server.router.routes.rest.NettyRestServerRouteDestination;
 import org.infinispan.server.router.routes.rest.RestRouteSource;
@@ -15,7 +15,7 @@ import org.infinispan.server.router.utils.RestClient;
 import org.infinispan.server.router.utils.RestTestingUtil;
 import org.junit.Test;
 
-public class RestRouterTest {
+public class RestEndpointRouterTest {
 
     /**
      * In this scenario we create 2 REST servers, each one with different REST Path: <ul> <li>REST1 -
@@ -37,7 +37,7 @@ public class RestRouterTest {
         RestRouteSource rest2Source = new RestRouteSource("rest2");
         Route<RestRouteSource, NettyRestServerRouteDestination> routeToRest2 = new Route<>(rest2Source, rest2Destination);
 
-        MultiTenantRouterConfigurationBuilder routerConfigurationBuilder = new MultiTenantRouterConfigurationBuilder();
+        RouterConfigurationBuilder routerConfigurationBuilder = new RouterConfigurationBuilder();
         routerConfigurationBuilder
                 .rest()
                 .port(8080)
@@ -46,9 +46,9 @@ public class RestRouterTest {
                 .add(routeToRest1)
                 .add(routeToRest2);
 
-        MultiTenantRouter router = new MultiTenantRouter(routerConfigurationBuilder.build());
+        Router router = new Router(routerConfigurationBuilder.build());
         router.start();
-        int port = router.getRouter(Router.Protocol.REST).get().getPort().get();
+        int port = router.getRouter(EndpointRouter.Protocol.REST).get().getPort();
 
         //when
         RestClient rest1Client = new RestClient("http://127.0.0.1:" + port + "/rest/rest1");

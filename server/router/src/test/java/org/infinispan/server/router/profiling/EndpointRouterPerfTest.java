@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.commons.test.categories.Profiling;
 import org.infinispan.server.hotrod.HotRodServer;
-import org.infinispan.server.router.MultiTenantRouter;
+import org.infinispan.server.router.Router;
 import org.infinispan.server.router.routes.Route;
 import org.infinispan.server.router.routes.RouteDestination;
 import org.infinispan.server.router.routes.RouteSource;
@@ -35,7 +35,7 @@ import io.netty.util.internal.logging.JdkLoggerFactory;
  * <p> Note that this class is not triggered by Surefire by default (it doesn't end with "test"). We want to do
  * performance test on demand only. </p>
  */
-public class RouterPerfTest {
+public class EndpointRouterPerfTest {
 
     private static final int MEASUREMENT_ITERATIONS_COUNT = 1;
     private static final int WARMUP_ITERATIONS_COUNT = 1;
@@ -72,7 +72,7 @@ public class RouterPerfTest {
         private List<HotRodServer> hotRodServers;
         private Optional<Set<Route<? extends RouteSource, ? extends RouteDestination>>> routes;
         private RemoteCacheManager preloadedClient;
-        private Optional<MultiTenantRouter> router;
+        private Optional<Router> router;
         private PerfTestConfiguration configuration;
 
         @Setup
