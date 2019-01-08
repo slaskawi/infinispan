@@ -188,7 +188,7 @@ public class ExtendedStatisticLockManager implements LockManager {
 
    private void onUnlock(Object key, Object lockOwner, long timestamp) {
       LockInfo lockInfo = lockInfoMap.get(key);
-      if (lockInfo != null && lockInfo.owner.equals(lockOwner)) {
+      if (lockInfo != null && lockInfo.owner != null && lockInfo.owner.equals(lockOwner)) {
          lockInfo.updateStats(timestamp);
          lockInfoMap.remove(key);
       }
