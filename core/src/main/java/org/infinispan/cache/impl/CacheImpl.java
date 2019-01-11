@@ -2097,7 +2097,7 @@ public class CacheImpl<K, V> implements AdvancedCache<K, V> {
                if (log.isDebugEnabled()) {
                   log.debug(failMessage);
                }
-            } else {
+            } else {BaseInvalidationInterceptor.java
                throw new CacheException(failMessage, e);
             }
          }

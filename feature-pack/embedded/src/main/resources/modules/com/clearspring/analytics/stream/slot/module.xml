@@ -1,0 +1,18 @@
+<module xmlns="urn:jboss:module:1.5" name="com.clearspring.analytics.stream" slot="@infinispan.module.slot@">
+
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
+
+    <resources>
+        <artifact name="${com.clearspring.analytics:stream}"/>
+    </resources>
+
+    <dependencies>
+        <!--<module name="com.fasterxml.jackson.core.jackson-core"/>-->
+        <!--<module name="javax.api"/>-->
+        <!--<module name="org.slf4j"/>-->
+    </dependencies>
+
+</module>
+

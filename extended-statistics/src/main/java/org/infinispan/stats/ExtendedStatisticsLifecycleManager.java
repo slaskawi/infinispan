@@ -12,10 +12,12 @@ import org.infinispan.configuration.global.GlobalJmxStatisticsConfiguration;
 import org.infinispan.factories.ComponentRegistry;
 import org.infinispan.factories.GlobalComponentRegistry;
 import org.infinispan.factories.components.ManageableComponentMetadata;
+import org.infinispan.interceptors.impl.TxInterceptor;
 import org.infinispan.jmx.CacheJmxRegistration;
 import org.infinispan.jmx.ComponentsJmxRegistration;
 import org.infinispan.jmx.ResourceDMBean;
 import org.infinispan.lifecycle.ModuleLifecycle;
+import org.infinispan.stats.topK.CacheUsageInterceptor;
 import org.infinispan.stats.wrappers.ExtendedStatisticInterceptor;
 import org.kohsuke.MetaInfServices;
 
@@ -27,9 +29,13 @@ public class ExtendedStatisticsLifecycleManager implements ModuleLifecycle {
       System.out.println("==== Adding extended statistics ====");
 
       ConfigurationBuilder builder = new ConfigurationBuilder().read(configuration);
-      ExtendedStatisticInterceptor interceptor = new ExtendedStatisticInterceptor();
-      builder.customInterceptors().addInterceptor().interceptor(interceptor)
+      ExtendedStatisticInterceptor extendedStatisticInterceptor = new ExtendedStatisticInterceptor();
+      builder.customInterceptors().addInterceptor().interceptor(extendedStatisticInterceptor)
             .position(InterceptorConfiguration.Position.FIRST);
+      CacheUsageInterceptor cacheUsageInterceptor = new CacheUsageInterceptor();
+      builder.customInterceptors().addInterceptor().interceptor(cacheUsageInterceptor)
+            .before(TxInterceptor.class);
+
       configuration.customInterceptors().interceptors(builder.build().customInterceptors().interceptors());
 
       GlobalJmxStatisticsConfiguration globalCfg = cr.getGlobalComponentRegistry().getGlobalConfiguration().globalJmxStatistics();
@@ -37,16 +43,22 @@ public class ExtendedStatisticsLifecycleManager implements ModuleLifecycle {
          MBeanServer mbeanServer = JmxUtil.lookupMBeanServer(globalCfg.mbeanServerLookup(), globalCfg.properties());
          String groupName = getGroupName(globalCfg, configuration, cacheName);
 
-         cr.registerComponent(interceptor, ExtendedStatisticInterceptor.class);
+         cr.registerComponent(extendedStatisticInterceptor, ExtendedStatisticInterceptor.class);
+         cr.registerComponent(cacheUsageInterceptor, CacheUsageInterceptor.class);
 
          // Pick up metadata from the component metadata repository
-         ManageableComponentMetadata meta = cr.getComponentMetadataRepo().findComponentMetadata(ExtendedStatisticInterceptor.class)
+         ManageableComponentMetadata extendedStatisticsMetadata = cr.getComponentMetadataRepo().findComponentMetadata(ExtendedStatisticInterceptor.class)
+               .toManageableComponentMetadata();
+         ManageableComponentMetadata cacheUsageMetadata = cr.getComponentMetadataRepo().findComponentMetadata(CacheUsageInterceptor.class)
                .toManageableComponentMetadata();
          // And use this metadata when registering the transport as a dynamic MBean
          try {
-            ResourceDMBean mbean = new ResourceDMBean(interceptor, meta);
-            ObjectName interpreterObjName = new ObjectName(String.format("%s:%s,component=ExtendedStatistics", globalCfg.domain(), groupName));
-            JmxUtil.registerMBean(mbean, interpreterObjName, mbeanServer);
+            ResourceDMBean extendedStatisticsMBean = new ResourceDMBean(extendedStatisticInterceptor, extendedStatisticsMetadata);
+            ResourceDMBean cacheUsageMBean = new ResourceDMBean(cacheUsageInterceptor, cacheUsageMetadata);
+            ObjectName extendedStatisticsObjectName = new ObjectName(String.format("%s:%s,component=ExtendedStatistics", globalCfg.domain(), groupName));
+            ObjectName cacheUsageObjectName = new ObjectName(String.format("%s:%s,component=CacheUsage", globalCfg.domain(), groupName));
+            JmxUtil.registerMBean(extendedStatisticsMBean, extendedStatisticsObjectName, mbeanServer);
+            JmxUtil.registerMBean(cacheUsageMBean, cacheUsageObjectName, mbeanServer);
          } catch (Exception e) {
             System.out.println("==== Extended statistics JMX attach failed");
          }
